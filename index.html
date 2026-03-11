@@ -97,6 +97,42 @@
 
     <div id="main-app" class="min-h-screen">
         <!-- Navigation -->
+    <!-- Splash/Auth Guard -->
+    <div id="auth-overlay" class="fixed inset-0 z-[1000] bg-gray-950 flex items-center justify-center p-4">
+        <div class="glass-card bg-gray-900 w-full max-w-sm p-8 border border-white/10 shadow-2xl scale-in-center">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto bg-white/5 rounded-3xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative mb-4">
+                    <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover">
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-tighter">Gestion des courses</h1>
+                <p id="auth-subtitle" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Accès Sécurisé - Famille Nour</p>
+            </div>
+
+            <div id="login-form-box" class="space-y-4">
+                <div class="space-y-1">
+                    <input type="email" id="auth-email" placeholder="Email..." 
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
+                </div>
+                <div class="space-y-1">
+                    <input type="password" id="auth-password" placeholder="Mot de passe..." 
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
+                </div>
+                <div class="flex flex-col gap-3 pt-2">
+                    <button id="btn-auth-action" onclick="handleAuthAction()" 
+                        class="w-full bg-gradient-to-r from-rose-600 to-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-rose-900/40 hover:scale-[1.02] transition-all disabled:opacity-50">Se Connecter</button>
+                    <button id="btn-toggle-auth" onclick="toggleAuthMode()" 
+                        class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors">Pas de compte ? S'inscrire</button>
+                </div>
+            </div>
+            <div id="auth-loading" class="hidden py-10 text-center">
+                <div class="w-8 h-8 border-4 border-rose-500/20 border-t-rose-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase">Connexion en cours...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden by default) -->
+    <div id="app-content" class="hidden">
         <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                 <!-- Logo -->
@@ -128,6 +164,10 @@
                     <button onclick="toggleStatsModal()" title="Statistiques"
                         class="bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
                         <i class="fas fa-chart-bar"></i>
+                    </button>
+                    <button onclick="logout()" title="Déconnexion"
+                        class="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-rose-500 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                        <i class="fas fa-power-off"></i>
                     </button>
                     <div class="relative">
                         <button onclick="toggleNotifications()" id="notif-btn" 
@@ -513,11 +553,72 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBSSVxLYLN2hx0hNCkbYwfGl--H8UZFnCw", authDomain: "biocare-biotech.firebaseapp.com", projectId: "biocare-biotech", storageBucket: "biocare-biotech.firebasestorage.app", messagingSenderId: "136143925673", appId: "1:136143925673:web:8c2b51a2bdbee662e594b8" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
         window.db = db;
+        window.auth = auth;
+
+        let isLoginMode = true;
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-subtitle').textContent = isLoginMode ? "Accès Sécurisé - Famille Nour" : "Créer un compte Famille";
+            document.getElementById('btn-auth-action').textContent = isLoginMode ? "Se Connecter" : "S'inscrire";
+            document.getElementById('btn-toggle-auth').textContent = isLoginMode ? "Pas de compte ? S'inscrire" : "Déjà un compte ? Se connecter";
+        };
+
+        window.handleAuthAction = async () => {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if (!email || !password) { showToast('Veuillez remplir tous les champs', true); return; }
+
+            document.getElementById('login-form-box').classList.add('hidden');
+            document.getElementById('auth-loading').classList.remove('hidden');
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) {
+                console.error(err);
+                let msg = "Erreur d'authentification";
+                if (err.code === 'auth/user-not-found') msg = "Utilisateur non trouvé";
+                else if (err.code === 'auth/wrong-password') msg = "Mot de passe incorrect";
+                else if (err.code === 'auth/email-already-in-use') msg = "Email déjà utilisé";
+                else if (err.code === 'auth/weak-password') msg = "Mot de passe trop court (min 6)";
+                
+                showToast(msg, true);
+                document.getElementById('login-form-box').classList.remove('hidden');
+                document.getElementById('auth-loading').classList.add('hidden');
+            }
+        };
+
+        window.logout = () => {
+            if (confirm('Se déconnecter ?')) {
+                signOut(auth);
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            const overlay = document.getElementById('auth-overlay');
+            const app = document.getElementById('app-content');
+            if (user) {
+                overlay.classList.add('hidden');
+                app.classList.remove('hidden');
+                // Set user email in profile if needed
+                console.log("Logged in as:", user.email);
+            } else {
+                overlay.classList.remove('hidden');
+                app.classList.add('hidden');
+                document.getElementById('login-form-box').classList.remove('hidden');
+                document.getElementById('auth-loading').classList.add('hidden');
+            }
+        });
 
         onSnapshot(collection(db, "achats_maison"), (snap) => {
             window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1565,6 +1666,7 @@
             </div>
         </div>
     </div>
+    </div> <!-- End of app-content -->
 </body>
 
 </html>
