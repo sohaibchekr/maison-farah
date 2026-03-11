@@ -159,15 +159,15 @@
 
                     <div class="flex items-center space-x-3">
                         <button onclick="toggleMembersModal()"
-                            class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-rose-400">
+                            class="admin-only hidden w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-rose-400">
                             <i class="fas fa-users-cog"></i>
                         </button>
                         <button onclick="toggleManageModal()" title="Base de données Produits"
-                            class="bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                            class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
                             <i class="fas fa-database"></i>
                         </button>
                         <button onclick="toggleMembersModal()"
-                            class="bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                            class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
                             <i class="fas fa-users"></i>
                         </button>
                         <button onclick="toggleStatsModal()" title="Statistiques"
@@ -203,7 +203,7 @@
                             </div>
                         </div>
                         <button onclick="openBudgetModal()"
-                            class="bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 px-3 py-2 rounded-xl flex items-center gap-2 text-sm font-bold group">
+                            class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 px-3 py-2 rounded-xl flex items-center gap-2 text-sm font-bold group">
                             <i class="fas fa-wallet"></i>
                             <span id="nav-budget">--- DA</span>
                             <i
@@ -228,7 +228,7 @@
                             class="bg-white text-rose-700 px-4 py-2 rounded-lg text-xs font-black uppercase">Acheter
                             Ensemble</button>
                         <button onclick="bulkDelete()"
-                            class="bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-black uppercase border border-white/20"><i
+                            class="admin-only hidden bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-black uppercase border border-white/20"><i
                                 class="fas fa-trash-alt mr-2"></i>Effacer</button>
                         <button onclick="clearSelection()" class="bg-rose-500/50 p-2 rounded-lg"><i
                                 class="fas fa-times"></i></button>
@@ -252,7 +252,7 @@
                                 Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
                         </div>
                         <button onclick="openBudgetModal('expenses')"
-                            class="absolute top-2 right-2 w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[10px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
+                            class="admin-only hidden absolute top-2 right-2 w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[10px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
@@ -512,23 +512,23 @@
                                 POUR QU'IL RESTE EXACTEMENT CETTE SOMME</p>
                         </div>
 
-                        <div id="budget-actions-expenses" class="hidden gap-2">
+                        <div id="budget-actions-expenses" class="hidden flex-col gap-2">
                             <button type="submit" name="action" value="set_expenses"
-                                class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-500 transition-colors">Définir
+                                class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-500 transition-colors">Définir
                                 Dépenses</button>
                         </div>
 
                         <div class="border-t border-white/5 pt-4 mt-4 space-y-2">
                             <button type="button" id="btn-reset-budget" onclick="resetBudgetToZero()"
-                                class="w-full bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-rose-500/20 transition-all">
+                                class="admin-only hidden w-full bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-rose-500/20 transition-all">
                                 <i class="fas fa-wallet mr-2"></i> Reset Budget (0 DA)
                             </button>
                             <button type="button" id="btn-reset-solde" onclick="resetSoldeToZero()"
-                                class="w-full bg-rose-600/5 hover:bg-rose-600/10 text-rose-400/60 py-2 rounded-xl font-black uppercase text-[9px] tracking-widest border border-rose-500/10 transition-all">
+                                class="admin-only hidden w-full bg-rose-600/5 hover:bg-rose-600/10 text-rose-400/60 py-2 rounded-xl font-black uppercase text-[9px] tracking-widest border border-rose-500/10 transition-all">
                                 <i class="fas fa-undo mr-2"></i> Remettre Solde à Zéro
                             </button>
                             <button type="button" id="btn-reset-expenses" onclick="resetExpensesToZero()"
-                                class="hidden w-full bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-emerald-500/20 transition-all">
+                                class="admin-only hidden w-full bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-emerald-500/20 transition-all">
                                 <i class="fas fa-broom mr-2"></i> Effacer Dépenses (0 DA)
                             </button>
                         </div>
@@ -638,6 +638,9 @@
             window.db = db;
             window.auth = auth;
 
+            const ADMIN_EMAIL = "sohaibchekri@gmail.com";
+            window.isAdmin = false;
+
             let isLoginMode = true;
             window.toggleAuthMode = () => {
                 isLoginMode = !isLoginMode;
@@ -686,8 +689,16 @@
                 if (user) {
                     overlay.classList.add('hidden');
                     app.classList.remove('hidden');
-                    // Set user email in profile if needed
-                    console.log("Logged in as:", user.email);
+                    
+                    window.isAdmin = user.email === ADMIN_EMAIL;
+                    document.body.classList.toggle('is-admin', window.isAdmin);
+                    
+                    // Hide/Show admin specific elements in navbar
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.classList.toggle('hidden', !window.isAdmin);
+                    });
+
+                    console.log("Logged in as:", user.email, "Admin:", window.isAdmin);
                 } else {
                     overlay.classList.remove('hidden');
                     app.classList.add('hidden');
@@ -737,15 +748,16 @@
                     <div><p class="font-black text-emerald-400 text-lg">+ ${d.amount.toLocaleString()} DA</p><p class="text-[9px] text-gray-500 font-bold uppercase">${d.displayDate}</p></div>
                     <div class="flex items-center gap-3">
                         <i class="fas fa-arrow-up text-emerald-500/10 text-xl"></i>
-                        <button onclick="deleteBudgetHistory('${d.id}')" class="text-white/10 hover:text-red-500 p-2 transition-colors">
+                        ${window.isAdmin ? `<button onclick="deleteBudgetHistory('${d.id}')" class="text-white/10 hover:text-red-500 p-2 transition-colors">
                             <i class="fas fa-trash-alt"></i>
-                        </button>
+                        </button>` : ''}
                     </div>
                 </div>
             `).join('') : '<div class="text-center py-10 opacity-30 text-xs italic">Aucun dépôt trouvé</div>';
             }
 
             window.deleteBudgetHistory = async (id) => {
+                if (!window.isAdmin) return;
                 if (confirm('Supprimer cette entrée de l\'historique ?')) {
                     try {
                         await deleteDoc(doc(db, "budget_history", id));
@@ -954,8 +966,10 @@
                     </div>
                         <div class="flex items-center gap-3" onclick="event.stopPropagation()">
                             <p class="font-black text-rose-400">${Math.round(a.price).toLocaleString()} DA</p>
-                            <button onclick="openEditModal('${a.id}')" class="text-white/10 hover:text-emerald-500 p-1 transition-colors"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteAchat('${a.id}')" class="text-white/10 hover:text-red-500 p-1 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                            ${window.isAdmin ? `
+                                <button onclick="openEditModal('${a.id}')" class="text-white/10 hover:text-emerald-500 p-1 transition-colors"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteAchat('${a.id}')" class="text-white/10 hover:text-red-500 p-1 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                            ` : ''}
                         </div>
                     </div>
                 `).join('') : '<div class="text-center py-10 opacity-30 text-xs italic">Aucun achat trouvé</div>';
@@ -1280,15 +1294,18 @@
                     <div class="flex-1 truncate mr-2">
                         <span class="text-[10px] font-bold uppercase ${isFused ? 'text-rose-400' : ''}">${p.name}</span>
                     </div>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        ${isFused ? `<button onclick="splitProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" title="Découper" class="text-emerald-500/50 hover:text-emerald-400"><i class="fas fa-scissors text-[10px]"></i></button>` : ''}
-                        <button onclick="deleteProduct('${p.id}')" title="Supprimer" class="text-white/10 hover:text-red-500"><i class="fas fa-trash-alt text-[10px]"></i></button>
-                    </div>
+                    ${window.isAdmin ? `
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            ${isFused ? `<button onclick="splitProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" title="Découper" class="text-emerald-500/50 hover:text-emerald-400"><i class="fas fa-scissors text-[10px]"></i></button>` : ''}
+                            <button onclick="deleteProduct('${p.id}')" title="Supprimer" class="text-white/10 hover:text-red-500"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                        </div>
+                    ` : ''}
                 </div>
             `}).join('') || '<div class="col-span-full py-10 opacity-30 italic text-center text-xs uppercase">Aucun produit trouvé</div>';
             }
 
             window.splitProduct = async (id, fullName) => {
+                if (!window.isAdmin) return;
                 const parts = fullName.split(/[,،]/).map(s => s.trim()).filter(s => s);
                 if (parts.length <= 1) return;
                 try {
@@ -1314,6 +1331,7 @@
             };
 
             window.deleteProduct = async (id) => {
+                if (!window.isAdmin) return;
                 if (confirm('Supprimer ce produit type ?')) {
                     try { await deleteDoc(doc(db, "produits_maison", id)); } catch (err) { showToast('Erreur'); }
                 }
@@ -1386,6 +1404,7 @@
             };
 
             window.removeMember = async (id) => {
+                if (!window.isAdmin) return;
                 if (confirm('Sûr ?')) {
                     try {
                         await deleteDoc(doc(db, "famille_membres", id));
@@ -1401,7 +1420,7 @@
                         <div class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 font-bold">${m.name[0]}</div>
                         <p class="text-sm font-bold uppercase tracking-tight">${m.name} <span class="text-[9px] text-gray-500 ml-1">(${m.role})</span></p>
                     </div>
-                    <button onclick="removeMember('${m.id}')" class="text-red-500/30 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>
+                    ${window.isAdmin ? `<button onclick="removeMember('${m.id}')" class="text-red-500/30 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>` : ''}
                 </div>
             `).join('');
             }
@@ -1449,6 +1468,7 @@
             };
 
             window.confirmPurchase = async (e) => {
+                // Anyone can confirm an item they bought
                 e.preventDefault(); const p = parseFloat(new FormData(e.target).get('price'));
                 if (isNaN(p)) return;
                 try {
@@ -1463,6 +1483,7 @@
             };
 
             window.saveBudget = async (e) => {
+                if (!window.isAdmin) return;
                 e.preventDefault();
                 const f = new FormData(e.target);
                 // Robust number parsing (handle spaces, commas)
@@ -1540,6 +1561,7 @@
             };
 
             window.resetBudgetToZero = async () => {
+                if (!window.isAdmin) return;
                 if (confirm('Voulez-vous vraiment remettre le budget à zéro ?')) {
                     try {
                         const now = new Date();
@@ -1556,6 +1578,7 @@
             };
 
             window.resetSoldeToZero = async () => {
+                if (!window.isAdmin) return;
                 if (confirm('Voulez-vous vraiment remettre le solde à zéro ? (Sera compensé par le budget)')) {
                     try {
                         const allReceived = window.achats.filter(a => a.status === 'received');
@@ -1577,6 +1600,7 @@
             };
 
             window.resetExpensesToZero = async () => {
+                if (!window.isAdmin) return;
                 if (confirm('Voulez-vous vraiment effacer les dépenses du mois ?')) {
                     try {
                         const now = new Date();
@@ -1619,6 +1643,7 @@
             }
 
             window.bulkDelete = async () => {
+                if (!window.isAdmin) return;
                 if (confirm(`Supprimer les ${selectedIds.size} articles sélectionnés ?`)) {
                     try {
                         for (const id of selectedIds) { await deleteDoc(doc(db, "achats_maison", id)); }
@@ -1646,12 +1671,12 @@
                                     ${a.dateAchat ? `<span class="text-emerald-500"><i class="fas fa-check-circle mr-1"></i>Payé: ${Math.round(a.price).toLocaleString()} DA</span>` : ''}
                                 </div>
                             </div>
-                            <div class="flex gap-2" onclick="event.stopPropagation()">
-                                ${a.status === 'pending' ? `
-                                    <button onclick="openPriceModal('${a.id}', '')" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border border-rose-500/20">Acheter</button>
-                                `: ''}
-                                <button onclick="deleteAchat('${a.id}')" class="text-white/10 hover:text-red-500 p-1"><i class="fas fa-trash-alt"></i></button>
-                            </div>
+                                <div class="flex gap-2" onclick="event.stopPropagation()">
+                                    ${a.status === 'pending' ? `
+                                        <button onclick="openPriceModal('${a.id}', '')" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border border-rose-500/20">Acheter</button>
+                                    `: ''}
+                                    ${window.isAdmin ? `<button onclick="deleteAchat('${a.id}')" class="text-white/10 hover:text-red-500 p-1"><i class="fas fa-trash-alt"></i></button>` : ''}
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -1684,6 +1709,7 @@
             };
 
             window.deleteAchat = async (id) => {
+                if (!window.isAdmin) return;
                 if (confirm('Effacer ?')) {
                     try {
                         await deleteDoc(doc(db, "achats_maison", id));
