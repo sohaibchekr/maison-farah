@@ -90,6 +90,61 @@
             accent-color: #fb7185;
             cursor: pointer;
         }
+
+        /* Mobile specific styles */
+        @media (max-width: 640px) {
+            .mobile-bottom-nav {
+                display: flex;
+            }
+            .mobile-fab {
+                display: flex;
+            }
+            .desktop-nav-items {
+                display: none;
+            }
+            main {
+                padding-bottom: 5rem; /* Space for bottom nav */
+            }
+            .glass-card {
+                border-radius: 1rem;
+            }
+        }
+
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .mobile-fab {
+            display: none;
+            position: fixed;
+            bottom: 5.5rem;
+            right: 1.5rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+            border-radius: 1.25rem;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.5);
+            z-index: 45;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-fab:active {
+            transform: scale(0.9);
+        }
     </style>
 </head>
 
@@ -142,80 +197,101 @@
             <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <!-- Logo -->
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
                         <div
-                            class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative group">
-                            <!-- Fallback Heart -->
-                            <i
-                                class="fas fa-heart text-rose-500 text-xl absolute transition-opacity duration-300 group-hover:opacity-100"></i>
-                            <!-- Main Photo -->
+                            class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative group">
+                            <i class="fas fa-heart text-rose-500 text-lg absolute transition-opacity duration-300 group-hover:opacity-100"></i>
                             <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover relative z-10"
                                 onerror="this.style.display='none'; this.previousElementSibling.style.opacity='1'">
                         </div>
-                        <div>
-                            <h1 class="text-2xl font-black tracking-tighter text-white">Gestion des courses</h1>
-                        </div>
+                        <h1 class="text-xl font-black tracking-tighter text-white">فرح نور</h1>
                     </div>
 
-                    <div class="flex items-center space-x-3">
-                        <button onclick="toggleMembersModal()"
-                            class="admin-only hidden w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-rose-400">
-                            <i class="fas fa-users-cog"></i>
-                        </button>
-                        <button onclick="toggleManageModal()" title="Base de données Produits"
-                            class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
-                            <i class="fas fa-database"></i>
-                        </button>
-                        <button onclick="toggleMembersModal()"
-                            class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
-                            <i class="fas fa-users"></i>
-                        </button>
-                        <button onclick="toggleStatsModal()" title="Statistiques"
-                            class="bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
-                            <i class="fas fa-chart-bar"></i>
-                        </button>
-                        <button onclick="logout()" title="Déconnexion"
-                            class="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-rose-500 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
-                            <i class="fas fa-power-off"></i>
-                        </button>
-                        <div class="relative">
-                            <button onclick="toggleNotifications()" id="notif-btn"
-                                class="bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all relative">
-                                <i class="fas fa-bell"></i>
-                                <span id="notif-badge"
-                                    class="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[8px] flex items-center justify-center rounded-full font-black hidden">0</span>
+                    <div class="flex items-center space-x-2">
+                        <!-- Desktop Items -->
+                        <div class="desktop-nav-items flex items-center space-x-2">
+                            <button onclick="toggleMembersModal()"
+                                class="admin-only hidden w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-rose-400">
+                                <i class="fas fa-users-cog"></i>
                             </button>
-                            <!-- Notifications Dropdown -->
-                            <div id="notif-dropdown"
-                                class="absolute right-0 mt-2 w-80 bg-gray-900 border border-white/10 rounded-2xl shadow-2xl hidden z-50 overflow-hidden">
-                                <div
-                                    class="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                                    <h3 class="text-xs font-black uppercase tracking-wider text-gray-400">Notifications
-                                    </h3>
-                                    <button onclick="clearNotifications()"
-                                        class="text-[9px] uppercase font-bold text-rose-400 hover:text-rose-300">Tout
-                                        effacer</button>
-                                </div>
-                                <div id="notif-list" class="max-h-96 overflow-y-auto custom-scrollbar p-2 space-y-2">
-                                    <div class="py-10 text-center opacity-30 text-[10px] uppercase font-bold italic">
-                                        Aucune notification</div>
+                            <button onclick="toggleManageModal()" title="Base de données Produits"
+                                class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-database"></i>
+                            </button>
+                            <button onclick="toggleStatsModal()" title="Statistiques"
+                                class="bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button onclick="openBudgetModal()"
+                                class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 px-3 py-2 rounded-xl flex items-center gap-2 text-sm font-bold group">
+                                <i class="fas fa-wallet"></i>
+                                <span id="nav-budget">--- DA</span>
+                                <i class="fas fa-pencil-alt text-[10px] opacity-20 group-hover:opacity-100 transition-all"></i>
+                            </button>
+                        </div>
+
+                        <!-- Global Actions -->
+                        <div class="flex items-center space-x-2">
+                            <div class="relative">
+                                <button onclick="toggleNotifications()" id="notif-btn"
+                                    class="bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all relative">
+                                    <i class="fas fa-bell"></i>
+                                    <span id="notif-badge"
+                                        class="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[8px] flex items-center justify-center rounded-full font-black hidden">0</span>
+                                </button>
+                                <!-- Notifications Dropdown -->
+                                <div id="notif-dropdown"
+                                    class="absolute right-0 mt-2 w-80 bg-gray-900 border border-white/10 rounded-2xl shadow-2xl hidden z-50 overflow-hidden">
+                                    <div class="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                                        <h3 class="text-xs font-black uppercase tracking-wider text-gray-400">Notifications</h3>
+                                        <button onclick="clearNotifications()" class="text-[9px] uppercase font-bold text-rose-400 hover:text-rose-300">Tout effacer</button>
+                                    </div>
+                                    <div id="notif-list" class="max-h-96 overflow-y-auto custom-scrollbar p-2 space-y-2">
+                                        <div class="py-10 text-center opacity-30 text-[10px] uppercase font-bold italic">Aucune notification</div>
+                                    </div>
                                 </div>
                             </div>
+                            <button onclick="logout()" title="Déconnexion"
+                                class="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-rose-500 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-power-off"></i>
+                            </button>
+                            <button onclick="openPurchaseModal()"
+                                class="hidden sm:flex bg-gradient-to-r from-rose-600 to-pink-500 text-white px-4 py-2 rounded-xl items-center gap-2 shadow-lg shadow-rose-600/20">
+                                <i class="fas fa-plus"></i> <span>Article</span>
+                            </button>
                         </div>
-                        <button onclick="openBudgetModal()"
-                            class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 px-3 py-2 rounded-xl flex items-center gap-2 text-sm font-bold group">
-                            <i class="fas fa-wallet"></i>
-                            <span id="nav-budget">--- DA</span>
-                            <i
-                                class="fas fa-pencil-alt text-[10px] opacity-20 group-hover:opacity-100 transition-all"></i>
-                        </button>
-                        <button onclick="openPurchaseModal()"
-                            class="bg-gradient-to-r from-rose-600 to-pink-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg shadow-rose-600/20">
-                            <i class="fas fa-plus"></i> <span class="hidden sm:inline">Article</span>
-                        </button>
                     </div>
                 </div>
             </nav>
+
+            <!-- Bottom Navigation (Mobile) -->
+            <div class="mobile-bottom-nav flex justify-around items-center">
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center gap-1 text-rose-400">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Accueil</span>
+                </button>
+                <button onclick="toggleStatsModal()" class="flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-chart-pie text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Stats</span>
+                </button>
+                <button onclick="toggleHistoryModal()" class="flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-history text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Histoire</span>
+                </button>
+                <button onclick="toggleMembersModal()" class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-users-cog text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Famille</span>
+                </button>
+                <button onclick="toggleManageModal()" class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-database text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Produits</span>
+                </button>
+            </div>
+
+            <!-- Floating Action Button (Mobile) -->
+            <button onclick="openPurchaseModal()" class="mobile-fab">
+                <i class="fas fa-plus"></i>
+            </button>
 
             <!-- Bulk Bar -->
             <div id="bulk-action-bar"
