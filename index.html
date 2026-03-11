@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فرح نور - Achats Famille</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border-radius: 1.25rem;
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .strike-through {
+            text-decoration: line-through;
+            opacity: 0.6;
+            filter: grayscale(0.2);
+        }
+
+        .selection-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #fb7185;
+            cursor: pointer;
+        }
+
+        /* Mobile specific styles */
+        @media (max-width: 640px) {
+            .mobile-bottom-nav {
+                display: flex;
+            }
+
+            .mobile-fab {
+                display: flex;
+            }
+
+            .desktop-nav-items {
+                display: none;
+            }
+
+            main {
+                padding-bottom: 5rem;
+                /* Space for bottom nav */
+            }
+
+            .glass-card {
+                border-radius: 1rem;
+            }
+        }
+
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .mobile-fab {
+            display: none;
+            position: fixed;
+            bottom: 5.5rem;
+            right: 1.5rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+            border-radius: 1.25rem;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.5);
+            z-index: 45;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-fab:active {
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+
+<body class="text-gray-100">
+
+    <div id="main-app" class="min-h-screen">
+        <!-- Navigation -->
+        <!-- Splash/Auth Guard -->
+        <div id="auth-overlay" class="fixed inset-0 z-[1000] bg-gray-950 flex items-center justify-center p-4">
+            <div class="glass-card bg-gray-900 w-full max-w-sm p-8 border border-white/10 shadow-2xl scale-in-center">
+                <div class="text-center mb-8">
+                    <div
+                        class="w-20 h-20 mx-auto bg-white/5 rounded-3xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative mb-4">
+                        <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover">
+                    </div>
+                    <h1 class="text-2xl font-black text-white tracking-tighter">Gestion des courses</h1>
+                    <p id="auth-subtitle" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                        Accès Sécurisé - Famille Nour</p>
+                </div>
+
+                <div id="login-form-box" class="space-y-4">
+                    <div class="space-y-1">
+                        <input type="email" id="auth-email" placeholder="Email..."
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <input type="password" id="auth-password" placeholder="Mot de passe..."
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
+                    </div>
+                    <div class="flex flex-col gap-3 pt-2">
+                        <button id="btn-auth-action" onclick="handleAuthAction()"
+                            class="w-full bg-gradient-to-r from-rose-600 to-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-rose-900/40 hover:scale-[1.02] transition-all disabled:opacity-50">Se
+                            Connecter</button>
+                        <button id="btn-toggle-auth" onclick="toggleAuthMode()"
+                            class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors">Pas
+                            de compte ? S'inscrire</button>
+                    </div>
+                </div>
+                <div id="auth-loading" class="hidden py-10 text-center">
+                    <div
+                        class="w-8 h-8 border-4 border-rose-500/20 border-t-rose-500 rounded-full animate-spin mx-auto mb-4">
+                    </div>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase">Connexion en cours...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Container (Hidden by default) -->
+        <div id="app-content" class="hidden">
+            <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+                    <!-- Logo -->
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative group">
+                            <i
+                                class="fas fa-heart text-rose-500 text-lg absolute transition-opacity duration-300 group-hover:opacity-100"></i>
+                            <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover relative z-10"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.opacity='1'">
+                        </div>
+                        <h1 class="text-xl font-black tracking-tighter text-white">فرح نور</h1>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <!-- Desktop Items -->
+                        <div class="desktop-nav-items flex items-center space-x-2">
+                            <button onclick="toggleMembersModal()"
+                                class="admin-only hidden w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-rose-400">
+                                <i class="fas fa-users-cog"></i>
+                            </button>
+                            <button onclick="toggleManageModal()" title="Base de données Produits"
+                                class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-database"></i>
+                            </button>
+                            <button onclick="toggleStatsModal()" title="Statistiques"
+                                class="bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button onclick="openBudgetModal()"
+                                class="admin-only hidden bg-white/5 hover:bg-white/10 border border-white/10 text-emerald-400 px-3 py-2 rounded-xl flex items-center gap-2 text-sm font-bold group">
+                                <i class="fas fa-wallet"></i>
+                                <span id="nav-budget">--- DA</span>
+                                <i
+                                    class="fas fa-pencil-alt text-[10px] opacity-20 group-hover:opacity-100 transition-all"></i>
+                            </button>
+                        </div>
+
+                        <!-- Global Actions -->
+                        <div class="flex items-center space-x-2">
+                            <div class="relative">
+                                <button onclick="toggleNotifications()" id="notif-btn"
+                                    class="bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all relative">
+                                    <i class="fas fa-bell"></i>
+                                    <span id="notif-badge"
+                                        class="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[8px] flex items-center justify-center rounded-full font-black hidden">0</span>
+                                </button>
+                                <!-- Notifications Dropdown -->
+                                <div id="notif-dropdown"
+                                    class="absolute right-0 mt-2 w-80 bg-gray-900 border border-white/10 rounded-2xl shadow-2xl hidden z-50 overflow-hidden">
+                                    <div
+                                        class="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                                        <h3 class="text-xs font-black uppercase tracking-wider text-gray-400">
+                                            Notifications</h3>
+                                        <button onclick="clearNotifications()"
+                                            class="text-[9px] uppercase font-bold text-rose-400 hover:text-rose-300">Tout
+                                            effacer</button>
+                                    </div>
+                                    <div id="notif-list"
+                                        class="max-h-96 overflow-y-auto custom-scrollbar p-2 space-y-2">
+                                        <div
+                                            class="py-10 text-center opacity-30 text-[10px] uppercase font-bold italic">
+                                            Aucune notification</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="logout()" title="Déconnexion"
+                                class="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-rose-500 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-power-off"></i>
+                            </button>
+                            <button onclick="openPurchaseModal()"
+                                class="hidden sm:flex bg-gradient-to-r from-rose-600 to-pink-500 text-white px-4 py-2 rounded-xl items-center gap-2 shadow-lg shadow-rose-600/20">
+                                <i class="fas fa-plus"></i> <span>Article</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Bottom Navigation (Mobile) -->
+            <div class="mobile-bottom-nav flex justify-around items-center">
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                    class="flex flex-col items-center gap-1 text-rose-400">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Accueil</span>
+                </button>
+                <button onclick="toggleStatsModal()" class="flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-chart-pie text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Stats</span>
+                </button>
+                <button onclick="toggleHistoryModal()" class="flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-history text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Histoire</span>
+                </button>
+                <button onclick="toggleMembersModal()"
+                    class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-users-cog text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Famille</span>
+                </button>
+                <button onclick="toggleManageModal()"
+                    class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
+                    <i class="fas fa-database text-xl"></i>
+                    <span class="text-[8px] font-black uppercase">Produits</span>
+                </button>
+            </div>
+
+            <!-- Floating Action Button (Mobile) -->
+            <button onclick="openPurchaseModal()" class="mobile-fab">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <!-- Bulk Bar -->
+            <div id="bulk-action-bar"
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-32 transition-all duration-300 hidden">
+                <div
+                    class="glass-card bg-rose-600/95 text-white px-6 py-4 flex items-center gap-6 shadow-2xl border border-rose-400/30">
+                    <p class="font-bold text-sm"><span id="bulk-count">0</span> séléctionnés</p>
+                    <div class="flex gap-2">
+                        <button id="bulk-buy-btn" onclick="openBulkPriceModal()"
+                            class="bg-white text-rose-700 px-4 py-2 rounded-lg text-xs font-black uppercase">Acheter
+                            Ensemble</button>
+                        <button onclick="bulkDelete()"
+                            class="admin-only hidden bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-black uppercase border border-white/20"><i
+                                class="fas fa-trash-alt mr-2"></i>Effacer</button>
+                        <button onclick="clearSelection()" class="bg-rose-500/50 p-2 rounded-lg"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div onclick="openBudgetModal('solde')"
+                        class="glass-card p-4 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform">
+                        <h3 class="text-xl font-bold text-rose-400" id="stat-budget-restant">---</h3>
+                        <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Solde restant <i
+                                class="fas fa-edit ml-1 opacity-30 text-[8px]"></i></p>
+                    </div>
+                    <div class="glass-card p-4 text-center border-b-2 border-emerald-500/30 group relative">
+                        <div onclick="toggleStatsModal()" class="cursor-pointer hover:scale-105 transition-transform">
+                            <h3 class="text-xl font-bold text-emerald-400" id="stat-total-depense">---</h3>
+                            <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest text-center">
+                                Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
+                        </div>
+                        <button onclick="openBudgetModal('expenses')"
+                            class="admin-only hidden absolute top-2 right-2 w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[10px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    <div class="glass-card p-4 text-center border-b-2 border-orange-500/30">
+                        <h3 class="text-xl font-bold text-orange-400" id="stat-pending">0</h3>
+                        <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">À acheter</p>
+                    </div>
+                    <div class="glass-card p-4 text-center border-b-2 border-pink-500/30">
+                        <h3 class="text-xl font-bold text-pink-400" id="stat-members-count">0</h3>
+                        <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Famille</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+                    <div class="relative flex-1 w-full max-w-md">
+                        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="text" id="search-input" oninput="renderAchats()"
+                            placeholder="Chercher un article..."
+                            class="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 focus:border-rose-500 outline-none">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleBudgetHistory()"
+                            class="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold uppercase"><i
+                                class="fas fa-history mr-2 text-rose-400"></i>Historique</button>
+                        <select id="filter-status" onchange="renderAchats()"
+                            class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-xs font-bold uppercase">
+                            <option value="all">Tout voir</option>
+                            <option value="pending">À acheter</option>
+                            <option value="received">Terminés</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="achats-container" class="space-y-4"></div>
+            </main>
+        </div>
+
+        <!-- Modals (Members, Purchase, Price, History) -->
+        <div id="members-modal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="toggleMembersModal()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div
+                    class="glass-card bg-gray-900 w-full max-w-md p-6 border border-white/10 flex flex-col max-h-[80vh]">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-rose-400 uppercase tracking-widest">Gérer la Famille</h2>
+                        <button onclick="toggleMembersModal()" class="text-gray-400"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+                    <form id="invite-form" onsubmit="inviteMember(event)" class="mb-4 space-y-3">
+                        <div class="flex gap-2">
+                            <input type="text" name="name" id="new-member-name" placeholder="Nom du membre..." required
+                                class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-rose-500 outline-none">
+                            <select name="role"
+                                class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs outline-none">
+                                <option value="Membre">Membre</option>
+                                <option value="Propriétaire">Propriétaire</option>
+                                <option value="Chef">Chef de Famille</option>
+                            </select>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-rose-500/30">Ajouter
+                            à la liste</button>
+                    </form>
+
+                    <div class="mb-6 p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 text-center">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-3">Inviter sur
+                            son téléphone</p>
+                        <button onclick="inviteShareLink()"
+                            class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-900/40 flex items-center justify-center gap-2 transition-all">
+                            <i class="fas fa-share-alt"></i> Partager le lien d'accès
+                        </button>
+                        <p class="text-[8px] text-gray-500 mt-2 italic">Envoyez ce lien à votre femme pour qu'elle
+                            puisse ajouter des articles</p>
+                    </div>
+                    <div id="members-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Modal -->
+        <div id="purchase-modal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePurchaseModal()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div class="glass-card bg-gray-900 w-full max-w-lg p-6 border border-white/10">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="purchase-modal-title" class="text-xl font-bold uppercase tracking-widest text-rose-400">
+                            Demander un Achat</h2>
+                        <button onclick="closePurchaseModal()" class="text-gray-400"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+                    <form id="purchase-form" onsubmit="submitPurchase(event)" class="space-y-4">
+                        <div class="space-y-2">
+                            <div id="selected-products-chips" class="flex flex-wrap gap-2 min-h-[10px]"></div>
+                            <div class="relative">
+                                <input type="text" id="productInput" autocomplete="off"
+                                    placeholder="Quoi acheter ? (Séparez par entrée ou virgule)"
+                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-rose-500 outline-none">
+                                <div id="suggestion-dropdown"
+                                    class="absolute left-0 right-0 top-full mt-1 bg-gray-900 border border-white/10 rounded-xl hidden z-50 max-h-48 overflow-y-auto custom-scrollbar shadow-2xl">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" name="quantity" placeholder="Quantité (ex: 5, 2kg)"
+                                class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-sm">
+                            <select name="urgency"
+                                class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none font-bold text-rose-400 text-sm">
+                                <option value="low">Pas urgent</option>
+                                <option value="medium" selected>Normal</option>
+                                <option value="high">Urgent !</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-500 uppercase font-black ml-1 mb-1 block">Date et
+                                Heure</label>
+                            <input type="datetime-local" name="dateDemande" id="dateDemandeInput" required
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-xs text-gray-400 focus:border-rose-500 transition-all uppercase font-bold">
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <textarea name="notes" placeholder="Détails supplémentaires..." rows="2"
+                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 resize-none outline-none"></textarea>
+                            </div>
+                            <div class="relative group">
+                                <input type="file" id="photoInput" accept="image/*" class="hidden"
+                                    onchange="handlePhotoSelect(event)">
+                                <button type="button" onclick="document.getElementById('photoInput').click()"
+                                    class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-rose-400 group-hover:bg-rose-500/10 group-hover:border-rose-500/50 transition-all">
+                                    <i class="fas fa-camera text-xl"></i>
+                                </button>
+                                <div id="photo-indicator"
+                                    class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-gray-900 hidden">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="image-preview-container" class="hidden">
+                            <div class="relative inline-block">
+                                <img id="image-preview" src=""
+                                    class="w-full h-32 object-cover rounded-xl border border-white/10">
+                                <button type="button" onclick="removeSelectedPhoto()"
+                                    class="absolute -top-2 -right-2 bg-rose-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg"><i
+                                        class="fas fa-times text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="closePurchaseModal()"
+                                class="flex-1 bg-white/5 rounded-xl py-3 font-bold uppercase text-xs">Annuler</button>
+                            <button type="submit"
+                                class="flex-1 bg-gradient-to-r from-rose-600 to-pink-500 text-white rounded-xl py-3 font-bold uppercase text-xs">Demander</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price/Confirm Modal -->
+        <div id="price-modal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div class="glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold uppercase tracking-widest text-emerald-400">Paiement</h2>
+                        <button onclick="closePriceModal()" class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+                    <div class="flex bg-white/5 p-1 rounded-xl mb-6">
+                        <button type="button" onclick="setPriceMode('total')" id="btn-mode-total"
+                            class="flex-1 py-2 text-xs font-bold rounded-lg bg-rose-600 text-white">Prix Total</button>
+                        <button type="button" onclick="setPriceMode('unit')" id="btn-mode-unit"
+                            class="flex-1 py-2 text-xs font-bold rounded-lg text-gray-500">Prix Unitaire</button>
+                    </div>
+                    <form id="price-form" onsubmit="confirmPurchase(event)" class="space-y-6">
+                        <div class="relative">
+                            <input type="number" step="0.01" name="price" id="priceInput" placeholder="0" autofocus
+                                required
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-5 text-4xl font-black text-center outline-none focus:border-emerald-500">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-gray-500">DA</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="closePriceModal()"
+                                class="flex-1 bg-white/5 rounded-xl py-3 font-bold uppercase text-xs">Annuler</button>
+                            <button type="submit"
+                                class="flex-1 bg-emerald-600 text-white rounded-xl py-3 font-bold uppercase text-xs shadow-lg shadow-emerald-500/20">Valider</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Photo Zoom Modal -->
+        <div id="photo-zoom-modal" class="fixed inset-0 z-[100] hidden" onclick="closePhotoZoom()">
+            <div class="absolute inset-0 bg-black/95 backdrop-blur-xl"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <img id="zoomed-image" src=""
+                    class="max-w-full max-h-full rounded-2xl shadow-2xl border border-white/10 transition-transform duration-300">
+                <button class="absolute top-6 right-6 text-white text-2xl hover:text-rose-400 transition-colors"><i
+                        class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- Budget Settings -->
+        <div id="budget-modal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeBudgetModal()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div class="glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl">
+                    <div class="flex flex-col mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 id="budget-modal-title"
+                                class="text-xs font-black uppercase tracking-widest text-emerald-400">Budget Famille
+                            </h2>
+                            <button onclick="closeBudgetModal()"
+                                class="text-gray-400 hover:text-white transition-colors"><i
+                                    class="fas fa-times"></i></button>
+                        </div>
+                        <div class="flex gap-4 border-b border-white/5 pb-2">
+                            <button onclick="openBudgetModal('add')" id="tab-budget-add"
+                                class="text-[10px] font-black uppercase tracking-widest text-emerald-400 border-b-2 border-emerald-500 pb-1">Ajouter/Fixer
+                                Total</button>
+                            <button onclick="openBudgetModal('solde')" id="tab-budget-solde"
+                                class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-1">Fixer
+                                Reste (Solde)</button>
+                        </div>
+                    </div>
+                    <form id="budget-form" onsubmit="saveBudget(event)" class="space-y-4">
+                        <input type="hidden" id="budget-action-input" value="add">
+                        <div class="relative">
+                            <input type="number" step="10" name="amount" id="budgetAmountInput" placeholder="Somme..."
+                                required
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-3xl font-black text-center outline-none focus:border-emerald-500">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">DA</span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-black uppercase tracking-widest text-gray-500 ml-1">Date et
+                                Heure</label>
+                            <input type="datetime-local" id="dateBudgetInput" name="date" required
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-emerald-500">
+                        </div>
+
+                        <div id="budget-actions-standard" class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <button type="submit" name="action" value="add"
+                                    class="flex-[2] bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/40">Ajouter
+                                    Somme</button>
+                                <button type="submit" name="action" value="set"
+                                    class="flex-1 bg-white/10 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/20 transition-colors border border-white/10">Écraser
+                                    Total</button>
+                            </div>
+                            <p class="text-[8px] text-gray-500 uppercase text-center font-bold px-2">"ÉCRASER TOTAL"
+                                REMPLACE LE BUDGET GLOBAL (LE CHIFFRE VERT)</p>
+                        </div>
+
+                        <div id="budget-actions-solde" class="hidden flex-col gap-2">
+                            <button type="submit" name="action" value="set_solde"
+                                class="w-full bg-rose-600 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-rose-500 transition-colors shadow-lg shadow-rose-900/40">Définir
+                                le Solde Restant</button>
+                            <p class="text-[8px] text-gray-500 uppercase text-center font-bold px-2">MODIFIE LE BUDGET
+                                POUR QU'IL RESTE EXACTEMENT CETTE SOMME</p>
+                        </div>
+
+                        <div id="budget-actions-expenses" class="hidden flex-col gap-2">
+                            <button type="submit" name="action" value="set_expenses"
+                                class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-500 transition-colors">Définir
+                                Dépenses</button>
+                        </div>
+
+                        <div class="border-t border-white/5 pt-4 mt-4 space-y-2">
+                            <button type="button" id="btn-reset-budget" onclick="resetBudgetToZero()"
+                                class="admin-only hidden w-full bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-rose-500/20 transition-all">
+                                <i class="fas fa-wallet mr-2"></i> Reset Budget (0 DA)
+                            </button>
+                            <button type="button" id="btn-reset-solde" onclick="resetSoldeToZero()"
+                                class="admin-only hidden w-full bg-rose-600/5 hover:bg-rose-600/10 text-rose-400/60 py-2 rounded-xl font-black uppercase text-[9px] tracking-widest border border-rose-500/10 transition-all">
+                                <i class="fas fa-undo mr-2"></i> Remettre Solde à Zéro
+                            </button>
+                            <button type="button" id="btn-reset-expenses" onclick="resetExpensesToZero()"
+                                class="admin-only hidden w-full bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-emerald-500/20 transition-all">
+                                <i class="fas fa-broom mr-2"></i> Effacer Dépenses (0 DA)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Modal -->
+        <div id="history-modal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleHistoryModal()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div
+                    class="glass-card bg-gray-900 w-full max-w-xl h-[80vh] flex flex-col p-6 border border-white/10 shadow-2xl">
+                    <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                        <div class="flex gap-6">
+                            <button onclick="switchHistoryTab('budget')" id="tab-budget"
+                                class="text-sm font-black uppercase tracking-widest text-rose-400 border-b-2 border-rose-500 pb-2 transition-all">Budget</button>
+                            <button onclick="switchHistoryTab('achats')" id="tab-achats"
+                                class="text-sm font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-2 transition-all">Achats</button>
+                        </div>
+                        <button onclick="toggleHistoryModal()"
+                            class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div id="history-search-container" class="mb-6">
+                        <div class="relative">
+                            <input type="text" id="history-search-input" oninput="runHistoryFilter()"
+                                placeholder="Chercher dans l'historique..."
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 focus:border-rose-500 outline-none text-sm transition-all">
+                            <i
+                                class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs transition-colors"></i>
+                        </div>
+                    </div>
+
+                    <div id="history-container" class="flex-1 overflow-y-auto custom-scrollbar pr-1">
+                        <div id="budget-history-list" class="space-y-3"></div>
+                        <div id="purchase-history-list" class="space-y-3 hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Modal -->
+        <div id="stats-modal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleStatsModal()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div
+                    class="glass-card bg-gray-900 w-full max-w-lg h-[70vh] flex flex-col p-6 border border-white/10 shadow-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-emerald-400 uppercase tracking-widest">Statistiques</h2>
+                        <button onclick="toggleStatsModal()"
+                            class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="flex gap-4 mb-6 border-b border-white/5 pb-4">
+                        <button onclick="switchStatsTab('monthly')" id="tab-stats-monthly"
+                            class="text-[10px] font-black uppercase tracking-widest text-emerald-400 border-b-2 border-emerald-500 pb-2">Résumé
+                            Mois</button>
+                        <button onclick="switchStatsTab('products')" id="tab-stats-products"
+                            class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-300 pb-2">Top
+                            Produits</button>
+                    </div>
+                    <div id="stats-filter-container" class="hidden mb-6 flex justify-center">
+                        <div class="inline-flex bg-white/5 p-1 rounded-xl border border-white/10">
+                            <button onclick="setStatsPeriod('month')" id="btn-stats-month"
+                                class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-emerald-600 text-white transition-all">Ce
+                                Mois</button>
+                            <button onclick="setStatsPeriod('all')" id="btn-stats-all"
+                                class="px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-gray-400 hover:text-white transition-all">Global</button>
+                        </div>
+                    </div>
+                    <div id="monthly-stats-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+                    <div id="product-stats-list" class="hidden flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast & Scripts -->
+        <div id="toast"
+            class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+            <div class="glass-card border border-rose-500/30 px-6 py-4">
+                <p id="toast-message" class="text-rose-400 font-bold text-sm tracking-tight"></p>
+            </div>
+        </div>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+            import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyD0fjLIAu-tUbwRncOKJSKtd422s0UhCNY",
+                authDomain: "farah-3fed2.firebaseapp.com",
+                projectId: "farah-3fed2",
+                storageBucket: "farah-3fed2.firebasestorage.app",
+                messagingSenderId: "242354999281",
+                appId: "1:242354999281:web:60a793151a57e88bf47e50",
+                measurementId: "G-NV9HMKGD36"
+            };
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            window.db = db;
+            window.auth = auth;
+
+            const ADMIN_EMAIL = "sohaibchekri@gmail.com";
+            window.isAdmin = false;
+
+            let isLoginMode = true;
+            window.toggleAuthMode = () => {
+                isLoginMode = !isLoginMode;
+                document.getElementById('auth-subtitle').textContent = isLoginMode ? "Accès Sécurisé - Famille Nour" : "Créer un compte Famille";
+                document.getElementById('btn-auth-action').textContent = isLoginMode ? "Se Connecter" : "S'inscrire";
+                document.getElementById('btn-toggle-auth').textContent = isLoginMode ? "Pas de compte ? S'inscrire" : "Déjà un compte ? Se connecter";
+            };
+
+            window.handleAuthAction = async () => {
+                const email = document.getElementById('auth-email').value;
+                const password = document.getElementById('auth-password').value;
+                if (!email || !password) { showToast('Veuillez remplir tous les champs', true); return; }
+
+                document.getElementById('login-form-box').classList.add('hidden');
+                document.getElementById('auth-loading').classList.remove('hidden');
+
+                try {
+                    if (isLoginMode) {
+                        await signInWithEmailAndPassword(auth, email, password);
+                    } else {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    let msg = "Erreur d'authentification";
+                    if (err.code === 'auth/user-not-found') msg = "Utilisateur non trouvé";
+                    else if (err.code === 'auth/wrong-password') msg = "Mot de passe incorrect";
+                    else if (err.code === 'auth/email-already-in-use') msg = "Email déjà utilisé";
+                    else if (err.code === 'auth/weak-password') msg = "Mot de passe trop court (min 6)";
+
+                    showToast(msg, true);
+                    document.getElementById('login-form-box').classList.remove('hidden');
+                    document.getElementById('auth-loading').classList.add('hidden');
+                }
+            };
+
+            window.logout = () => {
+                if (confirm('Se déconnecter ?')) {
+                    signOut(auth);
+                }
+            };
+
+            onAuthStateChanged(auth, (user) => {
+                const overlay = document.getElementById('auth-overlay');
+                const app = document.getElementById('app-content');
+                if (user) {
+                    overlay.classList.add('hidden');
+                    app.classList.remove('hidden');
+
+                    window.isAdmin = user.email === ADMIN_EMAIL;
+                    document.body.classList.toggle('is-admin', window.isAdmin);
+
+                    // Hide/Show admin specific elements in navbar
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.classList.toggle('hidden', !window.isAdmin);
+                    });
+
+                    console.log("Logged in as:", user.email, "Admin:", window.isAdmin);
+                } else {
+                    overlay.classList.remove('hidden');
+                    app.classList.add('hidden');
+                    document.getElementById('login-form-box').classList.remove('hidden');
+                    document.getElementById('auth-loading').classList.add('hidden');
+                }
+            });
+
+            onSnapshot(collection(db, "achats_maison"), (snap) => {
+                window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAchats(); renderPurchaseHistory(); updateAchatStats();
+            });
+
+            window.currentBudget = 0;
+            window.monthlyOffsets = {};
+
+            onSnapshot(doc(db, "achats_maison", "config_budget"), (snap) => {
+                const data = snap.exists() ? snap.data() : { amount: 0, monthlyOffsets: {} };
+                window.currentBudget = data.amount || 0;
+                window.monthlyOffsets = data.monthlyOffsets || {};
+                document.getElementById('nav-budget').textContent = Math.round(window.currentBudget).toLocaleString() + ' DA';
+                updateAchatStats();
+            });
+
+            onSnapshot(collection(db, "famille_membres"), (snap) => {
+                const members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                document.getElementById('stat-members-count').textContent = members.length;
+                renderMembersList(members);
+            });
+
+            onSnapshot(collection(db, "produits_maison"), (snap) => {
+                window.allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderManageProducts();
+            });
+
+            onSnapshot(query(collection(db, "budget_history"), orderBy("date", "desc")), (snap) => {
+                window.budgetHistory = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderBudgetHistory();
+            });
+
+            function renderBudgetHistory() {
+                const search = (document.getElementById('history-search-input')?.value || "").toLowerCase();
+                const list = (window.budgetHistory || []).filter(d =>
+                    d.amount.toString().includes(search) || d.displayDate.toLowerCase().includes(search)
+                );
+                document.getElementById('budget-history-list').innerHTML = list.length > 0 ? list.map(d => `
+                <div class="glass-card p-4 flex justify-between items-center border-l-4 border-emerald-500">
+                    <div><p class="font-black text-emerald-400 text-lg">+ ${d.amount.toLocaleString()} DA</p><p class="text-[9px] text-gray-500 font-bold uppercase">${d.displayDate}</p></div>
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-arrow-up text-emerald-500/10 text-xl"></i>
+                        ${window.isAdmin ? `<button onclick="deleteBudgetHistory('${d.id}')" class="text-white/10 hover:text-red-500 p-2 transition-colors">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>` : ''}
+                    </div>
+                </div>
+            `).join('') : '<div class="text-center py-10 opacity-30 text-xs italic">Aucun dépôt trouvé</div>';
+            }
+
+            window.deleteBudgetHistory = async (id) => {
+                if (!window.isAdmin) return;
+                if (confirm('Supprimer cette entrée de l\'historique ?')) {
+                    try {
+                        await deleteDoc(doc(db, "budget_history", id));
+                        showToast('Entrée supprimée');
+                    } catch (err) { showToast('Erreur suppression'); }
+                }
+            };
+            // Combined script block
+
+            let selectedIds = new Set();
+            let activeStatsTab = 'monthly';
+            let statsPeriod = 'month';
+
+            window.setStatsPeriod = (p) => {
+                statsPeriod = p;
+                document.getElementById('btn-stats-month').className = p === 'month' ? 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-emerald-600 text-white' : 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-gray-400 hover:text-white';
+                document.getElementById('btn-stats-all').className = p === 'all' ? 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg bg-emerald-600 text-white' : 'px-4 py-1.5 text-[9px] font-black uppercase rounded-lg text-gray-400 hover:text-white';
+                renderStatsData();
+            };
+
+            window.switchStatsTab = (tab) => {
+                activeStatsTab = tab;
+                const mList = document.getElementById('monthly-stats-list');
+                const pList = document.getElementById('product-stats-list');
+                const mTab = document.getElementById('tab-stats-monthly');
+                const pTab = document.getElementById('tab-stats-products');
+                const fBar = document.getElementById('stats-filter-container');
+
+                if (tab === 'monthly') {
+                    mList.classList.remove('hidden'); pList.classList.add('hidden'); fBar.classList.add('hidden');
+                    mTab.className = "text-[10px] font-black uppercase tracking-widest text-emerald-400 border-b-2 border-emerald-500 pb-2";
+                    pTab.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-300 pb-2";
+                } else {
+                    mList.classList.add('hidden'); pList.classList.remove('hidden'); fBar.classList.remove('hidden');
+                    pTab.className = "text-[10px] font-black uppercase tracking-widest text-emerald-400 border-b-2 border-emerald-500 pb-2";
+                    mTab.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-300 pb-2";
+                }
+                renderStatsData();
+            };
+
+            function renderStatsData() {
+                if (!window.achats) return;
+                const received = window.achats.filter(a => a.status === 'received' && a.dateAchat);
+
+                if (activeStatsTab === 'monthly') {
+                    const groups = {};
+                    received.forEach(a => {
+                        const d = new Date(a.dateAchat);
+                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        if (!groups[key]) groups[key] = { total: 0, count: 0, label: d.toLocaleString('fr-FR', { month: 'long', year: 'numeric' }) };
+                        groups[key].total += (parseFloat(a.price) || 0);
+                        groups[key].count++;
+                    });
+                    const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+                    document.getElementById('monthly-stats-list').innerHTML = sortedKeys.length > 0 ? sortedKeys.map(k => `
+                    <div class="glass-card p-5 border-l-4 border-emerald-500 bg-white/[0.02]">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm font-black uppercase text-gray-400 tracking-wider">${groups[k].label}</p>
+                                <p class="text-[10px] font-bold text-gray-600 mt-1 uppercase">${groups[k].count} ARTICLE(S)</p>
+                            </div>
+                            <p class="text-2xl font-black text-emerald-400">${Math.round(groups[k].total).toLocaleString()} DA</p>
+                        </div>
+                    </div>
+                `).join('') : '<div class="text-center py-20 opacity-30 italic">Aucune donnée disponible</div>';
+                } else {
+                    // Top Products Statistics
+                    const now = new Date();
+                    const filteredPurchases = received.filter(a => {
+                        if (statsPeriod === 'all') return true;
+                        const d = new Date(a.dateAchat);
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    });
+
+                    const productGroups = {};
+                    filteredPurchases.forEach(a => {
+                        const name = a.productName.trim().toUpperCase();
+                        if (!productGroups[name]) productGroups[name] = { total: 0, qty: 0, count: 0, name: a.productName };
+                        productGroups[name].total += (parseFloat(a.price) || 0);
+                        productGroups[name].qty += (parseInt(a.quantity) || 1);
+                        productGroups[name].count++; // Number of times requested/purchased
+                    });
+
+                    // Sort primarily by Number of Purchases (count) then by Total Price
+                    const sortedProducts = Object.values(productGroups).sort((a, b) => b.count - a.count).slice(0, 20);
+
+                    document.getElementById('product-stats-list').innerHTML = sortedProducts.length > 0 ? `
+                    <div class="mb-4 bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20">
+                        <p class="text-[9px] font-black text-emerald-400 uppercase tracking-widest text-center">Top Produits les Plus Fréquents (${statsPeriod === 'all' ? 'DÉBUT' : 'CE MOIS'})</p>
+                    </div>
+                    <div class="space-y-2">
+                        ${sortedProducts.map((p, i) => `
+                            <div class="glass-card p-4 flex justify-between items-center bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-all">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                                        <span class="text-[10px] font-black text-emerald-400">${i + 1}</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-black uppercase tracking-tight text-white">${p.name}</p>
+                                        <p class="text-[9px] text-gray-500 font-bold uppercase">Acheté ${p.count} fois</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-black text-emerald-400">${Math.round(p.total).toLocaleString()} DA</p>
+                                    <p class="text-[8px] text-gray-600 font-bold uppercase italic">Au total</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<div class="text-center py-20 opacity-30 italic">Aucune donnée pour cette période</div>';
+                }
+            }
+
+            let priceMode = 'total';
+            let pendingPurchaseIds = [];
+            let currentEditId = null;
+            let activeHistoryTab = 'budget';
+
+            window.showToast = (msg) => {
+                const t = document.getElementById('toast'); document.getElementById('toast-message').textContent = msg;
+                t.classList.remove('translate-y-20', 'opacity-0'); setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+            };
+
+            window.toggleMembersModal = () => document.getElementById('members-modal').classList.toggle('hidden');
+            window.toggleHistoryModal = () => {
+                const modal = document.getElementById('history-modal');
+                modal.classList.toggle('hidden');
+                if (!modal.classList.contains('hidden')) {
+                    document.getElementById('history-search-input').value = "";
+                    switchHistoryTab('budget');
+                }
+            };
+            window.toggleBudgetHistory = () => window.toggleHistoryModal(); // Backward compatibility
+
+            window.toggleStatsModal = () => {
+                const modal = document.getElementById('stats-modal');
+                modal.classList.toggle('hidden');
+                if (!modal.classList.contains('hidden')) switchStatsTab('monthly');
+            };
+
+            function renderMonthlyStats() {
+                if (!window.achats) return;
+                const received = window.achats.filter(a => a.status === 'received' && a.dateAchat);
+                const groups = {};
+
+                received.forEach(a => {
+                    const d = new Date(a.dateAchat);
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    if (!groups[key]) groups[key] = { total: 0, count: 0, label: d.toLocaleString('fr-FR', { month: 'long', year: 'numeric' }) };
+                    groups[key].total += (a.price || 0);
+                    groups[key].count++;
+                });
+
+                const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+                document.getElementById('monthly-stats-list').innerHTML = sortedKeys.length > 0 ? sortedKeys.map(k => `
+                <div class="glass-card p-5 border-l-4 border-emerald-500 bg-white/[0.02]">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-black uppercase text-gray-400 tracking-wider">${groups[k].label}</p>
+                            <p class="text-[10px] font-bold text-gray-600 mt-1 uppercase">${groups[k].count} ARTICLE(S)</p>
+                        </div>
+                        <p class="text-2xl font-black text-emerald-400">${Math.round(groups[k].total).toLocaleString()} DA</p>
+                    </div>
+                </div>
+            `).join('') : '<div class="text-center py-20 opacity-30 italic">Aucune donnée disponible</div>';
+            }
+
+            window.switchHistoryTab = (tab) => {
+                activeHistoryTab = tab;
+                const bList = document.getElementById('budget-history-list');
+                const pList = document.getElementById('purchase-history-list');
+                const bTab = document.getElementById('tab-budget');
+                const pTab = document.getElementById('tab-achats');
+
+                if (tab === 'budget') {
+                    bList.classList.remove('hidden'); pList.classList.add('hidden');
+                    bTab.className = 'text-sm font-black uppercase tracking-widest text-rose-400 border-b-2 border-rose-500 pb-2 transition-all';
+                    pTab.className = 'text-sm font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-2 transition-all';
+                    renderBudgetHistory();
+                } else {
+                    bList.classList.add('hidden'); pList.classList.remove('hidden');
+                    pTab.className = 'text-sm font-black uppercase tracking-widest text-rose-400 border-b-2 border-rose-500 pb-2 transition-all';
+                    bTab.className = 'text-sm font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-2 transition-all';
+                    renderPurchaseHistory();
+                }
+            };
+
+            window.runHistoryFilter = () => {
+                if (activeHistoryTab === 'budget') renderBudgetHistory();
+                else renderPurchaseHistory();
+            };
+
+            function renderPurchaseHistory() {
+                const search = (document.getElementById('history-search-input')?.value || "").toLowerCase();
+                const history = window.achats.filter(a => a.status === 'received' && a.productName.toLowerCase().includes(search))
+                    .sort((a, b) => new Date(b.dateAchat) - new Date(a.dateAchat));
+                document.getElementById('purchase-history-list').innerHTML = history.length > 0 ? history.map(a => `
+                <div onclick="toggleSelect('${a.id}')" class="glass-card p-4 border-l-4 ${selectedIds.has(a.id) ? 'border-rose-300 ring-2 ring-rose-500 bg-rose-500/10' : 'border-rose-500'} flex justify-between items-center cursor-pointer hover:bg-white/[0.05] transition-all">
+                    <div class="flex items-center gap-4">
+                        ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="w-10 h-10 rounded-lg object-cover border border-white/10 opacity-60 hover:opacity-100 transition-all">` : ''}
+                        <div>
+                            <p class="font-bold text-sm uppercase tracking-wider">${a.productName} <span class="text-xs text-rose-400 ml-1">x${a.quantity}</span></p>
+                            <p class="text-[9px] text-gray-500 font-bold uppercase mt-1 text-left">Acheté le ${new Date(a.dateAchat).toLocaleString('fr-FR')}</p>
+                        </div>
+                    </div>
+                        <div class="flex items-center gap-3" onclick="event.stopPropagation()">
+                            <p class="font-black text-rose-400">${Math.round(a.price).toLocaleString()} DA</p>
+                            ${window.isAdmin ? `
+                                <button onclick="openEditModal('${a.id}')" class="text-white/10 hover:text-emerald-500 p-1 transition-colors"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteAchat('${a.id}')" class="text-white/10 hover:text-red-500 p-1 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('') : '<div class="text-center py-10 opacity-30 text-xs italic">Aucun achat trouvé</div>';
+            }
+
+            window.openBudgetModal = (mode = 'add') => {
+                const modal = document.getElementById('budget-modal');
+                const title = document.getElementById('budget-modal-title');
+                const input = document.getElementById('budgetAmountInput');
+                const stdActions = document.getElementById('budget-actions-standard');
+                const soldeActions = document.getElementById('budget-actions-solde');
+                const expActions = document.getElementById('budget-actions-expenses');
+                const resetBudget = document.getElementById('btn-reset-budget');
+                const resetSolde = document.getElementById('btn-reset-solde');
+                const resetExp = document.getElementById('btn-reset-expenses');
+
+                const tabAdd = document.getElementById('tab-budget-add');
+                const tabSolde = document.getElementById('tab-budget-solde');
+                const actionInput = document.getElementById('budget-action-input');
+
+                [stdActions, soldeActions, expActions, resetBudget, resetSolde, resetExp].forEach(el => el.classList.add('hidden'));
+
+                const allReceived = (window.achats || []).filter(a => a.status === 'received');
+                const totalSpent = allReceived.reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                const now = new Date();
+                const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
+                const currentBalance = (window.currentBudget || 0) - (totalSpent + offset);
+
+                if (mode === 'solde') {
+                    actionInput.value = 'set_solde';
+                    title.textContent = "Modification Solde";
+                    title.className = "text-xs font-black uppercase tracking-widest text-rose-400";
+                    soldeActions.classList.remove('hidden');
+                    resetSolde.classList.remove('hidden');
+
+                    tabSolde.className = "text-[10px] font-black uppercase tracking-widest text-rose-400 border-b-2 border-rose-500 pb-1";
+                    tabAdd.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-300 pb-1";
+                    input.value = Math.round(currentBalance);
+                } else if (mode === 'expenses') {
+                    actionInput.value = 'set_expenses';
+                    title.textContent = "Modifier Dépenses (Mois)";
+                    title.className = "text-xs font-black uppercase tracking-widest text-emerald-400";
+                    expActions.classList.remove('hidden');
+                    resetExp.classList.remove('hidden');
+
+                    tabAdd.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-300 pb-1";
+                    tabSolde.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-1";
+
+                    const monthlySum = allReceived.filter(a => {
+                        const d = new Date(a.dateAchat);
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                    input.value = Math.round(monthlySum + offset);
+                } else {
+                    actionInput.value = 'add';
+                    title.textContent = "Budget Famille";
+                    title.className = "text-xs font-black uppercase tracking-widest text-emerald-400";
+                    stdActions.classList.remove('hidden');
+                    resetBudget.classList.remove('hidden');
+
+                    tabAdd.className = "text-[10px] font-black uppercase tracking-widest text-emerald-400 border-b-2 border-emerald-500 pb-1";
+                    tabSolde.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-1";
+                    input.value = "";
+                }
+                document.getElementById('dateBudgetInput').value = formatDateTime(new Date());
+                modal.classList.remove('hidden');
+                setTimeout(() => input.focus(), 100);
+            };
+
+            window.closeBudgetModal = () => {
+                document.getElementById('budget-modal').classList.add('hidden');
+                // Check if we were editing and if so, reload or sync
+            };
+
+            let selectedPhotoData = null;
+            window.handlePhotoSelect = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                try {
+                    selectedPhotoData = await compressImage(file);
+                    document.getElementById('photo-indicator').classList.remove('hidden');
+                    document.getElementById('image-preview').src = selectedPhotoData;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Erreur compression photo');
+                }
+            };
+
+            window.removeSelectedPhoto = () => {
+                selectedPhotoData = null;
+                document.getElementById('photoInput').value = "";
+                document.getElementById('photo-indicator').classList.add('hidden');
+                document.getElementById('image-preview-container').classList.add('hidden');
+            };
+
+            function compressImage(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const max = 600; // Max size for low cost storage
+                            if (width > height) { if (width > max) { height *= max / width; width = max; } }
+                            else { if (height > max) { width *= max / height; height = max; } }
+                            canvas.width = width; canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.6)); // High compression
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            let notifications = JSON.parse(localStorage.getItem('achats_notifs') || '[]');
+            window.toggleNotifications = () => {
+                const drop = document.getElementById('notif-dropdown');
+                drop.classList.toggle('hidden');
+                if (!drop.classList.contains('hidden')) {
+                    // Mark all as read conceptually by clearing badge
+                    document.getElementById('notif-badge').classList.add('hidden');
+                }
+            };
+
+            window.addNotification = (title, message, type = 'info') => {
+                const n = { id: Date.now(), title, message, type, time: new Date().toISOString() };
+                notifications.unshift(n);
+                if (notifications.length > 10) notifications.pop();
+                localStorage.setItem('achats_notifs', JSON.stringify(notifications));
+                renderNotifications();
+                const badge = document.getElementById('notif-badge');
+                badge.textContent = notifications.length;
+                badge.classList.remove('hidden');
+            };
+
+            window.clearNotifications = () => {
+                notifications = [];
+                localStorage.setItem('achats_notifs', JSON.stringify([]));
+                renderNotifications();
+                document.getElementById('notif-badge').classList.add('hidden');
+            };
+
+            function renderNotifications() {
+                const list = document.getElementById('notif-list');
+                if (!list) return;
+                list.innerHTML = notifications.map(n => `
+                <div class="p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-all">
+                    <div class="flex justify-between items-start mb-1">
+                        <p class="text-[10px] font-black uppercase text-rose-400">${n.title}</p>
+                        <span class="text-[8px] text-gray-500">${new Date(n.time).toLocaleTimeString('fr-FR')}</span>
+                    </div>
+                    <p class="text-[11px] text-gray-300 font-bold leading-tight">${n.message}</p>
+                </div>
+            `).join('') || '<div class="py-10 text-center opacity-30 text-[10px] uppercase font-bold italic">Aucune notification</div>';
+            }
+            window.openPhotoZoom = (src) => {
+                const img = document.getElementById('zoomed-image');
+                img.src = src;
+                document.getElementById('photo-zoom-modal').classList.remove('hidden');
+            };
+            window.closePhotoZoom = () => document.getElementById('photo-zoom-modal').classList.add('hidden');
+
+            let selectedProducts = new Set();
+            window.openPurchaseModal = () => {
+                currentEditId = null;
+                selectedProducts.clear();
+                renderChips();
+                document.getElementById('purchase-modal-title').textContent = "Demander un Achat";
+                document.getElementById('purchase-form').reset();
+                document.getElementById('dateDemandeInput').value = formatDateTime(new Date());
+                document.getElementById('purchase-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('productInput').focus(), 100);
+            };
+
+            const prodInput = document.getElementById('productInput');
+            const sugDrop = document.getElementById('suggestion-dropdown');
+
+            prodInput?.addEventListener('input', (e) => {
+                const val = e.target.value.toLowerCase().trim();
+                if (!val) { sugDrop.classList.add('hidden'); return; }
+                const matches = window.allProducts.filter(p => p.name.toLowerCase().includes(val) && !selectedProducts.has(p.name));
+                if (matches.length > 0) {
+                    sugDrop.innerHTML = matches.map(p => `
+                    <div onclick="addChip('${p.name.replace(/'/g, "\\'")}')" class="px-4 py-2 hover:bg-white/10 cursor-pointer text-xs uppercase font-bold text-gray-300 border-b border-white/5 last:border-0 flex justify-between items-center group">
+                        <span>${p.name}</span>
+                        <button onclick="event.stopPropagation(); deleteProduct('${p.id}')" class="opacity-0 group-hover:opacity-100 text-rose-500/50 hover:text-rose-500 transition-all p-1">
+                            <i class="fas fa-trash-alt text-[10px]"></i>
+                        </button>
+                    </div>
+                `).join('');
+                    sugDrop.classList.remove('hidden');
+                } else {
+                    sugDrop.classList.add('hidden');
+                }
+            });
+
+            prodInput?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = prodInput.value.trim().replace(/,/g, '');
+                    if (val) addChip(val);
+                }
+            });
+
+            window.addChip = (name) => {
+                if (!name) return;
+                selectedProducts.add(name);
+                prodInput.value = "";
+                sugDrop.classList.add('hidden');
+                renderChips();
+                prodInput.focus();
+            };
+
+            window.removeChip = (name) => {
+                selectedProducts.delete(name);
+                renderChips();
+            };
+
+            function renderChips() {
+                const container = document.getElementById('selected-products-chips');
+                if (!container) return;
+                container.innerHTML = Array.from(selectedProducts).map(p => `
+                <div class="bg-rose-500/20 text-rose-400 px-3 py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase border border-rose-500/20 shadow-lg">
+                    <span>${p}</span>
+                    <button type="button" onclick="removeChip('${p.replace(/'/g, "\\'")}')" class="hover:text-white transition-colors"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+            }
+
+            window.inviteShareLink = async () => {
+                const url = window.location.href;
+                const title = "Gestion des courses - Farah Nour";
+                const text = "Rejoins-moi sur l'application de gestion des courses de la maison !";
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share({ title, text, url });
+                    } catch (err) { console.log("Share cancelled"); }
+                } else {
+                    navigator.clipboard.writeText(url);
+                    showToast("Lien copié ! Envoyez-le par WhatsApp ou SMS.");
+                }
+            };
+
+            function formatDateTime(date) {
+                const d = new Date(date);
+                const pad = (n) => n.toString().padStart(2, '0');
+                return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            }
+
+            window.openEditModal = (id) => {
+                const a = window.achats.find(x => x.id === id);
+                if (!a) return;
+                currentEditId = id;
+                document.getElementById('purchase-modal-title').textContent = "Modifier l'Achat";
+                const f = document.getElementById('purchase-form');
+                f.productName.value = a.productName;
+                f.quantity.value = a.quantity || '';
+                f.urgency.value = a.urgency;
+                f.notes.value = a.notes || '';
+                document.getElementById('dateDemandeInput').value = formatDateTime(a.dateDemande || new Date());
+                document.getElementById('purchase-modal').classList.remove('hidden');
+            };
+
+            window.closePurchaseModal = () => {
+                document.getElementById('purchase-modal').classList.add('hidden');
+                document.getElementById('purchase-form').reset();
+                currentEditId = null;
+            };
+
+            window.setPriceMode = (m) => {
+                priceMode = m;
+                document.getElementById('btn-mode-total').className = m === 'total' ? 'flex-1 py-2 text-xs font-bold rounded-lg bg-rose-600 text-white' : 'flex-1 py-2 text-xs font-bold rounded-lg text-gray-500';
+                document.getElementById('btn-mode-unit').className = m === 'unit' ? 'flex-1 py-2 text-xs font-bold rounded-lg bg-rose-600 text-white' : 'flex-1 py-2 text-xs font-bold rounded-lg text-gray-500';
+            };
+
+            window.openPriceModal = (id, name) => { pendingPurchaseIds = [id]; document.body.classList.add('overflow-hidden'); document.getElementById('price-modal').classList.remove('hidden'); document.getElementById('priceInput').focus(); };
+            window.openBulkPriceModal = () => { pendingPurchaseIds = Array.from(selectedIds); document.getElementById('price-modal').classList.remove('hidden'); document.getElementById('priceInput').focus(); };
+            window.closePriceModal = () => { document.getElementById('price-modal').classList.add('hidden'); document.body.classList.remove('overflow-hidden'); pendingPurchaseIds = []; };
+
+            window.toggleManageModal = () => {
+                const m = document.getElementById('manage-modal');
+                m.classList.toggle('hidden');
+                if (!m.classList.contains('hidden')) switchManageTab('products');
+            };
+
+            window.switchManageTab = (tab) => {
+                const pSec = document.getElementById('manage-products-section');
+                const iSec = document.getElementById('manage-import-section');
+                const pTab = document.getElementById('tab-manage-products');
+                const iTab = document.getElementById('tab-manage-import');
+
+                if (tab === 'products') {
+                    pSec.classList.remove('hidden'); iSec.classList.add('hidden');
+                    pTab.className = "text-xs font-black uppercase tracking-widest text-rose-400 border-b-2 border-rose-500 pb-2";
+                    iTab.className = "text-xs font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-2";
+                    renderManageProducts();
+                } else {
+                    pSec.classList.add('hidden'); iSec.classList.remove('hidden');
+                    iTab.className = "text-xs font-black uppercase tracking-widest text-rose-400 border-b-2 border-rose-500 pb-2";
+                    pTab.className = "text-xs font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-2";
+                }
+            };
+
+            function renderManageProducts() {
+                const list = document.getElementById('manage-products-list');
+                const search = (document.getElementById('manage-products-search')?.value || "").toLowerCase();
+                if (!list || !window.allProducts) return;
+
+                const filtered = window.allProducts.filter(p => p.name.toLowerCase().includes(search));
+                list.innerHTML = filtered.map(p => {
+                    const isFused = p.name.includes(',') || p.name.includes('،');
+                    return `
+                <div class="bg-white/5 p-2 rounded-lg flex justify-between items-center group">
+                    <div class="flex-1 truncate mr-2">
+                        <span class="text-[10px] font-bold uppercase ${isFused ? 'text-rose-400' : ''}">${p.name}</span>
+                    </div>
+                    ${window.isAdmin ? `
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            ${isFused ? `<button onclick="splitProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" title="Découper" class="text-emerald-500/50 hover:text-emerald-400"><i class="fas fa-scissors text-[10px]"></i></button>` : ''}
+                            <button onclick="deleteProduct('${p.id}')" title="Supprimer" class="text-white/10 hover:text-red-500"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                        </div>
+                    ` : ''}
+                </div>
+            `}).join('') || '<div class="col-span-full py-10 opacity-30 italic text-center text-xs uppercase">Aucun produit trouvé</div>';
+            }
+
+            window.splitProduct = async (id, fullName) => {
+                if (!window.isAdmin) return;
+                const parts = fullName.split(/[,،]/).map(s => s.trim()).filter(s => s);
+                if (parts.length <= 1) return;
+                try {
+                    // 1. Delete the fused one
+                    await deleteDoc(doc(db, "produits_maison", id));
+                    // 2. Add individual parts
+                    for (const p of parts) {
+                        const exists = window.allProducts.find(x => x.name.toLowerCase() === p.toLowerCase());
+                        if (!exists) await addDoc(collection(db, "produits_maison"), { name: p });
+                    }
+                    showToast('Produit découpé !');
+                } catch (err) { showToast('Erreur découpage'); }
+            };
+
+            window.quickAddProduct = async () => {
+                const input = document.getElementById('new-product-input');
+                const name = input.value.trim();
+                if (!name) return;
+                try {
+                    await addDoc(collection(db, "produits_maison"), { name });
+                    input.value = "";
+                } catch (err) { showToast('Erreur ajout'); }
+            };
+
+            window.deleteProduct = async (id) => {
+                if (!window.isAdmin) return;
+                if (confirm('Supprimer ce produit type ?')) {
+                    try { await deleteDoc(doc(db, "produits_maison", id)); } catch (err) { showToast('Erreur'); }
+                }
+            };
+
+            window.processBulkImport = async () => {
+                const text = document.getElementById('import-data-textarea').value.trim();
+                if (!text) return;
+                const lines = text.split('\n');
+                let count = 0;
+                const btn = document.querySelector('[onclick="processBulkImport()"]');
+                btn.disabled = true; btn.textContent = "Importation...";
+
+                try {
+                    for (const line of lines) {
+                        const parts = line.split('\t');
+                        if (parts.length < 2) continue;
+
+                        const dateStr = parts[0].trim();
+                        const name = parts[1].trim();
+                        if (!name) continue;
+
+                        const quantity = parts[2] ? parts[2].trim() : '1';
+                        const priceRaw = parts[3] ? parts[3].trim() : '0';
+                        const price = parseFloat(priceRaw.replace(/[^0-9,.]/g, '').replace(',', '.')) || 0;
+
+                        // Parse Date DD/MM/YYYY
+                        const [d, m, y] = dateStr.split('/');
+                        const dateObj = (d && m && y) ? new Date(y, m - 1, d) : new Date();
+
+                        // 1. Create Purchase
+                        await addDoc(collection(db, "achats_maison"), {
+                            productName: name,
+                            quantity: quantity || '1',
+                            price: price,
+                            status: 'received',
+                            dateDemande: dateObj.toISOString(),
+                            dateAchat: dateObj.toISOString(),
+                            urgency: 'low',
+                            notes: 'Importé de Legacy'
+                        });
+
+                        // 2. Add to suggestions with splitting
+                        const namesToSuggest = name.split(/[,،]/).map(s => s.trim()).filter(s => s);
+                        for (const n of namesToSuggest) {
+                            const exists = window.allProducts && window.allProducts.find(p => p.name.toLowerCase() === n.toLowerCase());
+                            if (!exists) {
+                                await addDoc(collection(db, "produits_maison"), { name: n });
+                            }
+                        }
+                        count++;
+                    }
+                    showToast(`${count} articles importés !`);
+                    document.getElementById('import-data-textarea').value = "";
+                    toggleManageModal();
+                } catch (err) {
+                    console.error(err);
+                    showToast('Erreur lors de l\'import');
+                } finally {
+                    btn.disabled = false; btn.textContent = "Démarrer l'importation";
+                }
+            };
+
+            window.inviteMember = async (e) => {
+                e.preventDefault(); const f = new FormData(e.target);
+                try {
+                    await addDoc(collection(db, "famille_membres"), { name: f.get('name'), role: f.get('role'), joined: new Date().toISOString() });
+                    e.target.reset(); showToast('Membre ajouté !');
+                } catch (err) { console.error(err); showToast('Erreur lors de l\'ajout'); }
+            };
+
+            window.removeMember = async (id) => {
+                if (!window.isAdmin) return;
+                if (confirm('Sûr ?')) {
+                    try {
+                        await deleteDoc(doc(db, "famille_membres", id));
+                        showToast('Membre retiré');
+                    } catch (err) { console.error(err); showToast('Erreur'); }
+                }
+            };
+
+            function renderMembersList(list) {
+                document.getElementById('members-list').innerHTML = list.map(m => `
+                <div class="glass-card p-3 flex justify-between items-center border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 font-bold">${m.name[0]}</div>
+                        <p class="text-sm font-bold uppercase tracking-tight">${m.name} <span class="text-[9px] text-gray-500 ml-1">(${m.role})</span></p>
+                    </div>
+                    ${window.isAdmin ? `<button onclick="removeMember('${m.id}')" class="text-red-500/30 hover:text-red-500"><i class="fas fa-trash-alt"></i></button>` : ''}
+                </div>
+            `).join('');
+            }
+
+            window.submitPurchase = async (e) => {
+                e.preventDefault(); const f = new FormData(e.target);
+                const inputVal = document.getElementById('productInput').value.trim();
+                const names = selectedProducts.size > 0 ? Array.from(selectedProducts) : (inputVal ? [inputVal] : []);
+
+                if (names.length === 0) { showToast('Ajoutez au moins un produit', true); return; }
+
+                try {
+                    const commonData = {
+                        quantity: f.get('quantity') || '1',
+                        urgency: f.get('urgency'),
+                        notes: f.get('notes'),
+                        dateDemande: new Date(f.get('dateDemande')).toISOString()
+                    };
+
+                    if (currentEditId) {
+                        await updateDoc(doc(db, "achats_maison", currentEditId), {
+                            ...commonData,
+                            productName: names[0],
+                            photoData: selectedPhotoData
+                        });
+                        showToast('Modifié avec succès !');
+                    } else {
+                        for (const name of names) {
+                            await addDoc(collection(db, "achats_maison"), {
+                                ...commonData,
+                                productName: name,
+                                status: 'pending',
+                                photoData: selectedPhotoData
+                            });
+                            if (!window.allProducts.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+                                await addDoc(collection(db, "produits_maison"), { name });
+                            }
+                        }
+                        showToast(`${names.length} article(s) demandé(s)`);
+                        addNotification("Nouvelle demande", `${names.length} article(s) ajouté(s) par la famille.`);
+                    }
+                    removeSelectedPhoto();
+                    closePurchaseModal();
+                } catch (err) { console.error(err); showToast('Erreur d\'enregistrement'); }
+            };
+
+            window.confirmPurchase = async (e) => {
+                // Anyone can confirm an item they bought
+                e.preventDefault(); const p = parseFloat(new FormData(e.target).get('price'));
+                if (isNaN(p)) return;
+                try {
+                    for (const id of pendingPurchaseIds) {
+                        const item = window.achats.find(a => a.id === id);
+                        let final = priceMode === 'unit' ? p * (parseFloat(item.quantity) || 1) : p / pendingPurchaseIds.length;
+                        await updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() });
+                    }
+                    addNotification("Achat confirmé", `${pendingPurchaseIds.length} article(s) payé(s).`);
+                    selectedIds.clear(); updateBulk(); closePriceModal(); showToast('Fait !');
+                } catch (err) { console.error(err); showToast('Erreur paiement'); }
+            };
+
+            window.saveBudget = async (e) => {
+                if (!window.isAdmin) return;
+                e.preventDefault();
+                const f = new FormData(e.target);
+                // Robust number parsing (handle spaces, commas)
+                const rawAmount = f.get('amount') || "0";
+                const val = parseFloat(rawAmount.toString().replace(/\s/g, '').replace(',', '.')) || 0;
+
+                // Determine action with high priority given to the hidden action value set by the tab
+                const actionInput = document.getElementById('budget-action-input');
+                const action = (e.submitter ? e.submitter.getAttribute('value') : null) || actionInput.value || 'add';
+
+                try {
+                    const dateVal = f.get('date');
+                    const now = dateVal ? new Date(dateVal) : new Date();
+                    const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                    let updateData = {};
+                    let historyAmount = 0;
+                    let historyType = '';
+
+                    // Stats references for calculations
+                    const allReceived = (window.achats || []).filter(a => a.status === 'received');
+                    const totalSpent = allReceived.reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                    const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
+                    const currentBalance = (window.currentBudget || 0) - (totalSpent + offset);
+
+                    if (action === 'set_solde') {
+                        // Setting REMAINING balance to val -> New total budget = val + total spent + current offset
+                        const newTotalBudget = val + totalSpent + offset;
+                        updateData = { amount: newTotalBudget };
+                        historyAmount = val - currentBalance;
+                        historyType = 'balance_adj';
+                    } else if (action === 'set_expenses') {
+                        // Setting MONTHLY expenses to val -> Requires adjusting the offset for the month
+                        const monthlySum = allReceived.filter(a => {
+                            const d = new Date(a.dateAchat);
+                            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                        }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                        const newOffset = val - monthlySum;
+                        updateData = { [`monthlyOffsets.${key}`]: newOffset };
+                        historyAmount = val;
+                        historyType = 'expense_adj';
+                    } else if (action === 'set') {
+                        // Setting TOTAL budget to val
+                        updateData = { amount: val };
+                        historyAmount = val - (window.currentBudget || 0);
+                        historyType = 'reset';
+                    } else {
+                        // Adding val to TOTAL budget
+                        updateData = { amount: increment(val) };
+                        historyAmount = val;
+                        historyType = 'addition';
+                    }
+
+                    // Use updateDoc for targeted updates if document exists
+                    const configRef = doc(db, "achats_maison", "config_budget");
+                    await setDoc(configRef, updateData, { merge: true });
+
+                    await addDoc(collection(db, "budget_history"), {
+                        amount: historyAmount,
+                        date: now.toISOString(),
+                        displayDate: now.toLocaleString('fr-FR'),
+                        type: historyType
+                    });
+
+                    if (historyAmount !== 0) {
+                        addNotification("Budget mis à jour", `${historyAmount > 0 ? '+' : ''}${historyAmount.toLocaleString()} DA.`);
+                    }
+
+                    closeBudgetModal();
+                    showToast('Budget mis à jour !');
+                    e.target.reset();
+                } catch (err) {
+                    console.error(err);
+                    showToast('Erreur lors de la mise à jour');
+                }
+            };
+
+            window.resetBudgetToZero = async () => {
+                if (!window.isAdmin) return;
+                if (confirm('Voulez-vous vraiment remettre le budget à zéro ?')) {
+                    try {
+                        const now = new Date();
+                        await setDoc(doc(db, "achats_maison", "config_budget"), { amount: 0 }, { merge: true });
+                        await addDoc(collection(db, "budget_history"), {
+                            amount: -window.currentBudget,
+                            date: now.toISOString(),
+                            displayDate: now.toLocaleString('fr-FR'),
+                            type: 'clear'
+                        });
+                        closeBudgetModal(); showToast('Budget réinitialisé');
+                    } catch (err) { console.error(err); showToast('Erreur'); }
+                }
+            };
+
+            window.resetSoldeToZero = async () => {
+                if (!window.isAdmin) return;
+                if (confirm('Voulez-vous vraiment remettre le solde à zéro ? (Sera compensé par le budget)')) {
+                    try {
+                        const allReceived = window.achats.filter(a => a.status === 'received');
+                        const totalSpent = allReceived.reduce((s, a) => s + (a.price || 0), 0);
+                        const now = new Date();
+                        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                        const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
+                        const newBudget = totalSpent + offset;
+                        await setDoc(doc(db, "achats_maison", "config_budget"), { amount: newBudget }, { merge: true });
+                        await addDoc(collection(db, "budget_history"), {
+                            amount: newBudget - window.currentBudget,
+                            date: now.toISOString(),
+                            displayDate: now.toLocaleString('fr-FR'),
+                            type: 'balance_reset'
+                        });
+                        closeBudgetModal(); showToast('Solde réinitialisé');
+                    } catch (err) { console.error(err); showToast('Erreur'); }
+                }
+            };
+
+            window.resetExpensesToZero = async () => {
+                if (!window.isAdmin) return;
+                if (confirm('Voulez-vous vraiment effacer les dépenses du mois ?')) {
+                    try {
+                        const now = new Date();
+                        const curMonth = now.getMonth();
+                        const curYear = now.getFullYear();
+                        const key = `${curYear}-${String(curMonth + 1).padStart(2, '0')}`;
+                        const monthlySum = window.achats.filter(a => {
+                            const d = new Date(a.dateAchat);
+                            return a.status === 'received' && d.getMonth() === curMonth && d.getFullYear() === curYear;
+                        }).reduce((s, a) => s + (a.price || 0), 0);
+
+                        await setDoc(doc(db, "achats_maison", "config_budget"), { [`monthlyOffsets.${key}`]: -monthlySum }, { merge: true });
+                        closeBudgetModal(); showToast('Dépenses effacées');
+                    } catch (err) { console.error(err); showToast('Erreur'); }
+                }
+            };
+
+            window.toggleSelect = (id) => {
+                if (selectedIds.has(id)) selectedIds.delete(id);
+                else selectedIds.add(id);
+                updateBulk(); renderAchats(); renderPurchaseHistory();
+            };
+            window.clearSelection = () => { selectedIds.clear(); updateBulk(); renderAchats(); renderPurchaseHistory(); };
+
+            function updateBulk() {
+                const b = document.getElementById('bulk-action-bar');
+                const buyBtn = document.getElementById('bulk-buy-btn');
+                if (selectedIds.size > 0) {
+                    b.classList.remove('hidden', 'translate-y-32');
+                    document.getElementById('bulk-count').textContent = selectedIds.size;
+
+                    const selectedItems = Array.from(selectedIds).map(id => window.achats.find(a => a.id === id)).filter(Boolean);
+                    const allPending = selectedItems.length > 0 && selectedItems.every(a => a.status === 'pending');
+                    if (allPending) buyBtn.classList.remove('hidden');
+                    else buyBtn.classList.add('hidden');
+                } else {
+                    b.classList.add('translate-y-32');
+                    setTimeout(() => b.classList.add('hidden'), 300);
+                }
+            }
+
+            window.bulkDelete = async () => {
+                if (!window.isAdmin) return;
+                if (confirm(`Supprimer les ${selectedIds.size} articles sélectionnés ?`)) {
+                    try {
+                        for (const id of selectedIds) { await deleteDoc(doc(db, "achats_maison", id)); }
+                        selectedIds.clear(); updateBulk(); renderAchats(); renderPurchaseHistory();
+                        showToast('Articles supprimés');
+                    } catch (err) { showToast('Erreur suppression'); }
+                }
+            };
+
+            window.renderAchats = () => {
+                const filt = document.getElementById('filter-status').value;
+                const search = document.getElementById('search-input').value.toLowerCase();
+                const data = window.achats.filter(a => (filt === 'all' || a.status === filt) && (a.productName.toLowerCase().includes(search)));
+                data.sort((a, b) => new Date(b.dateDemande) - new Date(a.dateDemande));
+                document.getElementById('achats-container').innerHTML = data.map(a => `
+                <div onclick="openEditModal('${a.id}')" class="glass-card p-4 border-l-4 ${a.urgency === 'high' ? 'border-rose-500' : a.urgency === 'medium' ? 'border-orange-500' : 'border-sky-500'} ${a.status === 'received' ? 'strike-through' : ''} ${selectedIds.has(a.id) ? 'ring-2 ring-rose-500' : ''} cursor-pointer hover:bg-white/[0.05] transition-all">
+                    <div class="flex items-center gap-4">
+                        ${a.status === 'pending' ? `<input type="checkbox" onclick="event.stopPropagation(); toggleSelect('${a.id}')" ${selectedIds.has(a.id) ? 'checked' : ''} class="selection-checkbox">` : ''}
+                        ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="w-12 h-12 rounded-lg object-cover border border-white/10 shrink-0 hover:scale-110 transition-transform">` : ''}
+                        <div class="flex-1 flex justify-between items-start">
+                            <div class="flex-1">
+                                <h3 class="font-black text-lg uppercase tracking-wider">${a.productName} <span class="text-xs text-rose-400 font-bold ml-1 opacity-60">x${a.quantity}</span></h3>
+                                <div class="flex flex-wrap gap-3 text-[9px] font-bold uppercase tracking-tighter mt-1">
+                                    <span class="text-gray-500"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleString('fr-FR')}</span>
+                                    ${a.dateAchat ? `<span class="text-emerald-500"><i class="fas fa-check-circle mr-1"></i>Payé: ${Math.round(a.price).toLocaleString()} DA</span>` : ''}
+                                </div>
+                            </div>
+                                <div class="flex gap-2" onclick="event.stopPropagation()">
+                                    ${a.status === 'pending' ? `
+                                        <button onclick="openPriceModal('${a.id}', '')" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border border-rose-500/20">Acheter</button>
+                                    `: ''}
+                                    ${window.isAdmin ? `<button onclick="deleteAchat('${a.id}')" class="text-white/10 hover:text-red-500 p-1"><i class="fas fa-trash-alt"></i></button>` : ''}
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            };
+
+            window.updateAchatStats = () => {
+                if (!window.achats) return;
+                const now = new Date();
+                const curMonth = now.getMonth();
+                const curYear = now.getFullYear();
+                const key = `${curYear}-${String(curMonth + 1).padStart(2, '0')}`;
+
+                const allReceived = window.achats.filter(a => a.status === 'received');
+                const totalSpent = allReceived.reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+
+                const monthlySum = allReceived.filter(a => {
+                    const d = new Date(a.dateAchat);
+                    return d.getMonth() === curMonth && d.getFullYear() === curYear;
+                }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+
+                const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
+                const monthlySpent = monthlySum + offset;
+                const rem = window.currentBudget - (totalSpent + offset);
+
+                document.getElementById('stat-budget-restant').textContent = Math.round(rem).toLocaleString() + ' DA';
+                document.getElementById('stat-total-depense').textContent = Math.round(monthlySpent).toLocaleString() + ' DA';
+                document.getElementById('stat-pending').textContent = window.achats.filter(a => a.status === 'pending').length;
+                document.getElementById('stat-budget-restant').className = rem < 500 ? 'text-xl font-bold text-red-400' : 'text-xl font-bold text-rose-400';
+            };
+
+            window.deleteAchat = async (id) => {
+                if (!window.isAdmin) return;
+                if (confirm('Effacer ?')) {
+                    try {
+                        await deleteDoc(doc(db, "achats_maison", id));
+                        showToast('Article supprimé');
+                    } catch (err) { showToast('Erreur: ' + err.message, true); }
+                }
+            };
+            window.exportAchatsToExcel = () => { /* Logic Reused */ };
+        </script>
+        <!-- Manage / Import Modal -->
+        <div id="manage-modal" class="fixed inset-0 z-100 hidden">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleManageModal()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div
+                    class="glass-card bg-gray-900 w-full max-w-4xl h-[85vh] flex flex-col p-6 border border-white/10 shadow-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold uppercase tracking-widest text-rose-400">Gestion & Importation</h2>
+                        <button onclick="toggleManageModal()"
+                            class="text-gray-400 hover:text-white transition-colors"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+
+                    <div class="flex gap-4 mb-6 border-b border-white/5 pb-4">
+                        <button onclick="switchManageTab('products')" id="tab-manage-products"
+                            class="text-xs font-black uppercase tracking-widest text-rose-400 border-b-2 border-rose-500 pb-2">Mes
+                            Produits</button>
+                        <button onclick="switchManageTab('import')" id="tab-manage-import"
+                            class="text-xs font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-2">Importer
+                            des données</button>
+                    </div>
+
+                    <!-- Products List Tab -->
+                    <div id="manage-products-section" class="flex-1 overflow-hidden flex flex-col">
+                        <div class="flex flex-col gap-3 mb-4">
+                            <div class="flex gap-3">
+                                <input type="text" id="new-product-input" placeholder="Ajouter un produit suggéré..."
+                                    class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-rose-500 text-sm">
+                                <button onclick="quickAddProduct()"
+                                    class="bg-rose-600 text-white px-6 rounded-xl font-bold text-xs uppercase transition-all hover:bg-rose-500">Ajouter</button>
+                            </div>
+                            <div class="relative">
+                                <input type="text" id="manage-products-search" oninput="renderManageProducts()"
+                                    placeholder="Rechercher un produit..."
+                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 underline-none focus:border-rose-500 text-xs text-gray-400">
+                                <i
+                                    class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500"></i>
+                            </div>
+                        </div>
+                        <div id="manage-products-list"
+                            class="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-2 pr-2 custom-scrollbar">
+                            <!-- Products will be listed here -->
+                        </div>
+                    </div>
+
+                    <!-- Import Section Tab -->
+                    <div id="manage-import-section" class="hidden flex-1 flex flex-col">
+                        <div class="bg-white/5 p-4 rounded-xl border border-white/10 mb-4">
+                            <p class="text-[10px] text-gray-400 leading-relaxed uppercase font-bold">
+                                <i class="fas fa-info-circle mr-2 text-rose-400"></i> Collez ici vos données legacy
+                                (format Tabulé). L'importation créera automatiquement des achats "Payés" et mettra à
+                                jour vos suggestions.
+                            </p>
+                        </div>
+                        <textarea id="import-data-textarea" placeholder="Exemple: 04/12/2025    روز    500    210,00"
+                            class="flex-1 bg-white/5 border border-white/10 rounded-xl p-4 text-xs font-mono outline-none focus:border-rose-500 mb-4 resize-none custom-scrollbar"></textarea>
+                        <div class="flex justify-center">
+                            <button onclick="processBulkImport()"
+                                class="bg-emerald-600 text-white px-12 py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20">
+                                Lancer l'importation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End of app-content -->
+</body>
+
+</html>
