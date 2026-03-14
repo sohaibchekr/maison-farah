@@ -12,8 +12,67 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #4f0a78 0%, #251229 30%, #211218 60%, #e91e63 100%);
+            background: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
             min-height: 100vh;
+            color: #f1f5f9;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1.5rem;
+        }
+
+        .glass-card:hover {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+        }
+
+        .accent-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+
+        .text-accent {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-premium:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
+        }
+
+        .input-premium {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .input-premium:focus {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            outline: none;
         }
 
         .glass-panel {
@@ -110,47 +169,47 @@
             position: fixed;
             bottom: 5.5rem;
             right: 1.5rem;
-            width: 3.5rem;
-            height: 3.5rem;
-            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
-            border-radius: 1.25rem;
+            width: 4rem;
+            height: 4rem;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border-radius: 1.5rem;
             justify-content: center;
             align-items: center;
             color: white;
-            font-size: 1.25rem;
-            box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.5);
+            font-size: 1.5rem;
+            box-shadow: 0 15px 30px -5px rgba(79, 70, 229, 0.5);
             z-index: 45;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .mobile-fab:active {
             transform: scale(0.9);
         }
 
-        /* Mobile specific styles */
         @media (max-width: 640px) {
-            .mobile-bottom-nav {
-                display: flex;
-            }
+            .mobile-bottom-nav { display: flex; }
+            .mobile-fab { display: flex; }
+            .desktop-nav-items { display: none; }
+            main { padding-bottom: 7rem; }
+        }
 
-            .mobile-fab {
-                display: flex;
-            }
-
-            .desktop-nav-items {
-                display: none;
-            }
-
-            main {
-                padding-bottom: 5rem;
-                /* Space for bottom nav */
-            }
-
-            .glass-card {
-                border-radius: 1rem;
-            }
+        .chip-premium {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
     </style>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e1b4b">
+    <link rel="apple-touch-icon" href="fille.jpg">
 </head>
 
 <body class="text-gray-100">
@@ -372,9 +431,18 @@
                                 class="fas fa-history mr-2 text-rose-400"></i>Historique</button>
                         <select id="filter-status" onchange="renderAchats()"
                             class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-xs font-bold uppercase">
-                            <option value="all">Tout voir</option>
-                            <option value="pending">À acheter</option>
-                            <option value="received">Terminés</option>
+                            <option value="all">Statut: Tout</option>
+                            <option value="pending">🛒 À acheter</option>
+                            <option value="received">✅ Terminés</option>
+                        </select>
+                        <select id="filter-store" onchange="renderAchats()"
+                            class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-xs font-bold uppercase">
+                            <option value="all">Lieu: Tout</option>
+                            <option value="superrette">🏬 Superrette</option>
+                            <option value="marche">🥦 Marché</option>
+                            <option value="boucherie">🥩 Boucherie</option>
+                            <option value="cosmetique">💄 Cosmétique</option>
+                            <option value="autre">✨ Autre</option>
                         </select>
                     </div>
                 </div>
@@ -440,29 +508,63 @@
                         <div class="space-y-2">
                             <div id="selected-products-chips" class="flex flex-wrap gap-2 min-h-[10px]"></div>
                             <div class="relative">
-                                <input type="text" id="productInput" autocomplete="off"
-                                    placeholder="Quoi acheter ? (Séparez par entrée ou virgule)"
-                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-rose-500 outline-none">
+                                <input type="text" id="productInput" name="productName" autocomplete="off"
+                                    placeholder="Que voulez-vous acheter ?"
+                                    class="w-full input-premium px-4 py-4 pr-12 text-sm font-bold placeholder:text-gray-500 uppercase tracking-wide">
+                                <button type="button" onclick="const v = document.getElementById('productInput').value.trim(); if(v) addChip(v);" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-indigo-500/20 text-indigo-400 rounded-xl hover:bg-indigo-500 hover:text-white transition-all">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                                 <div id="suggestion-dropdown"
-                                    class="absolute left-0 right-0 top-full mt-1 bg-gray-900 border border-white/10 rounded-xl hidden z-50 max-h-48 overflow-y-auto custom-scrollbar shadow-2xl">
+                                    class="absolute left-0 right-0 top-full mt-2 glass-card bg-gray-900/95 border border-white/10 rounded-2xl max-h-60 overflow-y-auto z-50 hidden shadow-2xl custom-scrollbar">
                                 </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <input type="text" name="quantity" placeholder="Quantité (ex: 5, 2kg)"
-                                class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-sm">
+                                class="input-premium px-4 py-3 text-sm">
                             <select name="urgency"
-                                class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none font-bold text-rose-400 text-sm">
-                                <option value="low">Pas urgent</option>
-                                <option value="medium" selected>Normal</option>
-                                <option value="high">Urgent !</option>
+                                class="input-premium px-4 py-3 font-bold text-indigo-400 text-sm appearance-none">
+                                <option value="low">☕ Pas urgent</option>
+                                <option value="medium" selected>⚡ Normal</option>
+                                <option value="high">🔥 Urgent !</option>
                             </select>
                         </div>
+
+                        <select name="store" id="store-select" onchange="toggleCustomStore(this.value)" class="w-full input-premium px-4 py-3 font-bold text-indigo-400 text-sm appearance-none">
+                            <option value="">🛒 Choisir un magasin...</option>
+                            <option value="superrette">🏬 Superrette</option>
+                            <option value="marche">🥦 Marché</option>
+                            <option value="boucherie">🥩 Boucherie</option>
+                            <option value="cosmetique">💄 Cosmétique</option>
+                            <option value="autre">✨ Nouveau lieu / Classe...</option>
+                        </select>
+                        <div id="custom-store-container" class="hidden animate-fade-in">
+                            <input type="text" id="custom-store-input" placeholder="Nom du magasin ou catégorie..."
+                                class="w-full input-premium px-4 py-3 text-sm font-bold text-white placeholder:text-gray-600">
+                        </div>
+
+                        <div class="bg-indigo-500/5 border border-indigo-500/10 p-4 rounded-2xl space-y-3">
+                             <div class="flex items-center justify-between">
+                                <label class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Achat direct (Déjà payé ?)</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="direct-pay-check" onchange="toggleDirectPay(this.checked)" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                             </div>
+                             <div id="direct-pay-fields" class="hidden animate-fade-in">
+                                <div class="relative">
+                                    <input type="text" id="direct-price" name="price" inputmode="decimal" placeholder="Prix payé..."
+                                        class="w-full input-premium px-4 py-3 pl-10 text-emerald-400 font-bold">
+                                    <i class="fas fa-tag absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500/50 pointer-events-none"></i>
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 font-bold pointer-events-none">DA</span>
+                                </div>
+                             </div>
+                        </div>
+
                         <div>
-                            <label class="text-[10px] text-gray-500 uppercase font-black ml-1 mb-1 block">Date et
-                                Heure</label>
+                            <label class="text-[10px] text-gray-500 uppercase font-black ml-1 mb-1 block">Date et Heure</label>
                             <input type="datetime-local" name="dateDemande" id="dateDemandeInput" required
-                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-xs text-gray-400 focus:border-rose-500 transition-all uppercase font-bold">
+                                class="w-full input-premium px-4 py-3 text-xs text-gray-400 uppercase font-bold">
                         </div>
                         <div class="flex items-center gap-4">
                             <div class="flex-1">
@@ -471,9 +573,10 @@
                             </div>
                             <div class="flex gap-2 relative">
                                 <div class="relative group">
-                                    <input type="file" id="photoInputCamera" accept="image/*" capture="environment" class="hidden"
-                                        onchange="handlePhotoSelect(event)">
-                                    <button type="button" onclick="document.getElementById('photoInputCamera').click()" title="Prendre une photo avec l'appareil"
+                                    <input type="file" id="photoInputCamera" accept="image/*" capture="environment"
+                                        class="hidden" onchange="handlePhotoSelect(event)">
+                                    <button type="button" onclick="document.getElementById('photoInputCamera').click()"
+                                        title="Prendre une photo avec l'appareil"
                                         class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-rose-400 group-hover:bg-rose-500/10 group-hover:border-rose-500/50 transition-all">
                                         <i class="fas fa-camera text-xl"></i>
                                     </button>
@@ -481,7 +584,8 @@
                                 <div class="relative group">
                                     <input type="file" id="photoInput" accept="image/*" class="hidden"
                                         onchange="handlePhotoSelect(event)">
-                                    <button type="button" onclick="document.getElementById('photoInput').click()" title="Choisir depuis la galerie"
+                                    <button type="button" onclick="document.getElementById('photoInput').click()"
+                                        title="Choisir depuis la galerie"
                                         class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-rose-400 group-hover:bg-rose-500/10 group-hover:border-rose-500/50 transition-all">
                                         <i class="fas fa-image text-xl"></i>
                                     </button>
@@ -500,11 +604,17 @@
                                         class="fas fa-times text-[10px]"></i></button>
                             </div>
                         </div>
-                        <div class="flex gap-3">
-                            <button type="button" onclick="closePurchaseModal()"
-                                class="flex-1 bg-white/5 rounded-xl py-3 font-bold uppercase text-xs">Annuler</button>
-                            <button type="submit"
-                                class="flex-1 bg-gradient-to-r from-rose-600 to-pink-500 text-white rounded-xl py-3 font-bold uppercase text-xs">Demander</button>
+                        <div class="flex flex-col gap-3">
+                            <div class="flex gap-3">
+                                <button type="button" onclick="closePurchaseModal()"
+                                    class="flex-1 bg-white/5 hover:bg-white/10 rounded-xl py-3 font-bold uppercase text-xs transition-all">Annuler</button>
+                                <button type="submit" id="main-submit-btn"
+                                    class="flex-[2] btn-premium text-white rounded-xl py-3 font-bold uppercase text-xs">Demander</button>
+                            </div>
+                            <button type="button" id="continue-submit-btn" onclick="submitPurchase(event, true)"
+                                class="w-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl py-3 font-bold uppercase text-[10px] tracking-widest transition-all">
+                                <i class="fas fa-plus-circle mr-2"></i> Ajouter et Continuer
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -836,6 +946,7 @@
 
             onSnapshot(collection(db, "achats_maison"), (snap) => {
                 window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
+                updateStoreFilters();
                 renderAchats(); renderPurchaseHistory(); updateAchatStats();
             });
 
@@ -1557,19 +1668,45 @@
             `).join('');
             }
 
-            window.submitPurchase = async (e) => {
-                e.preventDefault(); const f = new FormData(e.target);
+            window.toggleCustomStore = (val) => {
+                const container = document.getElementById('custom-store-container');
+                if (container) container.classList.toggle('hidden', val !== 'autre');
+                if (val === 'autre') setTimeout(() => document.getElementById('custom-store-input').focus(), 100);
+            };
+
+            window.toggleDirectPay = (checked) => {
+                const fields = document.getElementById('direct-pay-fields');
+                if (fields) fields.classList.toggle('hidden', !checked);
+                if (checked) setTimeout(() => document.getElementById('direct-price').focus(), 100);
+            };
+
+            window.submitPurchase = async (e, keepOpen = false) => {
+                if (e) e.preventDefault();
+                const form = document.getElementById('purchase-form');
+                const f = new FormData(form);
                 const inputVal = document.getElementById('productInput').value.trim();
-                const names = selectedProducts.size > 0 ? Array.from(selectedProducts) : (inputVal ? [inputVal] : []);
+                let names = Array.from(selectedProducts);
+                if (inputVal) names.push(inputVal);
 
                 if (names.length === 0) { showToast('Ajoutez au moins un produit', true); return; }
 
+                const isDirectPay = document.getElementById('direct-pay-check').checked;
+                const priceRaw = document.getElementById('direct-price').value.replace(',', '.');
+                const directPrice = parseFloat(priceRaw) || 0;
+
                 try {
+                    const storeVal = f.get('store');
+                    const finalStore = storeVal === 'autre' ? document.getElementById('custom-store-input').value.trim() : storeVal;
+
                     const commonData = {
                         quantity: f.get('quantity') || '1',
                         urgency: f.get('urgency'),
+                        store: finalStore || '',
                         notes: f.get('notes'),
-                        dateDemande: new Date(f.get('dateDemande')).toISOString()
+                        dateDemande: new Date(f.get('dateDemande')).toISOString(),
+                        status: isDirectPay ? 'received' : 'pending',
+                        price: isDirectPay ? directPrice : 0,
+                        dateAchat: isDirectPay ? new Date().toISOString() : null
                     };
 
                     if (currentEditId) {
@@ -1584,18 +1721,27 @@
                             await addDoc(collection(db, "achats_maison"), {
                                 ...commonData,
                                 productName: name,
-                                status: 'pending',
                                 photoData: selectedPhotoData
                             });
                             if (!window.allProducts.some(p => p.name.toLowerCase() === name.toLowerCase())) {
                                 await addDoc(collection(db, "produits_maison"), { name });
                             }
                         }
-                        showToast(`${names.length} article(s) demandé(s)`);
-                        addNotification("Nouvelle demande", `${names.length} article(s) ajouté(s) par la famille.`);
+                        showToast(`${names.length} article(s) ajouté(s)`);
+                        addNotification(isDirectPay ? "Nouvel achat" : "Nouvelle demande", `${names.length} article(s) par la famille.`);
                     }
-                    removeSelectedPhoto();
-                    closePurchaseModal();
+
+                    if (keepOpen) {
+                        selectedProducts.clear();
+                        renderChips();
+                        document.getElementById('productInput').value = "";
+                        document.getElementById('productInput').focus();
+                        // Optional: Reset photo but keep other form fields for fast entry
+                        // removeSelectedPhoto(); 
+                    } else {
+                        removeSelectedPhoto();
+                        closePurchaseModal();
+                    }
                 } catch (err) { console.error(err); showToast('Erreur d\'enregistrement'); }
             };
 
@@ -1606,7 +1752,12 @@
                 try {
                     for (const id of pendingPurchaseIds) {
                         const item = window.achats.find(a => a.id === id);
-                        let final = priceMode === 'unit' ? p * (parseFloat(item.quantity) || 1) : p / pendingPurchaseIds.length;
+                        if (!item) continue;
+                        const qty = parseFloat(item.quantity) || 1;
+                        const div = pendingPurchaseIds.length || 1;
+                        let final = (priceMode === 'unit') ? (p * qty) : (p / div);
+                        
+                        if (!isFinite(final)) final = 0;
                         await updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() });
                     }
                     addNotification("Achat confirmé", `${pendingPurchaseIds.length} article(s) payé(s).`);
@@ -1788,70 +1939,201 @@
 
             window.renderAchats = () => {
                 const filt = document.getElementById('filter-status').value;
+                const storeFilt = document.getElementById('filter-store').value;
                 const search = document.getElementById('search-input').value.toLowerCase();
-                const data = window.achats.filter(a => (filt === 'all' || a.status === filt) && (a.productName.toLowerCase().includes(search)));
+                const data = window.achats.filter(a => 
+                    (filt === 'all' || a.status === filt) && 
+                    (storeFilt === 'all' || a.store === storeFilt) &&
+                    (a.productName.toLowerCase().includes(search))
+                );
                 data.sort((a, b) => new Date(b.dateDemande) - new Date(a.dateDemande));
+                
                 document.getElementById('achats-container').innerHTML = data.map(a => `
-                <div onclick="openEditModal('${a.id}')" class="glass-card p-4 border-l-4 ${a.urgency === 'high' ? 'border-rose-500' : a.urgency === 'medium' ? 'border-orange-500' : 'border-sky-500'} ${a.status === 'received' ? 'strike-through' : ''} ${selectedIds.has(a.id) ? 'ring-2 ring-rose-500' : ''} cursor-pointer hover:bg-white/[0.05] transition-all">
-                    <div class="flex items-center gap-4">
-                        ${a.status === 'pending' ? `<input type="checkbox" onclick="event.stopPropagation(); toggleSelect('${a.id}')" ${selectedIds.has(a.id) ? 'checked' : ''} class="selection-checkbox">` : ''}
-                        ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="w-12 h-12 rounded-lg object-cover border border-white/10 shrink-0 hover:scale-110 transition-transform">` : ''}
-                        <div class="flex-1 flex justify-between items-start">
-                            <div class="flex-1">
-                                <h3 class="font-black text-lg uppercase tracking-wider">${a.productName} <span class="text-xs text-rose-400 font-bold ml-1 opacity-60">x${a.quantity}</span></h3>
-                                <div class="flex flex-wrap gap-3 text-[9px] font-bold uppercase tracking-tighter mt-1">
-                                    <span class="text-gray-500"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleString('fr-FR')}</span>
-                                    ${a.dateAchat ? `<span class="text-emerald-500"><i class="fas fa-check-circle mr-1"></i>Payé: ${Math.round(a.price).toLocaleString()} DA</span>` : ''}
-                                    ${(a.isLegacy || a.notes === 'Importé de Legacy') ? `<span class="bg-gray-500/20 text-gray-500 px-1.5 py-0.5 rounded text-[8px] border border-gray-500/20 ml-2">ARCHIVE</span>` : ''}
+                <div onclick="openDetailsModal('${a.id}')" class="glass-card p-5 border-l-4 ${a.urgency === 'high' ? 'border-rose-500 shadow-lg shadow-rose-500/10' : a.urgency === 'medium' ? 'border-amber-500' : 'border-indigo-500'} ${a.status === 'received' ? 'opacity-60 grayscale-[0.3]' : ''} ${selectedIds.has(a.id) ? 'ring-2 ring-indigo-500' : ''} cursor-pointer hover:bg-white/[0.05] transition-all">
+                    <div class="flex items-center gap-5">
+                        ${a.status === 'pending' ? `<input type="checkbox" onclick="event.stopPropagation(); toggleSelect('${a.id}')" ${selectedIds.has(a.id) ? 'checked' : ''} class="w-5 h-5 accent-indigo-500 cursor-pointer">` : '<div class="w-5 h-5 flex items-center justify-center text-emerald-500"><i class="fas fa-check-circle"></i></div>'}
+                        ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="w-14 h-14 rounded-2xl object-cover border border-white/10 shrink-0 shadow-xl">` : `
+                            <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                                <i class="fas ${a.status === 'received' ? 'fa-shopping-bag' : 'fa-cart-plus'} text-xl"></i>
+                            </div>
+                        `}
+                        <div class="flex-1 flex justify-between items-center">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-black text-lg text-white uppercase tracking-wider leading-tight">${a.productName}</h3>
+                                    ${a.store ? `<span class="text-[8px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded border border-white/5 uppercase font-bold tracking-tighter">${getStoreLabel(a.store)}</span>` : ''}
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest">x${a.quantity}</span>
+                                    <span class="text-[9px] text-gray-500 font-bold uppercase"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleDateString('fr-FR', {day:'2-digit', month:'short'})}</span>
                                 </div>
                             </div>
-                                <div class="flex gap-2" onclick="event.stopPropagation()">
-                                    ${a.status === 'pending' ? `
-                                        <button onclick="openPriceModal('${a.id}', '')" class="bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border border-rose-500/20">Acheter</button>
-                                    `: ''}
-                                    ${window.isAdmin ? `<button onclick="deleteAchat('${a.id}')" class="text-white/10 hover:text-red-500 p-1"><i class="fas fa-trash-alt"></i></button>` : ''}
-                                </div>
+                            <div class="text-right">
+                                ${a.status === 'received' ? `
+                                    <p class="text-lg font-black text-emerald-400">${Math.round(a.price || 0).toLocaleString()} <span class="text-[10px]">DA</span></p>
+                                ` : `
+                                    <button onclick="event.stopPropagation(); openPriceModal('${a.id}', '')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Acheter</button>
+                                `}
+                            </div>
                         </div>
                     </div>
                 </div>
             `).join('');
             };
 
+            window.openDetailsModal = (id) => {
+                const a = window.achats.find(x => x.id === id);
+                if (!a) return;
+                currentEditId = id;
+                
+                document.getElementById('purchase-modal-title').textContent = "Détails de l'article";
+                const f = document.getElementById('purchase-form');
+                
+                selectedProducts.clear();
+                selectedProducts.add(a.productName);
+                renderChips();
+                
+                f.quantity.value = a.quantity || '';
+                f.urgency.value = a.urgency;
+                
+                if (a.store && !['superrette', 'marche', 'boucherie', 'cosmetique'].includes(a.store)) {
+                    if (f.store) f.store.value = 'autre';
+                    toggleCustomStore('autre');
+                    const cInput = document.getElementById('custom-store-input');
+                    if (cInput) cInput.value = a.store;
+                } else {
+                    if (f.store) f.store.value = a.store || '';
+                    toggleCustomStore(a.store || '');
+                }
+
+                f.notes.value = a.notes || '';
+                document.getElementById('dateDemandeInput').value = formatDateTime(a.dateDemande || new Date());
+                
+                if (a.photoData) {
+                    selectedPhotoData = a.photoData;
+                    document.getElementById('photo-indicator').classList.remove('hidden');
+                    document.getElementById('image-preview').src = a.photoData;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                } else {
+                    removeSelectedPhoto();
+                }
+                
+                const directCheck = document.getElementById('direct-pay-check');
+                if (a.status === 'received') {
+                    directCheck.checked = true;
+                    toggleDirectPay(true);
+                    document.getElementById('direct-price').value = a.price;
+                } else {
+                    directCheck.checked = false;
+                    toggleDirectPay(false);
+                }
+
+                document.getElementById('purchase-modal').classList.remove('hidden');
+            };
+
             window.updateAchatStats = () => {
                 if (!window.achats) return;
-                const now = new Date();
-                const curMonth = now.getMonth();
-                const curYear = now.getFullYear();
-                const key = `${curYear}-${String(curMonth + 1).padStart(2, '0')}`;
+                try {
+                    const now = new Date();
+                    const curMonth = now.getMonth();
+                    const curYear = now.getFullYear();
+                    const key = `${curYear}-${String(curMonth + 1).padStart(2, '0')}`;
 
-                const allReceived = (window.achats || []).filter(a => a.status === 'received');
-                const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
-                const totalSpent = activeReceived.reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                    const allReceived = (window.achats || []).filter(a => a.status === 'received');
+                    const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
 
-                const monthlySum = activeReceived.filter(a => {
-                    const d = new Date(a.dateAchat);
-                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                    const totalSpent = activeReceived.reduce((s, a) => {
+                        const val = parseFloat(a.price);
+                        return s + (isFinite(val) ? val : 0);
+                    }, 0);
 
-                const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                const monthlySpent = monthlySum + offset;
-                const rem = window.currentBudget - (totalSpent + offset);
-                const spentLife = totalSpent;
+                    const monthlySum = activeReceived.filter(a => {
+                        if (!a.dateAchat) return false;
+                        const d = new Date(a.dateAchat);
+                        return d.getMonth() === curMonth && d.getFullYear() === curYear;
+                    }).reduce((s, a) => {
+                        const val = parseFloat(a.price);
+                        return s + (isFinite(val) ? val : 0);
+                    }, 0);
 
-                document.getElementById('stat-budget-restant').textContent = Math.round(rem).toLocaleString() + ' DA';
-                document.getElementById('stat-total-depense').textContent = Math.round(monthlySpent).toLocaleString() + ' DA';
-                document.getElementById('stat-pending').textContent = window.achats.filter(a => a.status === 'pending').length;
-                document.getElementById('stat-budget-restant').className = rem < 500 ? 'text-xl font-bold text-red-400' : 'text-xl font-bold text-rose-400';
+                    const rawOffset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
+                    const offset = isFinite(parseFloat(rawOffset)) ? parseFloat(rawOffset) : 0;
 
-                // Populate Breakdown in Modal
-                if (document.getElementById('breakdown-total-budget')) {
-                    document.getElementById('breakdown-total-budget').textContent = Math.round(window.currentBudget).toLocaleString() + ' DA';
-                    document.getElementById('breakdown-total-spent').textContent = Math.round(spentLife).toLocaleString() + ' DA';
-                    document.getElementById('breakdown-offset').textContent = Math.round(offset).toLocaleString() + ' DA';
-                    document.getElementById('breakdown-final').textContent = Math.round(rem).toLocaleString() + ' DA';
-                    document.getElementById('breakdown-final').className = rem < 0 ? 'text-rose-500' : 'text-emerald-500';
+                    const monthlySpent = monthlySum + offset;
+                    const budgetVal = isFinite(parseFloat(window.currentBudget)) ? parseFloat(window.currentBudget) : 0;
+                    const rem = budgetVal - (totalSpent + offset);
+
+                    const statBalance = document.getElementById('stat-budget-restant');
+                    const statExpense = document.getElementById('stat-total-depense');
+
+                    if (statBalance) {
+                        statBalance.textContent = Math.round(rem).toLocaleString() + ' DA';
+                        statBalance.className = rem < 500 ? 'text-xl font-bold text-rose-400' : 'text-xl font-bold text-indigo-400';
+                    }
+
+                    if (statExpense) {
+                        statExpense.textContent = Math.round(monthlySpent).toLocaleString() + ' DA';
+                    }
+
+                    const statPending = document.getElementById('stat-pending');
+                    if (statPending) {
+                        statPending.textContent = window.achats.filter(a => a.status === 'pending').length;
+                    }
+
+                    // Populate Breakdown in Modal
+                    const bTotal = document.getElementById('breakdown-total-budget');
+                    if (bTotal) {
+                        bTotal.textContent = Math.round(budgetVal).toLocaleString() + ' DA';
+                        document.getElementById('breakdown-total-spent').textContent = Math.round(totalSpent).toLocaleString() + ' DA';
+                        document.getElementById('breakdown-offset').textContent = Math.round(offset).toLocaleString() + ' DA';
+                        const bFinal = document.getElementById('breakdown-final');
+                        bFinal.textContent = Math.round(rem).toLocaleString() + ' DA';
+                        bFinal.className = rem < 0 ? 'text-rose-500' : 'text-emerald-500';
+                    }
+                } catch (err) {
+                    console.error("Stats Error:", err);
                 }
             };
+
+            function getStoreLabel(s) {
+                if (!s) return '';
+                const map = {
+                    'superrette': '🏬 Superrette',
+                    'marche': '🥦 Marché',
+                    'boucherie': '🥩 Boucherie',
+                    'cosmetique': '💄 Cosmet',
+                    'autre': '✨ Autre'
+                };
+                return map[s.toLowerCase()] || '✨ ' + s;
+            }
+
+            function updateStoreFilters() {
+                const stores = new Set(['superrette', 'marche', 'boucherie', 'cosmetique']);
+                (window.achats || []).forEach(a => {
+                    if (a.store && !['superrette', 'marche', 'boucherie', 'cosmetique', 'autre', 'all', ''].includes(a.store)) {
+                        stores.add(a.store);
+                    }
+                });
+
+                const filterStoreSelect = document.getElementById('filter-store');
+                if (!filterStoreSelect) return;
+                const currentFilter = filterStoreSelect.value;
+                
+                let html = '<option value="all">Lieu: Tout</option>';
+                html += '<option value="superrette">🏬 Superrette</option>';
+                html += '<option value="marche">🥦 Marché</option>';
+                html += '<option value="boucherie">🥩 Boucherie</option>';
+                html += '<option value="cosmetique">💄 Cosmétique</option>';
+
+                Array.from(stores).forEach(s => {
+                    if (!['superrette', 'marche', 'boucherie', 'cosmetique'].includes(s)) {
+                        html += `<option value="${s}">✨ ${s.toUpperCase()}</option>`;
+                    }
+                });
+
+                filterStoreSelect.innerHTML = html;
+                filterStoreSelect.value = currentFilter;
+            }
 
             window.deleteAchat = async (id) => {
                 if (!window.isAdmin) return;
@@ -1863,6 +2145,14 @@
                 }
             };
             window.exportAchatsToExcel = () => { /* Logic Reused */ };
+
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => console.log('SW Registered', reg))
+                        .catch(err => console.log('SW Registration failed', err));
+                });
+            }
         </script>
         <!-- Manage / Import Modal -->
         <div id="manage-modal" class="fixed inset-0 z-100 hidden">
