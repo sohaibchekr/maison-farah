@@ -347,19 +347,26 @@
                                     </div>
                                     <div id="notif-perm-box"
                                         class="p-3 bg-indigo-500/10 border-b border-white/5 hidden">
-                                        <p id="notif-perm-text" class="text-[10px] text-gray-300 font-bold mb-2 text-center uppercase">
+                                        <p id="notif-perm-text"
+                                            class="text-[10px] text-gray-300 font-bold mb-2 text-center uppercase">
                                             Activer les alertes sur votre téléphone ?</p>
                                         <button id="btn-request-notif" onclick="requestNotificationPermission()"
                                             class="w-full py-2 bg-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest text-white shadow-lg">Activer
                                             les Notifications</button>
-                                        <p id="ios-install-hint" class="text-[8px] text-rose-400 font-bold mt-2 text-center uppercase hidden">
-                                            iPhone : Cliquez sur <i class="fas fa-share-square"></i> puis "Sur l'écran d'accueil" pour activer les alertes</p>
+                                        <p id="ios-install-hint"
+                                            class="text-[8px] text-rose-400 font-bold mt-2 text-center uppercase hidden">
+                                            iPhone : Cliquez sur <i class="fas fa-share-square"></i> puis "Sur l'écran
+                                            d'accueil" pour activer les alertes</p>
                                     </div>
                                     <div id="notif-list"
                                         class="max-h-96 overflow-y-auto custom-scrollbar p-2 space-y-2">
                                         <div
                                             class="py-10 text-center opacity-30 text-[10px] uppercase font-bold italic">
                                             Aucune notification</div>
+                                    </div>
+                                    <div id="sw-status-box" class="p-2 border-t border-white/5 text-center">
+                                        <p id="sw-status-text" class="text-[8px] text-gray-600 uppercase font-black">
+                                            Recherche du Service Worker...</p>
                                     </div>
                                 </div>
                             </div>
@@ -372,7 +379,8 @@
                                 <i class="fas fa-plus"></i> <span>Article</span>
                             </button>
                             <!-- Install Button (Hidden by default) -->
-                            <button id="pwa-install-btn" class="hidden bg-emerald-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg animate-bounce">
+                            <button id="pwa-install-btn"
+                                class="hidden bg-emerald-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg animate-bounce">
                                 <i class="fas fa-download"></i>
                             </button>
                         </div>
@@ -915,6 +923,7 @@
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
             import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
             import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+            import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
             const firebaseConfig = {
                 apiKey: "AIzaSyD0fjLIAu-tUbwRncOKJSKtd422s0UhCNY",
@@ -928,6 +937,7 @@
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const auth = getAuth(app);
+            const messaging = getMessaging(app);
             window.db = db;
             window.auth = auth;
 
@@ -1428,7 +1438,6 @@
                     return;
                 }
 
-                // Détection iOS
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
@@ -1443,20 +1452,9 @@
                     if (perm === "granted") {
                         showToast("Notifications activées !");
                         document.getElementById('notif-perm-box').classList.add('hidden');
-                        
-                        // Créer une notification de test via le Service Worker pour vérifier que ça marche en arrière-plan
-                        if (navigator.serviceWorker.controller) {
-                            navigator.serviceWorker.ready.then(reg => {
-                                reg.showNotification("Farah Achats", {
-                                    body: "Les alertes sont maintenant activées sur ce téléphone !",
-                                    icon: './fille.jpg',
-                                    badge: './fille.jpg',
-                                    vibrate: [100, 50, 100]
-                                });
-                            });
-                        }
+                        setupFCM();
                     } else if (perm === "denied") {
-                        showToast("Notifications bloquées dans les réglages", true);
+                        showToast("Notifications bloquées", true);
                     }
                 } catch (err) {
                     console.error(err);
@@ -1464,22 +1462,44 @@
                 }
             };
 
+            async function setupFCM() {
+                try {
+                    // C'EST ICI QU'IL FAUDRA TA CLÉ VAPID (Générée dans la console Firebase)
+                    const vapidKey = "VOTRE_CLE_VAPID_ICI"; 
+                    
+                    const swRegistration = await navigator.serviceWorker.ready;
+                    const currentToken = await getToken(messaging, { 
+                        serviceWorkerRegistration: swRegistration,
+                        vapidKey: vapidKey 
+                    });
+
+                    if (currentToken) {
+                        console.log("Token FCM récupéré :", currentToken);
+                        // Enregistrer le token dans Firestore pour ce membre de la famille
+                        if (auth.currentUser) {
+                            await setDoc(doc(db, "famille_tokens", auth.currentUser.uid), {
+                                token: currentToken,
+                                email: auth.currentUser.email,
+                                lastUpdate: new Date().toISOString()
+                            });
+                        }
+                    }
+                } catch (err) {
+                    console.error("Erreur FCM:", err);
+                }
+            }
+
+            // Écouter les messages quand l'app est OUVERTE
+            onMessage(messaging, (payload) => {
+                console.log('Message reçu (foreground):', payload);
+                addNotification(payload.notification.title, payload.notification.body);
+                showToast(payload.notification.title + ": " + payload.notification.body);
+            });
+
             window.showAppNotification = (title, message) => {
                 addNotification(title, message);
-                
-                // Si l'application est ouverte et active, on peut utiliser l'API classique ou SW
-                if (Notification.permission === "granted") {
-                    navigator.serviceWorker.ready.then(reg => {
-                        reg.showNotification(title, {
-                            body: message,
-                            icon: './fille.jpg',
-                            badge: './fille.jpg',
-                            vibrate: [100, 50, 100],
-                            tag: 'farah-achat-notif', // Évite les doublons
-                            renotify: true
-                        });
-                    });
-                }
+                // Si l'app est ouverte, on peut notifier via l'UI
+                // Si elle est fermée, c'est le Service Worker qui recevra le signal Cloud Messaging
             };
 
             window.addNotification = (title, message, type = 'info') => {
@@ -1491,6 +1511,11 @@
                 const badge = document.getElementById('notif-badge');
                 badge.textContent = notifications.length;
                 badge.classList.remove('hidden');
+
+                // Update App Badge (Desktop & Android)
+                if ('setAppBadge' in navigator) {
+                    navigator.setAppBadge(notifications.length).catch(e => console.log("Badge fail", e));
+                }
             };
 
             window.clearNotifications = () => {
@@ -1498,6 +1523,9 @@
                 localStorage.setItem('achats_notifs', JSON.stringify([]));
                 renderNotifications();
                 document.getElementById('notif-badge').classList.add('hidden');
+                if ('clearAppBadge' in navigator) {
+                    navigator.clearAppBadge().catch(e => console.log("Badge clear fail", e));
+                }
             };
 
             function renderNotifications() {
@@ -2292,17 +2320,27 @@
                     navigator.serviceWorker.register('./sw.js', { scope: './' })
                         .then(reg => {
                             console.log('SW Registered', reg);
-                            // Vérifier si des mises à jour sont disponibles
+                            const statusText = document.getElementById('sw-status-text');
+                            if (statusText) {
+                                statusText.textContent = "✓ Application Prête (Mode Hors-Ligne)";
+                                statusText.className = "text-[8px] text-emerald-500 uppercase font-black";
+                            }
+
+                            // Mise à jour automatique
                             reg.onupdatefound = () => {
                                 const installingWorker = reg.installing;
                                 installingWorker.onstatechange = () => {
                                     if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                        showToast("Mise à jour disponible ! Rechargez la page.");
+                                        showToast("Nouvelle version prête ! Rechargez la page.");
                                     }
                                 };
                             };
                         })
-                        .catch(err => console.log('SW Registration failed', err));
+                        .catch(err => {
+                            console.log('SW Registration failed', err);
+                            const statusText = document.getElementById('sw-status-text');
+                            if (statusText) statusText.textContent = "✗ Erreur Service Worker";
+                        });
                 });
             }
 
