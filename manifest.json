@@ -1,0 +1,17 @@
+{
+  "name": "فرح نور - Achats Famille",
+  "short_name": "FarahAchats",
+  "description": "Gestion des courses pour la famille Farah Nour",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "fille.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
