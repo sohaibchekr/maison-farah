@@ -4,14 +4,28 @@
   "description": "Gestion des courses pour la famille Farah Nour",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0f172a",
-  "theme_color": "#6366f1",
+  "theme_color": "#e11d48",
   "icons": [
+    {
+      "src": "fille.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
     {
       "src": "fille.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "family"],
+  "shortcuts": [
+    {
+      "name": "Nouvel Article",
+      "url": "./index.html?action=new",
+      "icons": [{ "src": "fille.jpg", "sizes": "192x192" }]
     }
   ]
 }
