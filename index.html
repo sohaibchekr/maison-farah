@@ -130,6 +130,23 @@
             border-radius: 3px;
         }
 
+        /* Responsive Modal Fix */
+        .modal-container {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 640px) {
+            .glass-card {
+                padding: 1rem;
+                border-radius: 1rem;
+            }
+            .input-premium {
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+        }
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
@@ -316,6 +333,10 @@
                                             class="text-[9px] uppercase font-bold text-rose-400 hover:text-rose-300">Tout
                                             effacer</button>
                                     </div>
+                                    <div id="notif-perm-box" class="p-3 bg-indigo-500/10 border-b border-white/5 hidden">
+                                        <p class="text-[10px] text-gray-300 font-bold mb-2 text-center uppercase">Activer les alertes sur votre téléphone ?</p>
+                                        <button onclick="requestNotificationPermission()" class="w-full py-2 bg-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest text-white shadow-lg">Activer les Notifications</button>
+                                    </div>
                                     <div id="notif-list"
                                         class="max-h-96 overflow-y-auto custom-scrollbar p-2 space-y-2">
                                         <div
@@ -439,8 +460,8 @@
                             class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-xs font-bold uppercase">
                             <option value="all">Lieu: Tout</option>
                             <option value="superrette">🏬 Superrette</option>
-                            <option value="الخضار">🥦 الخضار</option>
-                            <option value="الجواج">🥩 الجواج</option>
+                            <option value="marche">🥦 Marché</option>
+                            <option value="boucherie">🥩 Boucherie</option>
                             <option value="cosmetique">💄 Cosmétique</option>
                             <option value="autre">✨ Autre</option>
                         </select>
@@ -456,7 +477,7 @@
             <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="toggleMembersModal()"></div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
                 <div
-                    class="glass-card bg-gray-900 w-full max-w-md p-6 border border-white/10 flex flex-col max-h-[80vh]">
+                    class="glass-card bg-gray-900 w-full max-w-md p-6 border border-white/10 flex flex-col modal-container">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold text-rose-400 uppercase tracking-widest">Gérer la Famille</h2>
                         <button onclick="toggleMembersModal()" class="text-gray-400"><i
@@ -497,7 +518,7 @@
         <div id="purchase-modal" class="fixed inset-0 z-50 hidden">
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePurchaseModal()"></div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
-                <div class="glass-card bg-gray-900 w-full max-w-lg p-6 border border-white/10">
+                <div class="glass-card bg-gray-900 w-full max-w-lg p-6 border border-white/10 modal-container">
                     <div class="flex justify-between items-center mb-6">
                         <h2 id="purchase-modal-title" class="text-xl font-bold uppercase tracking-widest text-rose-400">
                             Demander un Achat</h2>
@@ -625,7 +646,7 @@
         <div id="price-modal" class="fixed inset-0 z-50 hidden">
             <div class="absolute inset-0 bg-black/80 backdrop-blur-md"></div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
-                <div class="glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl">
+                <div class="glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl modal-container">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold uppercase tracking-widest text-emerald-400">Paiement</h2>
                         <button onclick="closePriceModal()" class="text-gray-400 hover:text-white transition-colors"><i
@@ -669,7 +690,7 @@
         <div id="budget-modal" class="fixed inset-0 z-50 hidden">
             <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeBudgetModal()"></div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
-                <div class="glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl">
+                <div class="glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl modal-container">
                     <div class="flex flex-col mb-6">
                         <div class="flex justify-between items-center mb-4">
                             <h2 id="budget-modal-title"
@@ -779,7 +800,7 @@
             <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleHistoryModal()"></div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
                 <div
-                    class="glass-card bg-gray-900 w-full max-w-xl h-[80vh] flex flex-col p-6 border border-white/10 shadow-2xl">
+                    class="glass-card bg-gray-900 w-full max-w-xl p-6 border border-white/10 shadow-2xl modal-container">
                     <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
                         <div class="flex gap-6">
                             <button onclick="switchHistoryTab('budget')" id="tab-budget"
@@ -816,7 +837,7 @@
             <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleStatsModal()"></div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
                 <div
-                    class="glass-card bg-gray-900 w-full max-w-lg h-[70vh] flex flex-col p-6 border border-white/10 shadow-2xl">
+                    class="glass-card bg-gray-900 w-full max-w-lg p-6 border border-white/10 shadow-2xl modal-container">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-emerald-400 uppercase tracking-widest">Statistiques</h2>
                         <button onclick="toggleStatsModal()"
@@ -944,7 +965,27 @@
                 }
             });
 
+            let isInitialLoad = true;
             onSnapshot(collection(db, "achats_maison"), (snap) => {
+                if (!isInitialLoad) {
+                    snap.docChanges().forEach(change => {
+                        const data = change.doc.data();
+                        if (change.type === "added") {
+                            if (data.userId !== auth.currentUser?.uid && data.productName) {
+                                showAppNotification("Nouveau produit !", `${data.userName || 'Quelqu\'un'} a ajouté : ${data.productName}`);
+                            }
+                        } else if (change.type === "modified") {
+                            // Detect if status changed to 'received'
+                            const oldItem = window.achats?.find(a => a.id === change.doc.id);
+                            if (oldItem && oldItem.status === 'pending' && data.status === 'received') {
+                                if (data.userId !== auth.currentUser?.uid) {
+                                    showAppNotification("Produit acheté !", `${data.productName} a été payé.`);
+                                }
+                            }
+                        }
+                    });
+                }
+                isInitialLoad = false;
                 window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
                 updateStoreFilters();
                 renderAchats(); renderPurchaseHistory(); updateAchatStats();
@@ -1338,8 +1379,39 @@
                 const drop = document.getElementById('notif-dropdown');
                 drop.classList.toggle('hidden');
                 if (!drop.classList.contains('hidden')) {
-                    // Mark all as read conceptually by clearing badge
                     document.getElementById('notif-badge').classList.add('hidden');
+                    // Show permission box if not granted
+                    if (Notification.permission === 'default') {
+                        document.getElementById('notif-perm-box').classList.remove('hidden');
+                    }
+                }
+            };
+
+            window.requestNotificationPermission = async () => {
+                if (!("Notification" in window)) {
+                    showToast("Navigateur incompatible", true);
+                    return;
+                }
+                const perm = await Notification.requestPermission();
+                if (perm === "granted") {
+                    showToast("Notifications activées !");
+                    document.getElementById('notif-perm-box').classList.add('hidden');
+                    new Notification("Farah Achats", { body: "Prêt à recevoir les alertes !" });
+                } else {
+                    showToast("Accès refusé", true);
+                }
+            };
+
+            window.showAppNotification = (title, message, type = 'info') => {
+                addNotification(title, message, type);
+                if (Notification.permission === "granted") {
+                    try {
+                        new Notification(title, { body: message });
+                    } catch(e) {
+                        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                            navigator.serviceWorker.ready.then(reg => reg.showNotification(title, { body: message }));
+                        }
+                    }
                 }
             };
 
@@ -1706,7 +1778,9 @@
                         dateDemande: new Date(f.get('dateDemande')).toISOString(),
                         status: isDirectPay ? 'received' : 'pending',
                         price: isDirectPay ? directPrice : 0,
-                        dateAchat: isDirectPay ? new Date().toISOString() : null
+                        dateAchat: isDirectPay ? new Date().toISOString() : null,
+                        userId: auth.currentUser.uid,
+                        userName: auth.currentUser.displayName || auth.currentUser.email
                     };
 
                     if (currentEditId) {
@@ -1728,7 +1802,7 @@
                             }
                         }
                         showToast(`${names.length} article(s) ajouté(s)`);
-                        addNotification(isDirectPay ? "Nouvel achat" : "Nouvelle demande", `${names.length} article(s) par la famille.`);
+                        showAppNotification(isDirectPay ? "Nouvel achat" : "Nouvelle demande", `${names.length} article(s) par la famille.`);
                     }
 
                     if (keepOpen) {
@@ -1760,7 +1834,7 @@
                         if (!isFinite(final)) final = 0;
                         await updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() });
                     }
-                    addNotification("Achat confirmé", `${pendingPurchaseIds.length} article(s) payé(s).`);
+                    showAppNotification("Achat confirmé", `${pendingPurchaseIds.length} article(s) payé(s).`);
                     selectedIds.clear(); updateBulk(); closePriceModal(); showToast('Fait !');
                 } catch (err) { console.error(err); showToast('Erreur paiement'); }
             };
@@ -2159,7 +2233,7 @@
             <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleManageModal()"></div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
                 <div
-                    class="glass-card bg-gray-900 w-full max-w-4xl h-[85vh] flex flex-col p-6 border border-white/10 shadow-2xl">
+                    class="glass-card bg-gray-900 w-full max-w-4xl p-6 border border-white/10 shadow-2xl modal-container">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold uppercase tracking-widest text-rose-400">Gestion & Importation</h2>
                         <button onclick="toggleManageModal()"
