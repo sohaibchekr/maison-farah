@@ -2157,12 +2157,18 @@
                                         <span class="text-[9px] text-gray-500 font-bold uppercase"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
                                     </div>
                                 </div>
-                                <div class="text-right shrink-0 flex flex-col items-end gap-1">
+                                <div class="text-right shrink-0 flex flex-col items-end gap-2">
                                     ${a.status === 'received' ? `
                                         <p class="text-lg font-black text-emerald-400">${Math.round(a.price || 0).toLocaleString()} <span class="text-[10px]">DA</span></p>
-                                        <button onclick="event.stopPropagation(); window.cancelPurchase('${a.id}')" class="text-[9px] font-black uppercase text-rose-500/50 hover:text-rose-500 p-1">Annuler</button>
+                                        <div class="flex gap-2">
+                                            <button onclick="event.stopPropagation(); window.cancelPurchase('${a.id}')" class="bg-rose-500/10 hover:bg-rose-500 text-rose-500 text-[9px] font-black uppercase px-2 py-1 rounded-lg transition-all border border-rose-500/20">Annuler</button>
+                                            <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-500 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                                        </div>
                                     ` : `
-                                        <button onclick="event.stopPropagation(); openPriceModal('${a.id}', '')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Acheter</button>
+                                        <div class="flex flex-col items-end gap-2">
+                                            <button onclick="event.stopPropagation(); openPriceModal('${a.id}', '')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Acheter</button>
+                                            <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-500 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                                        </div>
                                     `}
                                 </div>
                         </div>
@@ -2325,9 +2331,14 @@
                 filterStoreSelect.value = currentFilter;
             }
 
-            window.deleteAchat = async (id) => {
-                if (!window.isAdmin) return;
-                if (confirm('Effacer ?')) {
+            window.deleteAchat = async (id, authorId) => {
+                const isAuthor = authorId === auth.currentUser?.uid;
+                if (!window.isAdmin && !isAuthor) {
+                    showToast('Vous ne pouvez supprimer que vos propres demandes', true);
+                    return;
+                }
+                
+                if (confirm('Supprimer définitivement cet article ?')) {
                     try {
                         await deleteDoc(doc(db, "achats_maison", id));
                         showToast('Article supprimé');
