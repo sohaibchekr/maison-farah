@@ -268,12 +268,15 @@
                 width: 2.8rem !important;
                 height: 2.8rem !important;
             }
+
             .stat-value {
                 font-size: 1.1rem !important;
             }
+
             .stat-label {
                 font-size: 8px !important;
             }
+
             .glass-card {
                 padding: 0.75rem !important;
             }
@@ -425,12 +428,15 @@
                                             class="py-10 text-center opacity-30 text-[10px] uppercase font-bold italic">
                                             Aucune notification</div>
                                     </div>
-                                    <div id="sw-status-box" class="p-2 border-t border-white/5 text-center flex flex-col gap-1">
+                                    <div id="sw-status-box"
+                                        class="p-2 border-t border-white/5 text-center flex flex-col gap-1">
                                         <p id="sw-status-text" class="text-[8px] text-gray-600 uppercase font-black">
                                             Recherche du Service Worker...</p>
                                         <p id="fcm-status-text" class="text-[7px] text-gray-500 uppercase font-bold">
                                             FCM Non Initialisé</p>
-                                        <button onclick="testNotification()" class="mt-1 text-[7px] text-rose-400 bg-rose-400/10 px-2 py-1 rounded inline-block">Tester la notification</button>
+                                        <button onclick="testNotification()"
+                                            class="mt-1 text-[7px] text-rose-400 bg-rose-400/10 px-2 py-1 rounded inline-block">Tester
+                                            la notification</button>
                                     </div>
                                 </div>
                             </div>
@@ -512,26 +518,40 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-8">
                     <div onclick="openBudgetModal('solde')"
                         class="glass-card p-3 md:p-6 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-rose-400" id="stat-budget-restant">---</h3>
-                        <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">Solde restant <i class="fas fa-edit ml-1 opacity-30 text-[8px]"></i></p>
+                        <h3 class="stat-value text-xl md:text-3xl font-bold text-rose-400" id="stat-budget-restant">---
+                        </h3>
+                        <p
+                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
+                            Solde restant <i class="fas fa-edit ml-1 opacity-30 text-[8px]"></i></p>
                     </div>
-                    <div class="glass-card p-3 md:p-6 text-center border-b-2 border-emerald-500/30 group relative flex flex-col justify-center min-h-[80px]">
+                    <div
+                        class="glass-card p-3 md:p-6 text-center border-b-2 border-emerald-500/30 group relative flex flex-col justify-center min-h-[80px]">
                         <div onclick="toggleStatsModal()" class="cursor-pointer hover:scale-105 transition-transform">
-                            <h3 class="stat-value text-xl md:text-3xl font-bold text-emerald-400" id="stat-total-depense">---</h3>
-                            <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
+                            <h3 class="stat-value text-xl md:text-3xl font-bold text-emerald-400"
+                                id="stat-total-depense">---</h3>
+                            <p
+                                class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
+                                Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
                         </div>
                         <button onclick="openBudgetModal('expenses')"
                             class="admin-only hidden absolute top-1 right-1 w-5 h-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-[9px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
-                    <div class="glass-card p-3 md:p-6 text-center border-b-2 border-orange-500/30 flex flex-col justify-center min-h-[80px]">
+                    <div
+                        class="glass-card p-3 md:p-6 text-center border-b-2 border-orange-500/30 flex flex-col justify-center min-h-[80px]">
                         <h3 class="stat-value text-xl md:text-3xl font-bold text-orange-400" id="stat-pending">0</h3>
-                        <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">À acheter</p>
+                        <p
+                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
+                            À acheter</p>
                     </div>
-                    <div class="glass-card p-3 md:p-6 text-center border-b-2 border-pink-500/30 flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-pink-400" id="stat-members-count">0</h3>
-                        <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">Famille</p>
+                    <div
+                        class="glass-card p-3 md:p-6 text-center border-b-2 border-pink-500/30 flex flex-col justify-center min-h-[80px]">
+                        <h3 class="stat-value text-xl md:text-3xl font-bold text-pink-400" id="stat-members-count">0
+                        </h3>
+                        <p
+                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
+                            Famille</p>
                     </div>
                 </div>
 
@@ -737,11 +757,13 @@
                             </div>
                         </div>
                         <div class="flex flex-col gap-3">
-                            <div class="flex gap-3">
+                            <div class="flex gap-2">
                                 <button type="button" onclick="closePurchaseModal()"
-                                    class="flex-1 bg-white/5 hover:bg-white/10 rounded-xl py-3 font-bold uppercase text-xs transition-all">Annuler</button>
+                                    class="flex-1 bg-white/5 hover:bg-white/10 rounded-xl py-3 font-bold uppercase text-[10px] transition-all">Annuler</button>
+                                <button type="submit" id="ok-submit-btn"
+                                    class="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl py-3 font-bold uppercase text-[10px] transition-all shadow-lg">OK</button>
                                 <button type="submit" id="main-submit-btn"
-                                    class="flex-[2] btn-premium text-white rounded-xl py-3 font-bold uppercase text-xs">Demander</button>
+                                    class="flex-[1.5] btn-premium text-white rounded-xl py-3 font-bold uppercase text-[10px] shadow-lg">Demander</button>
                             </div>
                             <button type="button" id="continue-submit-btn" onclick="submitPurchase(event, true)"
                                 class="w-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl py-3 font-bold uppercase text-[10px] tracking-widest transition-all">
@@ -773,9 +795,14 @@
                     <form id="price-form" onsubmit="confirmPurchase(event)" class="space-y-6">
                         <div class="relative">
                             <input type="number" step="0.01" name="price" id="priceInput" placeholder="0" autofocus
-                                required
+                                required oninput="window.updatePricePreview()"
                                 class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-5 text-4xl font-black text-center outline-none focus:border-emerald-500">
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-gray-500">DA</span>
+                        </div>
+                        <div id="price-preview-box"
+                            class="text-center py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20 hidden">
+                            <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest"
+                                id="price-preview-text">Prix par article : 0 DA</p>
                         </div>
                         <div class="flex gap-3">
                             <button type="button" onclick="closePriceModal()"
@@ -1655,7 +1682,7 @@
 
             window.showAppNotification = (title, message) => {
                 window.addNotification(title, message);
-                
+
                 // Déclencher une notification système (OS) si autorisé
                 if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
                     navigator.serviceWorker.ready.then(registration => {
@@ -1723,6 +1750,10 @@
                 selectedProducts.clear();
                 renderChips();
                 document.getElementById('purchase-modal-title').textContent = "Demander un Achat";
+                document.getElementById('main-submit-btn').textContent = "Demander";
+                document.getElementById('ok-submit-btn').textContent = "Enregistrer";
+                document.getElementById('ok-submit-btn').classList.remove('hidden');
+                document.getElementById('continue-submit-btn').classList.remove('hidden');
                 document.getElementById('purchase-form').reset();
                 document.getElementById('dateDemandeInput').value = formatDateTime(new Date());
                 document.getElementById('purchase-modal').classList.remove('hidden');
@@ -1787,14 +1818,14 @@
             window.shareListToWhatsApp = () => {
                 const pending = window.achats.filter(a => a.status === 'pending');
                 if (pending.length === 0) { showToast("Rien à acheter pour le moment !"); return; }
-                
+
                 let text = "🛒 *LISTE DES COURSES AUJOURD'HUI* :\n\n";
                 pending.forEach((a, i) => {
                     const urgency = a.urgency === 'high' ? ' 🔥 (URGENT)' : '';
                     text += `${i + 1}. *${a.productName}* - Qté: ${a.quantity || '1'}${urgency}\n`;
                 });
                 text += "\n--- \n_Consulter sur l'app : " + window.location.href + "_";
-                
+
                 // Redirection directe vers votre numéro (0675758220 -> 213675758220)
                 const url = `https://wa.me/213675758220?text=${encodeURIComponent(text)}`;
                 window.open(url, '_blank');
@@ -1826,6 +1857,9 @@
                 if (!a) return;
                 currentEditId = id;
                 document.getElementById('purchase-modal-title').textContent = "Modifier l'Achat";
+                document.getElementById('ok-submit-btn').textContent = "Sauvegarder";
+                document.getElementById('main-submit-btn').textContent = "Mettre à jour";
+                document.getElementById('continue-submit-btn').classList.add('hidden');
                 const f = document.getElementById('purchase-form');
                 f.productName.value = a.productName;
                 f.quantity.value = a.quantity || '';
@@ -1847,9 +1881,37 @@
                 document.getElementById('btn-mode-unit').className = m === 'unit' ? 'flex-1 py-2 text-xs font-bold rounded-lg bg-rose-600 text-white' : 'flex-1 py-2 text-xs font-bold rounded-lg text-gray-500';
             };
 
-            window.openPriceModal = (id, name) => { pendingPurchaseIds = [id]; document.body.classList.add('overflow-hidden'); document.getElementById('price-modal').classList.remove('hidden'); document.getElementById('priceInput').focus(); };
-            window.openBulkPriceModal = () => { pendingPurchaseIds = Array.from(selectedIds); document.getElementById('price-modal').classList.remove('hidden'); document.getElementById('priceInput').focus(); };
+            window.openPriceModal = (id, name) => {
+                pendingPurchaseIds = [id];
+                document.body.classList.add('overflow-hidden');
+                document.getElementById('price-modal').classList.remove('hidden');
+                document.getElementById('price-preview-box').classList.add('hidden');
+                document.getElementById('priceInput').value = "";
+                document.getElementById('priceInput').focus();
+            };
+            window.openBulkPriceModal = () => {
+                pendingPurchaseIds = Array.from(selectedIds);
+                document.getElementById('price-modal').classList.remove('hidden');
+                window.updatePricePreview();
+                document.getElementById('priceInput').value = "";
+                document.getElementById('priceInput').focus();
+            };
             window.closePriceModal = () => { document.getElementById('price-modal').classList.add('hidden'); document.body.classList.remove('overflow-hidden'); pendingPurchaseIds = []; };
+
+            window.updatePricePreview = () => {
+                const p = parseFloat(document.getElementById('priceInput').value) || 0;
+                const div = pendingPurchaseIds.length || 1;
+                const previewText = document.getElementById('price-preview-text');
+                const previewBox = document.getElementById('price-preview-box');
+
+                if (div > 1 && p > 0) {
+                    const final = (priceMode === 'unit') ? 'Calcul par quantité' : Math.round(p / div).toLocaleString() + ' DA / article';
+                    previewText.textContent = `PRIX CALCULÉ : ${final}`;
+                    previewBox.classList.remove('hidden');
+                } else {
+                    previewBox.classList.add('hidden');
+                }
+            };
 
             window.toggleManageModal = () => {
                 const m = document.getElementById('manage-modal');
@@ -2038,7 +2100,10 @@
                 const f = new FormData(form);
                 const inputVal = document.getElementById('productInput').value.trim();
                 let names = Array.from(selectedProducts);
-                if (inputVal) names.push(inputVal);
+                if (inputVal) {
+                    const parts = inputVal.split(/[,،]/).map(s => s.trim()).filter(s => s);
+                    names.push(...parts);
+                }
 
                 if (names.length === 0) { showToast('Ajoutez au moins un produit', true); return; }
 
@@ -2106,12 +2171,16 @@
                 e.preventDefault(); const p = parseFloat(new FormData(e.target).get('price'));
                 if (isNaN(p)) return;
                 try {
+                    const div = pendingPurchaseIds.length || 1;
+                    const pTotal = parseFloat(p) || 0;
+
+                    console.log("Bulk Confirm Calculations:", { total: pTotal, count: div, mode: priceMode });
+
                     for (const id of pendingPurchaseIds) {
                         const item = window.achats.find(a => a.id === id);
                         if (!item) continue;
                         const qty = parseFloat(item.quantity) || 1;
-                        const div = pendingPurchaseIds.length || 1;
-                        let final = (priceMode === 'unit') ? (p * qty) : (p / div);
+                        let final = (priceMode === 'unit') ? (pTotal * qty) : (pTotal / div);
 
                         if (!isFinite(final)) final = 0;
                         await updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() });
@@ -2373,6 +2442,9 @@
                 currentEditId = id;
 
                 document.getElementById('purchase-modal-title').textContent = "Détails de l'article";
+                document.getElementById('ok-submit-btn').textContent = "OK / Fermer";
+                document.getElementById('main-submit-btn').textContent = "Sauvegarder";
+                document.getElementById('continue-submit-btn').classList.add('hidden');
                 const f = document.getElementById('purchase-form');
 
                 selectedProducts.clear();
