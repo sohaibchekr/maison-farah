@@ -10,6 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            width: 100vw;
+        }
+
         :root {
             --bg-app: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
             --bg-body: #0f172a;
@@ -258,8 +265,17 @@
             }
 
             .product-img-size {
-                width: 3rem !important;
-                height: 3rem !important;
+                width: 2.8rem !important;
+                height: 2.8rem !important;
+            }
+            .stat-value {
+                font-size: 1.1rem !important;
+            }
+            .stat-label {
+                font-size: 8px !important;
+            }
+            .glass-card {
+                padding: 0.75rem !important;
             }
         }
 
@@ -490,31 +506,29 @@
 
             <!-- Main Content -->
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-8">
                     <div onclick="openBudgetModal('solde')"
-                        class="glass-card p-4 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform">
-                        <h3 class="text-xl font-bold text-rose-400" id="stat-budget-restant">---</h3>
-                        <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Solde restant <i
-                                class="fas fa-edit ml-1 opacity-30 text-[8px]"></i></p>
+                        class="glass-card p-3 md:p-6 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform flex flex-col justify-center min-h-[80px]">
+                        <h3 class="stat-value text-xl md:text-3xl font-bold text-rose-400" id="stat-budget-restant">---</h3>
+                        <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">Solde restant <i class="fas fa-edit ml-1 opacity-30 text-[8px]"></i></p>
                     </div>
-                    <div class="glass-card p-4 text-center border-b-2 border-emerald-500/30 group relative">
+                    <div class="glass-card p-3 md:p-6 text-center border-b-2 border-emerald-500/30 group relative flex flex-col justify-center min-h-[80px]">
                         <div onclick="toggleStatsModal()" class="cursor-pointer hover:scale-105 transition-transform">
-                            <h3 class="text-xl font-bold text-emerald-400" id="stat-total-depense">---</h3>
-                            <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest text-center">
-                                Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
+                            <h3 class="stat-value text-xl md:text-3xl font-bold text-emerald-400" id="stat-total-depense">---</h3>
+                            <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
                         </div>
                         <button onclick="openBudgetModal('expenses')"
-                            class="admin-only hidden absolute top-2 right-2 w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[10px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
+                            class="admin-only hidden absolute top-1 right-1 w-5 h-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-[9px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
-                    <div class="glass-card p-4 text-center border-b-2 border-orange-500/30">
-                        <h3 class="text-xl font-bold text-orange-400" id="stat-pending">0</h3>
-                        <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">À acheter</p>
+                    <div class="glass-card p-3 md:p-6 text-center border-b-2 border-orange-500/30 flex flex-col justify-center min-h-[80px]">
+                        <h3 class="stat-value text-xl md:text-3xl font-bold text-orange-400" id="stat-pending">0</h3>
+                        <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">À acheter</p>
                     </div>
-                    <div class="glass-card p-4 text-center border-b-2 border-pink-500/30">
-                        <h3 class="text-xl font-bold text-pink-400" id="stat-members-count">0</h3>
-                        <p class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Famille</p>
+                    <div class="glass-card p-3 md:p-6 text-center border-b-2 border-pink-500/30 flex flex-col justify-center min-h-[80px]">
+                        <h3 class="stat-value text-xl md:text-3xl font-bold text-pink-400" id="stat-members-count">0</h3>
+                        <p class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">Famille</p>
                     </div>
                 </div>
 
@@ -2268,8 +2282,8 @@
                         `}
                         <div class="flex-1 flex justify-between items-center">
                                 <div class="space-y-1 w-full overflow-hidden">
-                                    <div class="flex items-center gap-2">
-                                        <h3 class="font-black text-lg uppercase tracking-wider leading-tight line-clamp-2" style="color: var(--text-primary)">${a.productName}</h3>
+                                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                                        <h3 class="font-black text-base uppercase tracking-wider leading-tight break-words" style="color: var(--text-primary)">${a.productName}</h3>
                                         ${a.store ? `<span class="text-[8px] bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded border border-indigo-500/10 uppercase font-black tracking-tighter shrink-0">${getStoreLabel(a.store)}</span>` : ''}
                                     </div>
                                     <div class="flex items-center gap-3">
