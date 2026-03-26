@@ -425,9 +425,12 @@
                                             class="py-10 text-center opacity-30 text-[10px] uppercase font-bold italic">
                                             Aucune notification</div>
                                     </div>
-                                    <div id="sw-status-box" class="p-2 border-t border-white/5 text-center">
+                                    <div id="sw-status-box" class="p-2 border-t border-white/5 text-center flex flex-col gap-1">
                                         <p id="sw-status-text" class="text-[8px] text-gray-600 uppercase font-black">
                                             Recherche du Service Worker...</p>
+                                        <p id="fcm-status-text" class="text-[7px] text-gray-500 uppercase font-bold">
+                                            FCM Non Initialisé</p>
+                                        <button onclick="testNotification()" class="mt-1 text-[7px] text-rose-400 bg-rose-400/10 px-2 py-1 rounded inline-block">Tester la notification</button>
                                     </div>
                                 </div>
                             </div>
@@ -1127,7 +1130,8 @@
                         const data = change.doc.data();
                         if (change.type === "added") {
                             if (data.userId !== auth.currentUser?.uid && data.productName) {
-                                showAppNotification("Nouveau produit !", `${data.userName || 'Quelqu\'un'} a ajouté : ${data.productName}`);
+                                const sender = data.userName || "Un membre";
+                                showAppNotification("Nouveau produit !", `${sender} a ajouté : ${data.productName}`);
                             }
                         } else if (change.type === "modified") {
                             // Detect if status changed to 'received'
@@ -1585,18 +1589,35 @@
 
                     if (currentToken) {
                         console.log("Token FCM récupéré :", currentToken);
+                        const fcmStatus = document.getElementById('fcm-status-text');
+                        if (fcmStatus) {
+                            fcmStatus.textContent = "✓ Token Enregistré (Notifications OK)";
+                            fcmStatus.classList.remove('text-gray-500');
+                            fcmStatus.classList.add('text-emerald-500');
+                        }
+
                         if (auth.currentUser) {
                             await setDoc(doc(db, "famille_tokens", auth.currentUser.uid), {
                                 token: currentToken,
                                 email: auth.currentUser.email,
+                                device: navigator.userAgent,
                                 lastUpdate: new Date().toISOString()
                             });
                         }
+                    } else {
+                        console.warn("Pas de token FCM");
                     }
                 } catch (err) {
                     console.error("Erreur FCM:", err);
+                    const fcmStatus = document.getElementById('fcm-status-text');
+                    if (fcmStatus) fcmStatus.textContent = "✗ Erreur Token: " + (err.message || 'Error');
                 }
             }
+
+            window.testNotification = () => {
+                showAppNotification("TEST 👋", "Si vous voyez ceci, les notifications locales fonctionnent !");
+                showToast("Test envoyé...");
+            };
 
             window.requestNotificationPermission = async () => {
                 if (!('Notification' in window)) {
@@ -1629,9 +1650,21 @@
             });
 
             window.showAppNotification = (title, message) => {
-                addNotification(title, message);
-                // Si l'app est ouverte, on peut notifier via l'UI
-                // Si elle est fermée, c'est le Service Worker qui recevra le signal Cloud Messaging
+                window.addNotification(title, message);
+                
+                // Déclencher une notification système (OS) si autorisé
+                if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification(title, {
+                            body: message,
+                            icon: 'fille.jpg',
+                            badge: 'fille.jpg',
+                            vibrate: [200, 100, 200],
+                            tag: 'achat-notification',
+                            renotify: true
+                        });
+                    }).catch(err => console.error("Erreur Notification SW:", err));
+                }
             };
 
             window.addNotification = (title, message, type = 'info') => {
