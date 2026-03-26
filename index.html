@@ -542,18 +542,22 @@
                             placeholder="Chercher un article..."
                             class="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 focus:border-rose-500 outline-none">
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <button onclick="shareListToWhatsApp()"
+                            class="flex-1 md:flex-none bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 rounded-xl px-4 py-2 text-xs font-bold uppercase text-emerald-500 flex items-center justify-center gap-2 transition-all">
+                            <i class="fab fa-whatsapp text-lg"></i> Transférer
+                        </button>
                         <button onclick="toggleBudgetHistory()"
-                            class="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold uppercase"><i
-                                class="fas fa-history mr-2 text-rose-400"></i>Historique</button>
+                            class="flex-1 md:flex-none bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold uppercase whitespace-nowrap"><i
+                                class="fas fa-history mr-2 text-rose-400"></i>Histoire</button>
                         <select id="filter-status" onchange="renderAchats()"
-                            class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-xs font-bold uppercase">
+                            class="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-bold uppercase">
                             <option value="all">Statut: Tout</option>
                             <option value="pending">🛒 À acheter</option>
                             <option value="received">✅ Terminés</option>
                         </select>
                         <select id="filter-store" onchange="renderAchats()"
-                            class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-xs font-bold uppercase">
+                            class="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-bold uppercase">
                             <option value="all">Lieu: Tout</option>
                             <option value="superrette">🏬 Superrette</option>
                             <option value="marche">🥦 Marché</option>
@@ -1780,6 +1784,22 @@
             `).join('');
             }
 
+            window.shareListToWhatsApp = () => {
+                const pending = window.achats.filter(a => a.status === 'pending');
+                if (pending.length === 0) { showToast("Rien à acheter pour le moment !"); return; }
+                
+                let text = "🛒 *LISTE DES COURSES AUJOURD'HUI* :\n\n";
+                pending.forEach((a, i) => {
+                    const urgency = a.urgency === 'high' ? ' 🔥 (URGENT)' : '';
+                    text += `${i + 1}. *${a.productName}* - Qté: ${a.quantity || '1'}${urgency}\n`;
+                });
+                text += "\n--- \n_Consulter sur l'app : " + window.location.href + "_";
+                
+                // Redirection directe vers votre numéro (0675758220 -> 213675758220)
+                const url = `https://wa.me/213675758220?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+            };
+
             window.inviteShareLink = async () => {
                 const url = window.location.href;
                 const title = "Gestion des courses - Farah Nour";
@@ -2307,7 +2327,10 @@
                 document.getElementById('achats-container').innerHTML = data.map(a => `
                 <div onclick="openDetailsModal('${a.id}')" class="glass-card p-4 md:p-5 border-l-4 ${a.urgency === 'high' ? 'border-rose-500 shadow-lg shadow-rose-500/10' : a.urgency === 'medium' ? 'border-amber-500' : 'border-indigo-500'} ${a.status === 'received' ? 'opacity-60 grayscale-[0.3]' : ''} ${selectedIds.has(a.id) ? 'ring-2 ring-indigo-500' : ''} cursor-pointer hover:bg-white/[0.05] transition-all">
                     <div class="flex items-center gap-3 md:gap-5">
-                        ${a.status === 'pending' ? `<input type="checkbox" onclick="event.stopPropagation(); toggleSelect('${a.id}')" ${selectedIds.has(a.id) ? 'checked' : ''} class="w-5 h-5 accent-indigo-500 cursor-pointer">` : '<div class="w-5 h-5 flex items-center justify-center text-emerald-500"><i class="fas fa-check-circle"></i></div>'}
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" onclick="event.stopPropagation(); toggleSelect('${a.id}')" ${selectedIds.has(a.id) ? 'checked' : ''} class="w-5 h-5 accent-indigo-500 cursor-pointer">
+                            ${a.status === 'received' ? '<div class="text-emerald-500 text-xs"><i class="fas fa-check-circle"></i></div>' : ''}
+                        </div>
                         ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="product-img-size w-14 h-14 rounded-xl md:rounded-2xl object-cover border border-white/10 shrink-0 shadow-xl">` : `
                             <div class="product-img-size w-14 h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg ${a.status === 'received' ? 'bg-gradient-to-br from-emerald-400 to-teal-600 shadow-emerald-500/20' : (a.urgency === 'high' ? 'bg-gradient-to-br from-rose-500 to-pink-700 shadow-rose-500/20' : 'bg-gradient-to-br from-indigo-500 to-violet-700 shadow-indigo-500/20')} transition-all">
                                 <i class="fas ${a.status === 'received' ? 'fa-check' : (a.urgency === 'high' ? 'fa-fire' : 'fa-cart-shopping')} text-lg md:text-xl"></i>
