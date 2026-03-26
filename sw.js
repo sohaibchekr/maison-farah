@@ -29,13 +29,17 @@ messaging.onBackgroundMessage((payload) => {
     return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const CACHE_NAME = 'farah-achats-v2';
+const CACHE_NAME = 'farah-achats-v' + new Date().getTime(); // Versoin unique à chaque installation
 const ASSETS = [
     './',
     './index.html',
-    './fille.jpg'
+    './fille.jpg',
+    'https://cdn.tailwindcss.com',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
 ];
 
+// Installation : Mise en cache initiale
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -43,14 +47,56 @@ self.addEventListener('install', (e) => {
     self.skipWaiting();
 });
 
+// Activation : Nettoyage automatique des anciens caches
 self.addEventListener('activate', (e) => {
-    e.waitUntil(clients.claim());
+    e.waitUntil(
+        Promise.all([
+            caches.keys().then((keys) => {
+                return Promise.all(keys.map((key) => {
+                    if (key !== CACHE_NAME) return caches.delete(key);
+                }));
+            }),
+            self.clients.claim()
+        ])
+    );
 });
 
+// Stratégie : Stale-While-Revalidate pour index.html (chargement instantané + maj en arrière-plan)
+// Cache First pour le reste (images, polices, tailwind)
 self.addEventListener('fetch', (e) => {
-    e.respondWith(
-        caches.match(e.request).then((res) => res || fetch(e.request))
-    );
+    const url = new URL(e.request.url);
+    
+    // Si c'est la page principale, on charge depuis le cache immédiatement
+    // mais on lance une requête réseau pour mettre à jour le cache
+    if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html')) {
+        e.respondWith(
+            caches.match(e.request).then((cachedResponse) => {
+                const fetchPromise = fetch(e.request).then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        const clone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+                    }
+                    return networkResponse;
+                }).catch(() => {}); // Échec silencieux si hors-ligne
+
+                return cachedResponse || fetchPromise;
+            })
+        );
+    } else {
+        e.respondWith(
+            caches.match(e.request).then((res) => {
+                return res || fetch(e.request).then((response) => {
+                    if (response && response.status === 200) {
+                        return caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(e.request, response.clone());
+                            return response;
+                        });
+                    }
+                    return response;
+                });
+            })
+        );
+    }
 });
 
 self.addEventListener('notificationclick', (event) => {
