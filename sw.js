@@ -31,7 +31,7 @@ messaging.onBackgroundMessage((payload) => {
 
 // ✅ VERSION FIXE - Incrémentez ce numéro à chaque modification de index.html
 // Ex: v2 -> v3 -> v4 etc.
-const APP_VERSION = 'v4';
+const APP_VERSION = 'v5';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
@@ -40,16 +40,26 @@ const ASSETS = [
     './fille.jpg',
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
 ];
 
 // Installation : Mise en cache initiale
 self.addEventListener('install', (e) => {
     console.log('[SW] Installation version', APP_VERSION);
     e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+        caches.open(CACHE_NAME).then(async (cache) => {
+            console.log('[SW] Mise en cache des ressources...');
+            for (const res of ASSETS) {
+                try {
+                    await cache.add(res);
+                } catch (err) {
+                    console.error('[SW] Erreur de cache pour:', res, err);
+                }
+            }
+        })
     );
-    // Prendre le contrôle immédiatement (sans attendre la fermeture de l'onglet)
+    // Prendre le contrôle immédiatement
     self.skipWaiting();
 });
 
