@@ -1826,14 +1826,14 @@
                 }
 
                 if (list.length === 0) { showToast("Veuillez sélectionner des produits à envoyer !"); return; }
-                
+
                 let text = selectedIds.size > 0 ? "🛒 *ARTICLES SÉLÉCTIONNÉS* :\n\n" : "🛒 *LISTE DES COURSES AUJOURD'HUI* :\n\n";
                 list.forEach((a, i) => {
                     const urgency = a.urgency === 'high' ? ' 🔥 (URGENT)' : '';
                     text += `${i + 1}. *${a.productName}* - Qté: ${a.quantity || '1'}${urgency}\n`;
                 });
                 text += "\n--- \n_Consulter sur l'app : " + window.location.href + "_";
-                
+
                 // Redirection directe vers votre numéro (0675758220 -> 213675758220)
                 const url = `https://wa.me/213675758220?text=${encodeURIComponent(text)}`;
                 window.open(url, '_blank');
