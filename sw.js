@@ -29,7 +29,11 @@ messaging.onBackgroundMessage((payload) => {
     return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const CACHE_NAME = 'farah-achats-v' + new Date().getTime(); // Versoin unique à chaque installation
+// ✅ VERSION FIXE - Incrémentez ce numéro à chaque modification de index.html
+// Ex: v2 -> v3 -> v4 etc.
+const APP_VERSION = 'v4';
+const CACHE_NAME = 'farah-achats-' + APP_VERSION;
+
 const ASSETS = [
     './',
     './index.html',
@@ -41,48 +45,57 @@ const ASSETS = [
 
 // Installation : Mise en cache initiale
 self.addEventListener('install', (e) => {
+    console.log('[SW] Installation version', APP_VERSION);
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
     );
+    // Prendre le contrôle immédiatement (sans attendre la fermeture de l'onglet)
     self.skipWaiting();
 });
 
 // Activation : Nettoyage automatique des anciens caches
 self.addEventListener('activate', (e) => {
+    console.log('[SW] Activation version', APP_VERSION);
     e.waitUntil(
         Promise.all([
             caches.keys().then((keys) => {
                 return Promise.all(keys.map((key) => {
-                    if (key !== CACHE_NAME) return caches.delete(key);
+                    if (key !== CACHE_NAME) {
+                        console.log('[SW] Suppression ancien cache:', key);
+                        return caches.delete(key);
+                    }
                 }));
             }),
-            self.clients.claim()
+            self.clients.claim() // Prendre le contrôle de tous les onglets ouverts
         ])
     );
 });
 
-// Stratégie : Stale-While-Revalidate pour index.html (chargement instantané + maj en arrière-plan)
+// Stratégie : Network First pour index.html (toujours la version la plus récente)
 // Cache First pour le reste (images, polices, tailwind)
 self.addEventListener('fetch', (e) => {
     const url = new URL(e.request.url);
-    
-    // Si c'est la page principale, on charge depuis le cache immédiatement
-    // mais on lance une requête réseau pour mettre à jour le cache
+
+    // Pour la page principale : Network First (réseau en priorité, cache si hors-ligne)
     if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html')) {
         e.respondWith(
-            caches.match(e.request).then((cachedResponse) => {
-                const fetchPromise = fetch(e.request).then((networkResponse) => {
+            fetch(e.request)
+                .then((networkResponse) => {
+                    // ✅ On reçoit une réponse réseau : on met à jour le cache et on retourne
                     if (networkResponse && networkResponse.status === 200) {
                         const clone = networkResponse.clone();
                         caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
                     }
                     return networkResponse;
-                }).catch(() => {}); // Échec silencieux si hors-ligne
-
-                return cachedResponse || fetchPromise;
-            })
+                })
+                .catch(() => {
+                    // Hors-ligne : on retourne le cache
+                    console.log('[SW] Hors-ligne, retour cache pour index.html');
+                    return caches.match(e.request);
+                })
         );
     } else {
+        // Pour les autres ressources : Cache First
         e.respondWith(
             caches.match(e.request).then((res) => {
                 return res || fetch(e.request).then((response) => {
