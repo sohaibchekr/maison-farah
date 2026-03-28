@@ -294,6 +294,41 @@
             align-items: center;
             gap: 0.5rem;
         }
+
+        /* Calculator Styles */
+        .calc-container {
+            transition: transform 0.2s ease;
+            transform-origin: top center;
+        }
+
+        .calc-btn {
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 1rem;
+            transition: all 0.1s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .calc-btn:active {
+            transform: scale(0.9);
+        }
+
+        .calc-btn-ops {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border: 1px solid rgba(244, 63, 94, 0.25);
+        }
+
+        .calc-btn-num {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
@@ -436,7 +471,8 @@
                                             FCM Non Initialisé</p>
                                         <div class="flex gap-1 justify-center mt-1">
                                             <button onclick="checkForUpdates()"
-                                                class="text-[7px] text-indigo-400 bg-indigo-400/10 px-2 py-1 rounded inline-block">Mettre à jour</button>
+                                                class="text-[7px] text-indigo-400 bg-indigo-400/10 px-2 py-1 rounded inline-block">Mettre
+                                                à jour</button>
                                             <button onclick="testNotification()"
                                                 class="text-[7px] text-rose-400 bg-rose-400/10 px-2 py-1 rounded inline-block">Tester</button>
                                         </div>
@@ -479,6 +515,13 @@
                 <button onclick="toggleHistoryModal()" class="flex flex-col items-center gap-1 text-gray-500">
                     <i class="fas fa-history text-xl"></i>
                     <span class="text-[8px] font-black uppercase">Histoire</span>
+                </button>
+                <button onclick="toggleCalculator()" class="flex flex-col items-center gap-1 text-emerald-500 group">
+                    <div
+                        class="relative w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30 group-active:scale-90 transition-transform">
+                        <i class="fas fa-calculator text-lg"></i>
+                    </div>
+                    <span class="text-[8px] font-black uppercase">Calcul</span>
                 </button>
                 <button onclick="toggleMembersModal()"
                     class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
@@ -634,8 +677,11 @@
                     </div>
                     <div id="members-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
                     <div class="mt-4 pt-4 border-t border-white/5 text-center flex flex-col items-center gap-1">
-                        <p class="text-[9px] text-gray-700 font-black uppercase tracking-widest opacity-40">Achats Famille - v5</p>
-                        <button onclick="checkForUpdates()" class="text-[7px] text-indigo-500 hover:text-indigo-400 font-bold uppercase underline">Vérifier les mises à jour</button>
+                        <p class="text-[9px] text-gray-700 font-black uppercase tracking-widest opacity-40">Achats
+                            Famille - v5</p>
+                        <button onclick="checkForUpdates()"
+                            class="text-[7px] text-indigo-500 hover:text-indigo-400 font-bold uppercase underline">Vérifier
+                            les mises à jour</button>
                     </div>
                 </div>
             </div>
@@ -710,9 +756,10 @@
                                 <div class="relative">
                                     <input type="text" id="direct-price" name="price" inputmode="decimal"
                                         placeholder="Prix payé..."
-                                        class="w-full input-premium px-4 py-3 pl-10 text-emerald-400 font-bold">
-                                    <i
-                                        class="fas fa-tag absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500/50 pointer-events-none"></i>
+                                        class="w-full input-premium py-3 pr-10 pl-12 text-emerald-400 font-bold">
+                                    <button type="button" onclick="openCalcForInput('direct-price')"
+                                        class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-emerald-500 hover:text-white hover:bg-emerald-500/20 bg-emerald-500/10 rounded-lg transition-all z-10"><i
+                                            class="fas fa-calculator"></i></button>
                                     <span
                                         class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 font-bold pointer-events-none">DA</span>
                                 </div>
@@ -801,9 +848,12 @@
                     </div>
                     <form id="price-form" onsubmit="confirmPurchase(event)" class="space-y-6">
                         <div class="relative">
+                            <button type="button" onclick="openCalcForInput('priceInput')"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-emerald-500 hover:text-white hover:bg-emerald-500/20 bg-emerald-500/10 rounded-xl transition-all z-10"><i
+                                    class="fas fa-calculator text-lg"></i></button>
                             <input type="number" step="0.01" name="price" id="priceInput" placeholder="0" autofocus
                                 required oninput="window.updatePricePreview()"
-                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-5 text-4xl font-black text-center outline-none focus:border-emerald-500">
+                                class="w-full bg-white/5 border border-white/10 rounded-xl pr-4 pl-16 py-5 text-4xl font-black text-center outline-none focus:border-emerald-500">
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-gray-500">DA</span>
                         </div>
                         <div id="price-preview-box"
@@ -1017,6 +1067,98 @@
                     </div>
                     <div id="monthly-stats-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
                     <div id="product-stats-list" class="hidden flex-1 overflow-y-auto custom-scrollbar space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculator Modal -->
+        <div id="calc-modal" class="fixed inset-0 z-[60] hidden">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="toggleCalculator()"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div
+                    class="glass-card bg-gray-900 w-full max-w-sm border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <!-- Header -->
+                    <div
+                        class="p-4 border-b border-white/10 flex justify-between items-center bg-gray-900/90 z-10 sticky top-0">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-sm font-black uppercase tracking-widest text-emerald-400"><i
+                                    class="fas fa-calculator mr-2"></i>Calculatrice</h2>
+                            <!-- Zoom controls -->
+                            <div class="flex bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+                                <button type="button" onclick="zoomCalc(-0.1)"
+                                    class="w-8 h-8 flex items-center justify-center text-gray-400 hover:bg-white/10 transition-colors"><i
+                                        class="fas fa-search-minus"></i></button>
+                                <div class="w-px bg-white/10"></div>
+                                <button type="button" onclick="zoomCalc(0.1)"
+                                    class="w-8 h-8 flex items-center justify-center text-gray-400 hover:bg-white/10 transition-colors"><i
+                                        class="fas fa-search-plus"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="toggleCalculator()"
+                            class="text-gray-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 bg-white/5"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+
+                    <!-- Calculator Body -->
+                    <div class="p-4 flex-1 overflow-x-hidden overflow-y-auto custom-scrollbar">
+                        <div id="calc-wrapper" class="calc-container w-full" style="transform: scale(1);">
+                            <!-- Display -->
+                            <div
+                                class="bg-black/40 rounded-xl p-4 mb-4 border border-white/5 text-right font-mono flex flex-col justify-end min-h-[100px] break-all">
+                                <div id="calc-history" class="text-sm text-gray-400 min-h-[1.25rem] tracking-wider">
+                                </div>
+                                <div id="calc-display" class="text-4xl text-white font-black mt-2 tracking-tighter">0
+                                </div>
+                            </div>
+
+                            <!-- Keypad -->
+                            <div class="grid grid-cols-4 gap-2 sm:gap-3">
+                                <button type="button" onclick="calcInput('C')"
+                                    class="calc-btn calc-btn-ops col-span-2 text-rose-400 !bg-rose-500/20">C</button>
+                                <button type="button" onclick="calcInput('DEL')"
+                                    class="calc-btn calc-btn-ops text-orange-400 !bg-orange-500/20"><i
+                                        class="fas fa-backspace"></i></button>
+                                <button type="button" onclick="calcInput('/')" class="calc-btn calc-btn-ops">÷</button>
+
+                                <button type="button" onclick="calcInput('7')" class="calc-btn calc-btn-num">7</button>
+                                <button type="button" onclick="calcInput('8')" class="calc-btn calc-btn-num">8</button>
+                                <button type="button" onclick="calcInput('9')" class="calc-btn calc-btn-num">9</button>
+                                <button type="button" onclick="calcInput('*')" class="calc-btn calc-btn-ops">×</button>
+
+                                <button type="button" onclick="calcInput('4')" class="calc-btn calc-btn-num">4</button>
+                                <button type="button" onclick="calcInput('5')" class="calc-btn calc-btn-num">5</button>
+                                <button type="button" onclick="calcInput('6')" class="calc-btn calc-btn-num">6</button>
+                                <button type="button" onclick="calcInput('-')" class="calc-btn calc-btn-ops">-</button>
+
+                                <button type="button" onclick="calcInput('1')" class="calc-btn calc-btn-num">1</button>
+                                <button type="button" onclick="calcInput('2')" class="calc-btn calc-btn-num">2</button>
+                                <button type="button" onclick="calcInput('3')" class="calc-btn calc-btn-num">3</button>
+                                <button type="button" onclick="calcInput('+')" class="calc-btn calc-btn-ops">+</button>
+
+                                <button type="button" onclick="calcInput('0')"
+                                    class="calc-btn calc-btn-num col-span-2">0</button>
+                                <button type="button" onclick="calcInput('.')" class="calc-btn calc-btn-num">.</button>
+                                <button type="button" onclick="calcInput('=')"
+                                    class="calc-btn bg-emerald-600 text-white shadow-lg shadow-emerald-900/50 hover:bg-emerald-500">=</button>
+                            </div>
+
+                            <!-- Action spéciale pour intégration -->
+                            <div id="calc-use-container" class="hidden mt-4">
+                                <button type="button" onclick="useCalcResult()"
+                                    class="w-full bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600 hover:text-white rounded-xl py-3 text-xs font-black uppercase tracking-widest transition-all shadow-lg text-center">
+                                    <i class="fas fa-check-double mr-2"></i> Ajouter ce résultat
+                                </button>
+                            </div>
+
+                            <!-- Historique / Sommes rapides -->
+                            <div class="mt-4 pt-4 border-t border-white/10">
+                                <p class="text-[10px] uppercase font-black tracking-widest text-emerald-500 mb-2">
+                                    Historique des sommes (+)</p>
+                                <div id="calc-saves" class="flex flex-col gap-2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2589,23 +2731,45 @@
                 });
 
                 const filterStoreSelect = document.getElementById('filter-store');
-                if (!filterStoreSelect) return;
-                const currentFilter = filterStoreSelect.value;
+                if (filterStoreSelect) {
+                    const currentFilter = filterStoreSelect.value;
+                    let html = '<option value="all">Lieu: Tout</option>';
+                    html += '<option value="superrette">🏬 Superrette</option>';
+                    html += '<option value="marche">🥦 Marché</option>';
+                    html += '<option value="boucherie">🥩 Boucherie</option>';
+                    html += '<option value="cosmetique">💄 Cosmétique</option>';
 
-                let html = '<option value="all">Lieu: Tout</option>';
-                html += '<option value="superrette">🏬 Superrette</option>';
-                html += '<option value="marche">🥦 Marché</option>';
-                html += '<option value="boucherie">🥩 Boucherie</option>';
-                html += '<option value="cosmetique">💄 Cosmétique</option>';
+                    Array.from(stores).forEach(s => {
+                        if (!['superrette', 'marche', 'boucherie', 'cosmetique'].includes(s)) {
+                            html += `<option value="${s}">✨ ${s.toUpperCase()}</option>`;
+                        }
+                    });
 
-                Array.from(stores).forEach(s => {
-                    if (!['superrette', 'marche', 'boucherie', 'cosmetique'].includes(s)) {
-                        html += `<option value="${s}">✨ ${s.toUpperCase()}</option>`;
+                    filterStoreSelect.innerHTML = html;
+                    filterStoreSelect.value = currentFilter;
+                }
+
+                const formStoreSelect = document.getElementById('store-select');
+                if (formStoreSelect) {
+                    const currentFormVal = formStoreSelect.value;
+                    let htmlForm = '<option value="">🛒 Choisir un magasin...</option>';
+                    htmlForm += '<option value="superrette">🏬 Superrette</option>';
+                    htmlForm += '<option value="marche">🥦 Marché</option>';
+                    htmlForm += '<option value="boucherie">🥩 Boucherie</option>';
+                    htmlForm += '<option value="cosmetique">💄 Cosmétique</option>';
+
+                    Array.from(stores).forEach(s => {
+                        if (!['superrette', 'marche', 'boucherie', 'cosmetique'].includes(s)) {
+                            htmlForm += `<option value="${s}">✨ ${s.toUpperCase()}</option>`;
+                        }
+                    });
+                    htmlForm += '<option value="autre">✨ Nouveau lieu / Classe...</option>';
+
+                    formStoreSelect.innerHTML = htmlForm;
+                    if (Array.from(formStoreSelect.options).some(opt => opt.value === currentFormVal)) {
+                        formStoreSelect.value = currentFormVal;
                     }
-                });
-
-                filterStoreSelect.innerHTML = html;
-                filterStoreSelect.value = currentFilter;
+                }
             }
 
             window.deleteAchat = async (id, authorId) => {
@@ -2739,6 +2903,129 @@
                     }
                 }
             });
+
+            // --- Calculatrice ---
+            let calcScale = 1;
+            window.calcTarget = null;
+
+            window.toggleCalculator = () => {
+                const modal = document.getElementById('calc-modal');
+                modal.classList.toggle('hidden');
+                if (modal.classList.contains('hidden')) {
+                    window.calcTarget = null;
+                    document.getElementById('calc-use-container').classList.add('hidden');
+                }
+            };
+
+            window.openCalcForInput = (inputId) => {
+                window.calcTarget = inputId;
+                document.getElementById('calc-use-container').classList.remove('hidden');
+                document.getElementById('calc-modal').classList.remove('hidden');
+
+                // Si l'input a déjà une valeur, préparer la calculatrice avec !
+                const val = document.getElementById(inputId).value;
+                if (val && !isNaN(val)) {
+                    calcCurrent = parseFloat(val).toString();
+                    document.getElementById('calc-display').textContent = calcCurrent;
+                }
+            };
+
+            window.useCalcResult = () => {
+                if (calcCurrent && calcCurrent !== 'Erreur') {
+                    const targetEl = document.getElementById(window.calcTarget);
+                    if (targetEl) {
+                        targetEl.value = calcCurrent;
+                        targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }
+                toggleCalculator(); // Close
+            };
+
+            window.zoomCalc = (delta) => {
+                calcScale += delta;
+                if (calcScale < 0.6) calcScale = 0.6;
+                // Ajustement max zoom selon besoin
+                if (calcScale > 1.8) calcScale = 1.8;
+                document.getElementById('calc-wrapper').style.transform = `scale(${calcScale})`;
+            };
+
+            let calcCurrent = '0';
+            let calcHistoryContent = '';
+            let calcHistoryArr = [];
+
+            window.calcInput = (val) => {
+                const display = document.getElementById('calc-display');
+                const historyEl = document.getElementById('calc-history');
+
+                if (val === 'C') {
+                    calcCurrent = '0';
+                    calcHistoryContent = '';
+                } else if (val === 'DEL') {
+                    if (calcCurrent.length > 1) {
+                        calcCurrent = calcCurrent.slice(0, -1);
+                    } else {
+                        calcCurrent = '0';
+                    }
+                } else if (val === '=') {
+                    if (!calcCurrent || calcCurrent === 'Erreur') return;
+                    try {
+                        let expr = calcCurrent.replace(/×/g, '*').replace(/÷/g, '/');
+                        // Ajoute une tolérance pour éviter que eval crash sur rien
+                        if (/^[0-9+\-*/.\s()]+$/.test(expr)) {
+                            let res = eval(expr);
+
+                            // On vérifie s'il y a un composant décimal énorme cause JS
+                            res = Math.round((res + Number.EPSILON) * 100) / 100;
+
+                            // Si l'opération avait une addition ou une soustraction (les sommes demandées)
+                            if (calcCurrent !== res.toString() && /[+\-*/]/.test(calcCurrent)) {
+                                window.saveCalcHistory(calcCurrent + ' = ' + res);
+                            }
+
+                            calcHistoryContent = calcCurrent + ' =';
+                            calcCurrent = res.toString();
+                        }
+                    } catch (e) {
+                        calcCurrent = 'Erreur';
+                    }
+                } else if (['+', '-', '*', '/', '×', '÷'].includes(val)) {
+                    if (calcCurrent === 'Erreur') calcCurrent = '0';
+                    let op = val;
+                    if (op === '*') op = '×';
+                    if (op === '/') op = '÷';
+
+                    if (/[+\-×÷.]$/.test(calcCurrent)) {
+                        calcCurrent = calcCurrent.slice(0, -1) + op;
+                    } else {
+                        calcCurrent += op;
+                    }
+                } else {
+                    if (calcCurrent === '0' && val !== '.') {
+                        calcCurrent = val;
+                    } else if (calcCurrent === 'Erreur') {
+                        calcCurrent = val;
+                        calcHistoryContent = '';
+                    } else {
+                        calcCurrent += val;
+                    }
+                }
+
+                display.textContent = calcCurrent;
+                historyEl.textContent = calcHistoryContent;
+            };
+
+            window.saveCalcHistory = (text) => {
+                calcHistoryArr.unshift(text);
+                if (calcHistoryArr.length > 10) calcHistoryArr.pop(); // keep last 10
+
+                const container = document.getElementById('calc-saves');
+                container.innerHTML = calcHistoryArr.map(item => `
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-2.5 rounded-xl font-mono flex justify-between items-center text-sm shadow-inner group transition-all">
+                        <span>${item}</span>
+                        <button onclick="navigator.clipboard.writeText('${item.split(' = ')[1]}'); showToast('Somme copiée !')" class="text-white/30 hover:text-white p-1" title="Copier le résultat"><i class="fas fa-copy"></i></button>
+                    </div>
+                `).join('');
+            };
         </script>
         <!-- Manage / Import Modal -->
         <div id="manage-modal" class="fixed inset-0 z-100 hidden">
