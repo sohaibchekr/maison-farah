@@ -3,14 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>فرح نور - Achats Famille</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             overflow-x: hidden;
@@ -978,6 +980,10 @@
                         </div>
 
                         <div class="border-t border-white/5 pt-4 mt-4 space-y-2">
+                            <button type="button" onclick="forceBudget37k()"
+                                class="w-full bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-blue-500/20 transition-all mb-2">
+                                <i class="fas fa-magic mr-2"></i> Forcer 44k Budget / 37k Solde
+                            </button>
                             <button type="button" id="btn-reset-budget" onclick="resetBudgetToZero()"
                                 class="admin-only hidden w-full bg-rose-600/10 hover:bg-rose-600/20 text-rose-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-rose-500/20 transition-all">
                                 <i class="fas fa-wallet mr-2"></i> Reset Budget (0 DA)
@@ -1431,7 +1437,8 @@
                         const d = new Date(a.dateAchat);
                         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                         if (!groups[key]) groups[key] = { total: 0, count: 0, label: d.toLocaleString('fr-FR', { month: 'long', year: 'numeric' }) };
-                        groups[key].total += (parseFloat(a.price) || 0);
+                        const val = parseFloat(a.price);
+                        groups[key].total += isFinite(val) ? val : 0;
                         groups[key].count++;
                     });
                     const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
@@ -1459,7 +1466,8 @@
                     filteredPurchases.forEach(a => {
                         const name = a.productName.trim().toUpperCase();
                         if (!productGroups[name]) productGroups[name] = { total: 0, qty: 0, count: 0, name: a.productName };
-                        productGroups[name].total += (parseFloat(a.price) || 0);
+                        const val = parseFloat(a.price);
+                        productGroups[name].total += isFinite(val) ? val : 0;
                         productGroups[name].qty += (parseInt(a.quantity) || 1);
                         productGroups[name].count++; // Number of times requested/purchased
                     });
@@ -1530,7 +1538,8 @@
                     const d = new Date(a.dateAchat);
                     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                     if (!groups[key]) groups[key] = { total: 0, count: 0, label: d.toLocaleString('fr-FR', { month: 'long', year: 'numeric' }) };
-                    groups[key].total += (a.price || 0);
+                    const val = parseFloat(a.price);
+                    groups[key].total += isFinite(val) ? val : 0;
                     groups[key].count++;
                 });
 
@@ -1616,11 +1625,21 @@
                 [stdActions, soldeActions, expActions, resetBudget, resetSolde, resetExp].forEach(el => el.classList.add('hidden'));
 
                 const allReceived = (window.achats || []).filter(a => a.status === 'received');
-                const totalSpent = allReceived.reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
                 const now = new Date();
+                
+                const monthlySum = activeReceived.filter(a => {
+                    if (!a.dateAchat) return false;
+                    const d = new Date(a.dateAchat);
+                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                }).reduce((s, a) => {
+                    const v = parseFloat(a.price);
+                    return s + (isFinite(v) ? v : 0);
+                }, 0);
+                
                 const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                 const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                const currentBalance = (window.currentBudget || 0) - (totalSpent + offset);
+                const currentBalance = (window.currentBudget || 0) - (monthlySum + offset);
 
                 if (mode === 'solde') {
                     actionInput.value = 'set_solde';
@@ -1642,10 +1661,13 @@
                     tabAdd.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-300 pb-1";
                     tabSolde.className = "text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-rose-300 pb-1";
 
-                    const monthlySum = allReceived.filter(a => {
+                    const monthlySum = activeReceived.filter(a => {
                         const d = new Date(a.dateAchat);
                         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                    }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                    }).reduce((s, a) => {
+                        const v = parseFloat(a.price);
+                        return s + (isFinite(v) ? v : 0);
+                    }, 0);
                     input.value = Math.round(monthlySum + offset);
                 } else {
                     actionInput.value = 'add';
@@ -2389,22 +2411,38 @@
 
                     // Stats references for calculations
                     const allReceived = (window.achats || []).filter(a => a.status === 'received');
-                    const totalSpent = allReceived.reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                    const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
+                    
+                    const monthlySum = activeReceived.filter(a => {
+                        if (!a.dateAchat) return false;
+                        const d = new Date(a.dateAchat);
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    }).reduce((s, a) => {
+                        const v = parseFloat(a.price);
+                        return s + (isFinite(v) ? v : 0);
+                    }, 0);
+                    
                     const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                    const currentBalance = (window.currentBudget || 0) - (totalSpent + offset);
+                    const currentBalance = (window.currentBudget || 0) - (monthlySum + offset);
 
                     if (action === 'set_solde') {
-                        // Setting REMAINING balance to val -> New total budget = val + total spent + current offset
-                        const newTotalBudget = val + totalSpent + offset;
-                        if (isNaN(newTotalBudget)) throw new Error("Calcul invalide (NaN)");
-                        updateData = { amount: newTotalBudget };
+                        // Adjust 'offset' to keep Total Budget frozen when Solde changes
+                        // Target Solde = val. Known: Solde = currentBudget - (monthlySum + offset)
+                        // => newOffset = currentBudget - val - monthlySum
+                        const currentBudget = window.currentBudget || 0;
+                        const newOffset = currentBudget - val - monthlySum;
+                        if (isNaN(newOffset)) throw new Error("Calcul invalide (NaN)");
+                        updateData = { [`monthlyOffsets.${key}`]: newOffset };
                         historyAmount = val - currentBalance;
                         historyType = 'balance_adj';
                     } else if (action === 'set_expenses') {
-                        const monthlySum = allReceived.filter(a => {
+                        const monthlySum = activeReceived.filter(a => {
                             const d = new Date(a.dateAchat);
                             return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                        }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                        }).reduce((s, a) => {
+                            const v = parseFloat(a.price);
+                            return s + (isFinite(v) ? v : 0);
+                        }, 0);
                         const newOffset = val - monthlySum;
                         if (isNaN(newOffset)) throw new Error("Calcul invalide (NaN)");
                         // Fix nested update for Firestore
@@ -2445,6 +2483,37 @@
                 }
             };
 
+            window.forceBudget37k = async () => {
+                try {
+                    const now = new Date();
+                    const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                    const targetBudget = 44000;
+                    const targetSolde = 37000;
+                    
+                    const allReceived = (window.achats || []).filter(a => a.status === 'received');
+                    const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
+                    
+                    const monthlySum = activeReceived.filter(a => {
+                        if (!a.dateAchat) return false;
+                        const d = new Date(a.dateAchat);
+                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                    }).reduce((s, a) => {
+                        const val = parseFloat(a.price);
+                        return s + (isFinite(val) ? val : 0);
+                    }, 0);
+                    
+                    const newOffset = targetBudget - targetSolde - monthlySum;
+
+                    await setDoc(doc(db, "achats_maison", "config_budget"), {
+                        amount: targetBudget,
+                        [`monthlyOffsets.${key}`]: newOffset
+                    }, { merge: true });
+                    
+                    closeBudgetModal(); 
+                    showToast('Automatisé: Budget 44000 et Solde 37000 appliqués !');
+                } catch (err) { console.error(err); showToast('Erreur: ' + err.message); }
+            };
+
             window.resetBudgetToZero = async () => {
                 if (!window.isAdmin) return;
                 if (confirm('Voulez-vous vraiment remettre le budget à zéro ?')) {
@@ -2467,11 +2536,19 @@
                 if (confirm('Voulez-vous vraiment remettre le solde à zéro ? (Sera compensé par le budget)')) {
                     try {
                         const allReceived = (window.achats || []).filter(a => a.status === 'received');
-                        const totalSpent = allReceived.reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
+                        const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
                         const now = new Date();
+                        const monthlySum = activeReceived.filter(a => {
+                            if (!a.dateAchat) return false;
+                            const d = new Date(a.dateAchat);
+                            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                        }).reduce((s, a) => {
+                            const v = parseFloat(a.price);
+                            return s + (isFinite(v) ? v : 0);
+                        }, 0);
                         const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                         const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                        const newBudget = totalSpent + offset;
+                        const newBudget = monthlySum + offset;
                         if (isNaN(newBudget)) throw new Error("Calcul invalide");
                         await setDoc(doc(db, "achats_maison", "config_budget"), { amount: newBudget }, { merge: true });
                         await addDoc(collection(db, "budget_history"), {
@@ -2680,7 +2757,7 @@
 
                     const monthlySpent = monthlySum + offset;
                     const budgetVal = isFinite(parseFloat(window.currentBudget)) ? parseFloat(window.currentBudget) : 0;
-                    const rem = budgetVal - (totalSpent + offset);
+                    const rem = budgetVal - monthlySpent;
 
                     const statBalance = document.getElementById('stat-budget-restant');
                     const statExpense = document.getElementById('stat-total-depense');
@@ -2703,7 +2780,7 @@
                     const bTotal = document.getElementById('breakdown-total-budget');
                     if (bTotal) {
                         bTotal.textContent = Math.round(budgetVal).toLocaleString() + ' DA';
-                        document.getElementById('breakdown-total-spent').textContent = Math.round(totalSpent).toLocaleString() + ' DA';
+                        document.getElementById('breakdown-total-spent').textContent = Math.round(monthlySum).toLocaleString() + ' DA';
                         document.getElementById('breakdown-offset').textContent = Math.round(offset).toLocaleString() + ' DA';
                         const bFinal = document.getElementById('breakdown-final');
                         bFinal.textContent = Math.round(rem).toLocaleString() + ' DA';
