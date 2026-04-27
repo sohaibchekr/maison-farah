@@ -1344,9 +1344,10 @@
             window.monthlyOffsets = {};
 
             onSnapshot(doc(db, "achats_maison", "config_budget"), (snap) => {
-                const data = snap.exists() ? snap.data() : { amount: 0, monthlyOffsets: {} };
+                const data = snap.exists() ? snap.data() : { amount: 0, monthlyOffsets: {}, soldeOffsets: {} };
                 window.currentBudget = data.amount || 0;
                 window.monthlyOffsets = data.monthlyOffsets || {};
+                window.soldeOffsets = data.soldeOffsets || {};
                 document.getElementById('nav-budget').textContent = Math.round(window.currentBudget).toLocaleString() + ' DA';
                 updateAchatStats();
             });
@@ -1639,7 +1640,9 @@
                 
                 const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                 const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                const currentBalance = (window.currentBudget || 0) - (monthlySum + offset);
+                const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+                const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
 
                 if (mode === 'solde') {
                     actionInput.value = 'set_solde';
@@ -2423,16 +2426,17 @@
                     }, 0);
                     
                     const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                    const currentBalance = (window.currentBudget || 0) - (monthlySum + offset);
+                    const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                    const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+                    
+                    const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
 
                     if (action === 'set_solde') {
-                        // Adjust 'offset' to keep Total Budget frozen when Solde changes
-                        // Target Solde = val. Known: Solde = currentBudget - (monthlySum + offset)
-                        // => newOffset = currentBudget - val - monthlySum
+                        // Modifie uniquement le Solde, sans affecter les dépenses (monthlyOffsets)
                         const currentBudget = window.currentBudget || 0;
-                        const newOffset = currentBudget - val - monthlySum;
-                        if (isNaN(newOffset)) throw new Error("Calcul invalide (NaN)");
-                        updateData = { [`monthlyOffsets.${key}`]: newOffset };
+                        const newSoldeOffset = val - currentBudget + monthlySum;
+                        if (isNaN(newSoldeOffset)) throw new Error("Calcul invalide (NaN)");
+                        updateData = { soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset } };
                         historyAmount = val - currentBalance;
                         historyType = 'balance_adj';
                     } else if (action === 'set_expenses') {
@@ -2446,7 +2450,7 @@
                         const newOffset = val - monthlySum;
                         if (isNaN(newOffset)) throw new Error("Calcul invalide (NaN)");
                         // Fix nested update for Firestore
-                        updateData = { [`monthlyOffsets.${key}`]: newOffset };
+                        updateData = { monthlyOffsets: { ...window.monthlyOffsets, [key]: newOffset } };
                         historyAmount = val;
                         historyType = 'expense_adj';
                     } else if (action === 'set') {
@@ -2502,11 +2506,11 @@
                         return s + (isFinite(val) ? val : 0);
                     }, 0);
                     
-                    const newOffset = targetBudget - targetSolde - monthlySum;
+                    const newSoldeOffset = targetSolde - targetBudget + monthlySum;
 
                     await setDoc(doc(db, "achats_maison", "config_budget"), {
                         amount: targetBudget,
-                        [`monthlyOffsets.${key}`]: newOffset
+                        soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset }
                     }, { merge: true });
                     
                     closeBudgetModal(); 
@@ -2547,12 +2551,17 @@
                             return s + (isFinite(v) ? v : 0);
                         }, 0);
                         const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                        const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                        const newBudget = monthlySum + offset;
-                        if (isNaN(newBudget)) throw new Error("Calcul invalide");
-                        await setDoc(doc(db, "achats_maison", "config_budget"), { amount: newBudget }, { merge: true });
+                        
+                        const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                        const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+                        const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
+                        
+                        const newSoldeOffset = -(window.currentBudget || 0) + monthlySum;
+                        
+                        if (isNaN(newSoldeOffset)) throw new Error("Calcul invalide");
+                        await setDoc(doc(db, "achats_maison", "config_budget"), { soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset } }, { merge: true });
                         await addDoc(collection(db, "budget_history"), {
-                            amount: newBudget - (window.currentBudget || 0),
+                            amount: -currentBalance,
                             date: now.toISOString(),
                             displayDate: now.toLocaleString('fr-FR'),
                             type: 'balance_reset'
@@ -2575,7 +2584,7 @@
                             return a.status === 'received' && d.getMonth() === curMonth && d.getFullYear() === curYear;
                         }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
 
-                        await setDoc(doc(db, "achats_maison", "config_budget"), { [`monthlyOffsets.${key}`]: -monthlySum }, { merge: true });
+                        await setDoc(doc(db, "achats_maison", "config_budget"), { monthlyOffsets: { ...window.monthlyOffsets, [key]: -monthlySum } }, { merge: true });
                         closeBudgetModal(); showToast('Dépenses effacées');
                     } catch (err) { console.error(err); showToast('Erreur'); }
                 }
@@ -2755,9 +2764,14 @@
                     const rawOffset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
                     const offset = isFinite(parseFloat(rawOffset)) ? parseFloat(rawOffset) : 0;
 
+                    const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                    const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+
                     const monthlySpent = monthlySum + offset;
                     const budgetVal = isFinite(parseFloat(window.currentBudget)) ? parseFloat(window.currentBudget) : 0;
-                    const rem = budgetVal - monthlySpent;
+                    
+                    // Decoupled Solde calculation: uses its own offset instead of being strictly Budget - Dépenses
+                    const rem = budgetVal - monthlySum + soldeOffset;
 
                     const statBalance = document.getElementById('stat-budget-restant');
                     const statExpense = document.getElementById('stat-total-depense');
