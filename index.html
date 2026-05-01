@@ -1628,7 +1628,7 @@
                 const allReceived = (window.achats || []).filter(a => a.status === 'received');
                 const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
                 const now = new Date();
-                
+
                 const monthlySum = activeReceived.filter(a => {
                     if (!a.dateAchat) return false;
                     const d = new Date(a.dateAchat);
@@ -1637,7 +1637,7 @@
                     const v = parseFloat(a.price);
                     return s + (isFinite(v) ? v : 0);
                 }, 0);
-                
+
                 const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                 const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
                 const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
@@ -2415,7 +2415,7 @@
                     // Stats references for calculations
                     const allReceived = (window.achats || []).filter(a => a.status === 'received');
                     const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
-                    
+
                     const monthlySum = activeReceived.filter(a => {
                         if (!a.dateAchat) return false;
                         const d = new Date(a.dateAchat);
@@ -2424,11 +2424,11 @@
                         const v = parseFloat(a.price);
                         return s + (isFinite(v) ? v : 0);
                     }, 0);
-                    
+
                     const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
                     const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
                     const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
-                    
+
                     const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
 
                     if (action === 'set_solde') {
@@ -2493,10 +2493,10 @@
                     const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                     const targetBudget = 44000;
                     const targetSolde = 37000;
-                    
+
                     const allReceived = (window.achats || []).filter(a => a.status === 'received');
                     const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
-                    
+
                     const monthlySum = activeReceived.filter(a => {
                         if (!a.dateAchat) return false;
                         const d = new Date(a.dateAchat);
@@ -2505,15 +2505,15 @@
                         const val = parseFloat(a.price);
                         return s + (isFinite(val) ? val : 0);
                     }, 0);
-                    
+
                     const newSoldeOffset = targetSolde - targetBudget + monthlySum;
 
                     await setDoc(doc(db, "achats_maison", "config_budget"), {
                         amount: targetBudget,
                         soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset }
                     }, { merge: true });
-                    
-                    closeBudgetModal(); 
+
+                    closeBudgetModal();
                     showToast('Automatisé: Budget 44000 et Solde 37000 appliqués !');
                 } catch (err) { console.error(err); showToast('Erreur: ' + err.message); }
             };
@@ -2551,13 +2551,13 @@
                             return s + (isFinite(v) ? v : 0);
                         }, 0);
                         const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                        
+
                         const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
                         const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
                         const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
-                        
+
                         const newSoldeOffset = -(window.currentBudget || 0) + monthlySum;
-                        
+
                         if (isNaN(newSoldeOffset)) throw new Error("Calcul invalide");
                         await setDoc(doc(db, "achats_maison", "config_budget"), { soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset } }, { merge: true });
                         await addDoc(collection(db, "budget_history"), {
@@ -2662,6 +2662,7 @@
                                         <span class="bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest">x${a.quantity}</span>
                                         <span class="text-[9px] text-gray-500 font-bold uppercase"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
                                     </div>
+                                    ${a.notes ? `<div class="mt-1.5 flex items-start gap-1.5 bg-white/5 p-1.5 rounded-lg border border-white/5"><i class="fas fa-comment-dots text-amber-500/80 text-[10px] mt-[1px]"></i><span class="text-[9px] font-bold text-gray-300 break-words leading-tight line-clamp-2">${a.notes}</span></div>` : ''}
                                 </div>
                                 <div class="text-right shrink-0 flex flex-col items-end gap-2">
                                     ${a.status === 'received' ? `
@@ -2769,7 +2770,7 @@
 
                     const monthlySpent = monthlySum + offset;
                     const budgetVal = isFinite(parseFloat(window.currentBudget)) ? parseFloat(window.currentBudget) : 0;
-                    
+
                     // Decoupled Solde calculation: uses its own offset instead of being strictly Budget - Dépenses
                     const rem = budgetVal - monthlySum + soldeOffset;
 
