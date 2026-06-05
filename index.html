@@ -335,6 +335,11 @@
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
     </style>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
@@ -347,47 +352,9 @@
     <div id="main-app" class="min-h-screen">
         <!-- Navigation -->
         <!-- Splash/Auth Guard -->
-        <div id="auth-overlay" class="fixed inset-0 z-[1000] bg-gray-950 flex items-center justify-center p-4">
-            <div class="glass-card bg-gray-900 w-full max-w-sm p-8 border border-white/10 shadow-2xl scale-in-center">
-                <div class="text-center mb-8">
-                    <div
-                        class="w-20 h-20 mx-auto bg-white/5 rounded-3xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative mb-4">
-                        <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover">
-                    </div>
-                    <h1 class="text-2xl font-black text-white tracking-tighter">Gestion des courses</h1>
-                    <p id="auth-subtitle" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
-                        Accès Sécurisé - Famille Nour</p>
-                </div>
-
-                <div id="login-form-box" class="space-y-4">
-                    <div class="space-y-1">
-                        <input type="email" id="auth-email" placeholder="Email..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
-                    </div>
-                    <div class="space-y-1">
-                        <input type="password" id="auth-password" placeholder="Mot de passe..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
-                    </div>
-                    <div class="flex flex-col gap-3 pt-2">
-                        <button id="btn-auth-action" onclick="handleAuthAction()"
-                            class="w-full bg-gradient-to-r from-rose-600 to-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-rose-900/40 hover:scale-[1.02] transition-all disabled:opacity-50">Se
-                            Connecter</button>
-                        <button id="btn-toggle-auth" onclick="toggleAuthMode()"
-                            class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors">Pas
-                            de compte ? S'inscrire</button>
-                    </div>
-                </div>
-                <div id="auth-loading" class="hidden py-10 text-center">
-                    <div
-                        class="w-8 h-8 border-4 border-rose-500/20 border-t-rose-500 rounded-full animate-spin mx-auto mb-4">
-                    </div>
-                    <p class="text-[10px] text-gray-500 font-bold uppercase">Connexion en cours...</p>
-                </div>
-            </div>
-        </div>
 
         <!-- Main App Container (Hidden by default) -->
-        <div id="app-content" class="hidden">
+        <div id="app-content" class="px-2 pb-24 sm:px-4">
             <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <!-- Logo -->
@@ -1201,10 +1168,9 @@
             const auth = getAuth(app);
             const messaging = getMessaging(app);
 
-            // Activer la persistance hors-ligne pour Firestore
-            enableIndexedDbPersistence(db).catch((err) => {
-                if (err.code == 'failed-precondition') console.warn("Persistance échouée: onglets multiples");
-                else if (err.code == 'unimplemented') console.warn("Navigateur ne supporte pas la persistance");
+            // Firestore Persistence with Online/Offline sync
+            enableIndexedDbPersistence(db, { forceOwnership: true }).catch((err) => {
+                console.warn("Firestore Persistence:", err.code);
             });
 
             // Persistance de l'authentification (pour rester connecté même hors-ligne)
@@ -1284,32 +1250,22 @@
                 }
             };
 
-            onAuthStateChanged(auth, (user) => {
-                const overlay = document.getElementById('auth-overlay');
-                const app = document.getElementById('app-content');
-                if (user) {
-                    overlay.classList.add('hidden');
-                    app.classList.remove('hidden');
+            window.showManualLogin = () => {
+                document.getElementById('auth-loading-state').classList.add('hidden');
+                document.getElementById('login-form-box').classList.remove('hidden');
+            };
 
+            onAuthStateChanged(auth, (user) => {
+                const app = document.getElementById('app-content');
+                app.classList.remove('hidden');
+                
+                if (user) {
                     window.isAdmin = user.email === ADMIN_EMAIL;
                     document.body.classList.toggle('is-admin', window.isAdmin);
-
-                    // Hide/Show admin specific elements in navbar
-                    document.querySelectorAll('.admin-only').forEach(el => {
-                        el.classList.toggle('hidden', !window.isAdmin);
-                    });
-
-                    console.log("Logged in as:", user.email, "Admin:", window.isAdmin);
-
-                    // Si déjà autorisé, rafraîchir le token FCM
-                    if (Notification.permission === 'granted') {
-                        setupFCM();
-                    }
+                    document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !window.isAdmin));
+                    if (Notification.permission === 'granted') setupFCM();
                 } else {
-                    overlay.classList.remove('hidden');
-                    app.classList.add('hidden');
-                    document.getElementById('login-form-box').classList.remove('hidden');
-                    document.getElementById('auth-loading').classList.add('hidden');
+                    console.log("Accès invité / Hors-ligne");
                 }
             });
 
