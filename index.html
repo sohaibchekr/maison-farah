@@ -1287,23 +1287,23 @@
 
             onAuthStateChanged(auth, (user) => {
                 const debugLog = document.getElementById('debug-log-content');
+                const loginBox = document.getElementById('login-form-box');
+                
                 if (user) {
                     if (debugLog) debugLog.innerHTML += `<div>✓ Session OK: ${user.uid.substr(0,5)}...</div>`;
                     window.isAdmin = user.email === ADMIN_EMAIL;
                     document.body.classList.toggle('is-admin', window.isAdmin);
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !window.isAdmin));
                     
-                    // Si on est connecté mais qu'on ne voit pas les données, on logue un message
-                    if (debugLog && (!window.achats || window.achats.length === 0)) {
-                        debugLog.innerHTML += `<div class="text-amber-500">? Pas encore de données reçues...</div>`;
-                    }
-
+                    if (loginBox) loginBox.classList.add('hidden');
                     if (Notification.permission === 'granted') setupFCM();
                 } else {
                     if (debugLog) debugLog.innerHTML += `<div>! Pas de session, tentative anonyme...</div>`;
                     signInAnonymously(auth).catch(err => {
                         if (debugLog) debugLog.innerHTML += `<div class="text-rose-500">✗ Erreur Auth: ${err.code}</div>`;
-                        showToast("Mode Invité activé", true);
+                        // Si l'anonyme échoue, c'est qu'il faut se connecter par email
+                        if (loginBox) loginBox.classList.remove('hidden');
+                        showToast("Veuillez vous connecter pour continuer", true);
                     });
                 }
             });
