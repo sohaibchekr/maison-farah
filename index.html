@@ -1151,7 +1151,7 @@
 
         <script type="module">
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-            import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+            import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment, enableIndexedDbPersistence, clearPersistence, terminate } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
             import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
             import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
@@ -1170,9 +1170,12 @@
             const messaging = getMessaging(app);
 
             // Firestore Persistence with Online/Offline sync
+            // Persistance temporairement désactivée pour forcer la synchro sur mobile
+            /*
             enableIndexedDbPersistence(db, { forceOwnership: true }).catch((err) => {
                 console.warn("Firestore Persistence:", err.code);
             });
+            */
 
             // Persistance de l'authentification (pour rester connecté même hors-ligne)
             setPersistence(auth, browserLocalPersistence);
@@ -1285,10 +1288,16 @@
             onAuthStateChanged(auth, (user) => {
                 const debugLog = document.getElementById('debug-log-content');
                 if (user) {
-                    if (debugLog) debugLog.innerHTML += `<div>✓ Connecté: ${user.uid}</div>`;
+                    if (debugLog) debugLog.innerHTML += `<div>✓ Session OK: ${user.uid.substr(0,5)}...</div>`;
                     window.isAdmin = user.email === ADMIN_EMAIL;
                     document.body.classList.toggle('is-admin', window.isAdmin);
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !window.isAdmin));
+                    
+                    // Si on est connecté mais qu'on ne voit pas les données, on logue un message
+                    if (debugLog && (!window.achats || window.achats.length === 0)) {
+                        debugLog.innerHTML += `<div class="text-amber-500">? Pas encore de données reçues...</div>`;
+                    }
+
                     if (Notification.permission === 'granted') setupFCM();
                 } else {
                     if (debugLog) debugLog.innerHTML += `<div>! Pas de session, tentative anonyme...</div>`;
@@ -1322,6 +1331,12 @@
                 }
                 isInitialLoad = false;
                 window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const debugLog = document.getElementById('debug-log-content');
+                if (debugLog) {
+                    debugLog.innerHTML += `<div>📶 Données: ${window.achats.length} articles reçus</div>`;
+                }
+
                 updateStoreFilters();
                 renderAchats(); renderPurchaseHistory(); updateAchatStats();
             });
@@ -3030,26 +3045,35 @@
             };
 
             window.repairApp = async () => {
-                if (confirm("L'application semble bloquée ? Cela va vider le cache et forcer une nouvelle synchronisation. Continuer ?")) {
+                if (confirm("Forcer la synchronisation ? Cela va supprimer le cache local de votre téléphone pour télécharger les nouveaux articles.")) {
                     try {
-                        // Vider LocalStorage
+                        showToast("Nettoyage du cache...");
+                        
+                        // 1. Arrêter Firestore
+                        await terminate(db).catch(() => {});
+                        
+                        // 2. Supprimer la persistance physique (IndexedDB)
+                        await clearPersistence(db).catch((e) => console.error("Persistence Clear fail:", e));
+
+                        // 3. Vider LocalStorage (sauf thème)
                         const theme = localStorage.getItem('achats_theme');
                         localStorage.clear();
-                        if (theme) localStorage.setItem('achats_theme', theme); // Garder le thème
+                        if (theme) localStorage.setItem('achats_theme', theme);
 
-                        // Vider les Caches Service Worker
+                        // 4. Vider les Caches Service Worker
                         if ('caches' in window) {
                             const keys = await caches.keys();
                             await Promise.all(keys.map(k => caches.delete(k)));
                         }
 
-                        // Déconnexion Firebase pour forcer un nouveau UID
-                        await signOut(auth);
+                        // 5. Déconnexion pour forcer rafraîchissement auth
+                        await signOut(auth).catch(() => {});
 
-                        showToast("Application réinitialisée. Rechargement...");
-                        setTimeout(() => location.reload(true), 1500);
+                        showToast("Réussite ! Rechargement...");
+                        setTimeout(() => location.reload(true), 1000);
                     } catch (err) {
-                        showToast("Erreur lors de la réparation");
+                        console.error(err);
+                        showToast("Erreur. Rechargement forcé.");
                         location.reload();
                     }
                 }
