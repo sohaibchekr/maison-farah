@@ -457,6 +457,10 @@
                                 class="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-500 hover:text-rose-500 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
                                 <i class="fas fa-power-off"></i>
                             </button>
+                            <button onclick="repairApp()" title="Réparer l'app (Reset Cache)"
+                                class="bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
+                                <i class="fas fa-tools"></i>
+                            </button>
                             <button onclick="openPurchaseModal()"
                                 class="hidden sm:flex bg-gradient-to-r from-rose-600 to-pink-500 text-white px-4 py-2 rounded-xl items-center gap-2 shadow-lg shadow-rose-600/20">
                                 <i class="fas fa-plus"></i> <span>Article</span>
@@ -1191,16 +1195,24 @@
             let clickCount = 0;
             window.handleLogoClick = () => {
                 clickCount++;
-                if (clickCount >= 5) {
+                if (clickCount === 5) {
                     document.getElementById('login-form-box').classList.remove('hidden');
-                    clickCount = 0;
-                    showToast("Mode Administrateur activé");
+                    showToast("Mode Admin");
                 }
-                setTimeout(() => clickCount = 0, 3000);
+                if (clickCount === 10) {
+                    document.getElementById('debug-console').classList.remove('hidden');
+                    showToast("Console Debug");
+                }
+                setTimeout(() => clickCount = 0, 4000);
             };
 
             const ADMIN_EMAIL = "sohaibchekri@gmail.com";
             window.isAdmin = false;
+            window.fallbackUID = localStorage.getItem('achats_fallback_uid') || 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('achats_fallback_uid', window.fallbackUID);
+
+            window.getUID = () => auth.currentUser?.uid || window.fallbackUID;
+            window.getUserEmail = () => auth.currentUser?.email || "Visiteur";
 
             // Système de Thème (Sombre / Clair)
             window.toggleTheme = () => {
@@ -1263,16 +1275,27 @@
                 document.getElementById('login-form-box').classList.remove('hidden');
             };
 
+            window.debugReset = () => {
+                if (confirm("Réinitialiser les données locales (IndexedDB) ?")) {
+                    indexedDB.deleteDatabase("firebase-persistence-farah-3fed2");
+                    window.location.reload();
+                }
+            };
+
             onAuthStateChanged(auth, (user) => {
+                const debugLog = document.getElementById('debug-log-content');
                 if (user) {
-                    console.log("Utilisateur connecté:", user.uid, user.isAnonymous ? "(Anonyme)" : "(Email)");
+                    if (debugLog) debugLog.innerHTML += `<div>✓ Connecté: ${user.uid}</div>`;
                     window.isAdmin = user.email === ADMIN_EMAIL;
                     document.body.classList.toggle('is-admin', window.isAdmin);
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !window.isAdmin));
                     if (Notification.permission === 'granted') setupFCM();
                 } else {
-                    console.log("Tentative de connexion anonyme...");
-                    signInAnonymously(auth).catch(err => console.error("Erreur auth:", err));
+                    if (debugLog) debugLog.innerHTML += `<div>! Pas de session, tentative anonyme...</div>`;
+                    signInAnonymously(auth).catch(err => {
+                        if (debugLog) debugLog.innerHTML += `<div class="text-rose-500">✗ Erreur Auth: ${err.code}</div>`;
+                        showToast("Mode Invité activé", true);
+                    });
                 }
             });
 
@@ -2250,11 +2273,17 @@
                 const inputVal = document.getElementById('productInput').value.trim();
                 let names = Array.from(selectedProducts);
                 if (inputVal) {
-                    const parts = inputVal.split(/[,،]/).map(s => s.trim()).filter(s => s);
+                    const parts = inputVal.split(/[,,]/).map(s => s.trim()).filter(s => s);
                     names.push(...parts);
                 }
 
                 if (names.length === 0) { showToast('Ajoutez au moins un produit', true); return; }
+
+                if (!auth.currentUser) {
+                    showToast("Connexion en cours, veuillez patienter...", true);
+                    signInAnonymously(auth).catch(e => showToast("Erreur d'accès", true));
+                    return;
+                }
 
                 const isDirectPay = document.getElementById('direct-pay-check').checked;
                 const priceRaw = document.getElementById('direct-price').value.replace(',', '.');
@@ -2272,8 +2301,8 @@
                         dateDemande: new Date(f.get('dateDemande')).toISOString(),
                         status: isDirectPay ? 'received' : 'pending',
                         dateAchat: isDirectPay ? new Date().toISOString() : null,
-                        userId: auth.currentUser.uid,
-                        userName: auth.currentUser.displayName || auth.currentUser.email || "Membre"
+                        userId: window.getUID(),
+                        userName: auth.currentUser?.displayName || auth.currentUser?.email || "Membre"
                     };
 
                     if (currentEditId) {
@@ -3000,6 +3029,32 @@
                 toggleCalculator(); // Close
             };
 
+            window.repairApp = async () => {
+                if (confirm("L'application semble bloquée ? Cela va vider le cache et forcer une nouvelle synchronisation. Continuer ?")) {
+                    try {
+                        // Vider LocalStorage
+                        const theme = localStorage.getItem('achats_theme');
+                        localStorage.clear();
+                        if (theme) localStorage.setItem('achats_theme', theme); // Garder le thème
+
+                        // Vider les Caches Service Worker
+                        if ('caches' in window) {
+                            const keys = await caches.keys();
+                            await Promise.all(keys.map(k => caches.delete(k)));
+                        }
+
+                        // Déconnexion Firebase pour forcer un nouveau UID
+                        await signOut(auth);
+
+                        showToast("Application réinitialisée. Rechargement...");
+                        setTimeout(() => location.reload(true), 1500);
+                    } catch (err) {
+                        showToast("Erreur lors de la réparation");
+                        location.reload();
+                    }
+                }
+            };
+
             window.zoomCalc = (delta) => {
                 calcScale += delta;
                 if (calcScale < 0.6) calcScale = 0.6;
@@ -3171,6 +3226,14 @@
                     <button id="btn-auth-action" onclick="handleAuthAction()" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all">Se Connecter</button>
                 </div>
             </div>
+        </div>
+        <!-- Debug Console -->
+        <div id="debug-console" class="hidden fixed bottom-0 left-0 right-0 z-[1000] bg-black text-[10px] font-mono p-2 max-h-40 overflow-y-auto border-t border-rose-500">
+            <div class="flex justify-between items-center mb-1 border-b border-white/10 pb-1">
+                <span class="text-rose-500 font-bold uppercase">Debug Console</span>
+                <button onclick="document.getElementById('debug-console').classList.add('hidden')" class="text-white">Fermer</button>
+            </div>
+            <div id="debug-log-content" class="text-gray-300"></div>
         </div>
     </div> <!-- End of app-content -->
 </body>
