@@ -335,11 +335,6 @@
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
     </style>
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
@@ -351,7 +346,48 @@
 
     <div id="main-app" class="min-h-screen">
         <!-- Navigation -->
-        <div id="app-content" class="px-2 pb-24 sm:px-4">
+        <!-- Splash/Auth Guard -->
+        <div id="auth-overlay" class="fixed inset-0 z-[1000] bg-gray-950 flex items-center justify-center p-4">
+            <div class="glass-card bg-gray-900 w-full max-w-sm p-8 border border-white/10 shadow-2xl scale-in-center">
+                <div class="text-center mb-8">
+                    <div
+                        class="w-20 h-20 mx-auto bg-white/5 rounded-3xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative mb-4">
+                        <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover">
+                    </div>
+                    <h1 class="text-2xl font-black text-white tracking-tighter">Gestion des courses</h1>
+                    <p id="auth-subtitle" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                        Accès Sécurisé - Famille Nour</p>
+                </div>
+
+                <div id="login-form-box" class="space-y-4">
+                    <div class="space-y-1">
+                        <input type="email" id="auth-email" placeholder="Email..."
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <input type="password" id="auth-password" placeholder="Mot de passe..."
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
+                    </div>
+                    <div class="flex flex-col gap-3 pt-2">
+                        <button id="btn-auth-action" onclick="handleAuthAction()"
+                            class="w-full bg-gradient-to-r from-rose-600 to-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-rose-900/40 hover:scale-[1.02] transition-all disabled:opacity-50">Se
+                            Connecter</button>
+                        <button id="btn-toggle-auth" onclick="toggleAuthMode()"
+                            class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors">Pas
+                            de compte ? S'inscrire</button>
+                    </div>
+                </div>
+                <div id="auth-loading" class="hidden py-10 text-center">
+                    <div
+                        class="w-8 h-8 border-4 border-rose-500/20 border-t-rose-500 rounded-full animate-spin mx-auto mb-4">
+                    </div>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase">Connexion en cours...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Container (Hidden by default) -->
+        <div id="app-content" class="hidden">
             <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <!-- Logo -->
@@ -363,12 +399,11 @@
                             <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover relative z-10"
                                 onerror="this.style.display='none'; this.previousElementSibling.style.opacity='1'">
                         </div>
-                        <h1 class="text-xl font-black tracking-tighter text-white" onclick="handleLogoClick()">فرح نور</h1>
+                        <h1 class="text-xl font-black tracking-tighter text-white">فرح نور</h1>
                         <span id="offline-badge"
                             class="hidden bg-rose-600/20 text-rose-400 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase border border-rose-500/20 animate-pulse">
                             Hors Ligne <i class="fas fa-wifi-slash ml-1"></i>
                         </span>
-                        <span class="bg-emerald-600 text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase">V8 - JUIN</span>
                     </div>
 
                     <div class="flex items-center space-x-2">
@@ -457,10 +492,6 @@
                             <button onclick="logout()" title="Déconnexion"
                                 class="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-500 hover:text-rose-500 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
                                 <i class="fas fa-power-off"></i>
-                            </button>
-                            <button onclick="repairApp()" title="Réparer l'app (Reset Cache)"
-                                class="bg-white/5 hover:bg-white/10 border border-white/10 text-rose-400 w-10 h-10 rounded-xl flex items-center justify-center transition-all">
-                                <i class="fas fa-tools"></i>
                             </button>
                             <button onclick="openPurchaseModal()"
                                 class="hidden sm:flex bg-gradient-to-r from-rose-600 to-pink-500 text-white px-4 py-2 rounded-xl items-center gap-2 shadow-lg shadow-rose-600/20">
@@ -1152,8 +1183,8 @@
 
         <script type="module">
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-            import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment, enableIndexedDbPersistence, clearPersistence, terminate } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+            import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
             import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
             const firebaseConfig = {
@@ -1170,13 +1201,11 @@
             const auth = getAuth(app);
             const messaging = getMessaging(app);
 
-            // Firestore Persistence with Online/Offline sync
-            // Persistance temporairement désactivée pour forcer la synchro sur mobile
-            /*
-            enableIndexedDbPersistence(db, { forceOwnership: true }).catch((err) => {
-                console.warn("Firestore Persistence:", err.code);
+            // Activer la persistance hors-ligne pour Firestore
+            enableIndexedDbPersistence(db).catch((err) => {
+                if (err.code == 'failed-precondition') console.warn("Persistance échouée: onglets multiples");
+                else if (err.code == 'unimplemented') console.warn("Navigateur ne supporte pas la persistance");
             });
-            */
 
             // Persistance de l'authentification (pour rester connecté même hors-ligne)
             setPersistence(auth, browserLocalPersistence);
@@ -1196,27 +1225,8 @@
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
 
-            let clickCount = 0;
-            window.handleLogoClick = () => {
-                clickCount++;
-                if (clickCount === 5) {
-                    document.getElementById('login-form-box').classList.remove('hidden');
-                    showToast("Mode Admin");
-                }
-                if (clickCount === 10) {
-                    document.getElementById('debug-console').classList.remove('hidden');
-                    showToast("Console Debug");
-                }
-                setTimeout(() => clickCount = 0, 4000);
-            };
-
             const ADMIN_EMAIL = "sohaibchekri@gmail.com";
             window.isAdmin = false;
-            window.fallbackUID = localStorage.getItem('achats_fallback_uid') || 'user_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('achats_fallback_uid', window.fallbackUID);
-
-            window.getUID = () => auth.currentUser?.uid || window.fallbackUID;
-            window.getUserEmail = () => auth.currentUser?.email || "Visiteur";
 
             // Système de Thème (Sombre / Clair)
             window.toggleTheme = () => {
@@ -1274,38 +1284,32 @@
                 }
             };
 
-            window.showManualLogin = () => {
-                document.getElementById('auth-loading-state').classList.add('hidden');
-                document.getElementById('login-form-box').classList.remove('hidden');
-            };
-
-            window.debugReset = () => {
-                if (confirm("Réinitialiser les données locales (IndexedDB) ?")) {
-                    indexedDB.deleteDatabase("firebase-persistence-farah-3fed2");
-                    window.location.reload();
-                }
-            };
-
             onAuthStateChanged(auth, (user) => {
-                const debugLog = document.getElementById('debug-log-content');
-                const loginBox = document.getElementById('login-form-box');
-                
+                const overlay = document.getElementById('auth-overlay');
+                const app = document.getElementById('app-content');
                 if (user) {
-                    if (debugLog) debugLog.innerHTML += `<div>✓ Session OK: ${user.uid.substr(0,5)}...</div>`;
+                    overlay.classList.add('hidden');
+                    app.classList.remove('hidden');
+
                     window.isAdmin = user.email === ADMIN_EMAIL;
                     document.body.classList.toggle('is-admin', window.isAdmin);
-                    document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !window.isAdmin));
-                    
-                    if (loginBox) loginBox.classList.add('hidden');
-                    if (Notification.permission === 'granted') setupFCM();
-                } else {
-                    if (debugLog) debugLog.innerHTML += `<div>! Pas de session, tentative anonyme...</div>`;
-                    signInAnonymously(auth).catch(err => {
-                        if (debugLog) debugLog.innerHTML += `<div class="text-rose-500">✗ Erreur Auth: ${err.code}</div>`;
-                        // Si l'anonyme échoue, c'est qu'il faut se connecter par email
-                        if (loginBox) loginBox.classList.remove('hidden');
-                        showToast("Veuillez vous connecter pour continuer", true);
+
+                    // Hide/Show admin specific elements in navbar
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.classList.toggle('hidden', !window.isAdmin);
                     });
+
+                    console.log("Logged in as:", user.email, "Admin:", window.isAdmin);
+
+                    // Si déjà autorisé, rafraîchir le token FCM
+                    if (Notification.permission === 'granted') {
+                        setupFCM();
+                    }
+                } else {
+                    overlay.classList.remove('hidden');
+                    app.classList.add('hidden');
+                    document.getElementById('login-form-box').classList.remove('hidden');
+                    document.getElementById('auth-loading').classList.add('hidden');
                 }
             });
 
@@ -1332,12 +1336,6 @@
                 }
                 isInitialLoad = false;
                 window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                const debugLog = document.getElementById('debug-log-content');
-                if (debugLog) {
-                    debugLog.innerHTML += `<div>📶 Données: ${window.achats.length} articles reçus</div>`;
-                }
-
                 updateStoreFilters();
                 renderAchats(); renderPurchaseHistory(); updateAchatStats();
             });
@@ -2289,17 +2287,11 @@
                 const inputVal = document.getElementById('productInput').value.trim();
                 let names = Array.from(selectedProducts);
                 if (inputVal) {
-                    const parts = inputVal.split(/[,,]/).map(s => s.trim()).filter(s => s);
+                    const parts = inputVal.split(/[,،]/).map(s => s.trim()).filter(s => s);
                     names.push(...parts);
                 }
 
                 if (names.length === 0) { showToast('Ajoutez au moins un produit', true); return; }
-
-                if (!auth.currentUser) {
-                    showToast("Connexion en cours, veuillez patienter...", true);
-                    signInAnonymously(auth).catch(e => showToast("Erreur d'accès", true));
-                    return;
-                }
 
                 const isDirectPay = document.getElementById('direct-pay-check').checked;
                 const priceRaw = document.getElementById('direct-price').value.replace(',', '.');
@@ -2317,8 +2309,8 @@
                         dateDemande: new Date(f.get('dateDemande')).toISOString(),
                         status: isDirectPay ? 'received' : 'pending',
                         dateAchat: isDirectPay ? new Date().toISOString() : null,
-                        userId: window.getUID(),
-                        userName: auth.currentUser?.displayName || auth.currentUser?.email || "Membre"
+                        userId: auth.currentUser.uid,
+                        userName: auth.currentUser.displayName || auth.currentUser.email
                     };
 
                     if (currentEditId) {
@@ -3045,41 +3037,6 @@
                 toggleCalculator(); // Close
             };
 
-            window.repairApp = async () => {
-                if (confirm("Forcer la synchronisation ? Cela va supprimer le cache local de votre téléphone pour télécharger les nouveaux articles.")) {
-                    try {
-                        showToast("Nettoyage du cache...");
-                        
-                        // 1. Arrêter Firestore
-                        await terminate(db).catch(() => {});
-                        
-                        // 2. Supprimer la persistance physique (IndexedDB)
-                        await clearPersistence(db).catch((e) => console.error("Persistence Clear fail:", e));
-
-                        // 3. Vider LocalStorage (sauf thème)
-                        const theme = localStorage.getItem('achats_theme');
-                        localStorage.clear();
-                        if (theme) localStorage.setItem('achats_theme', theme);
-
-                        // 4. Vider les Caches Service Worker
-                        if ('caches' in window) {
-                            const keys = await caches.keys();
-                            await Promise.all(keys.map(k => caches.delete(k)));
-                        }
-
-                        // 5. Déconnexion pour forcer rafraîchissement auth
-                        await signOut(auth).catch(() => {});
-
-                        showToast("Réussite ! Rechargement...");
-                        setTimeout(() => location.reload(true), 1000);
-                    } catch (err) {
-                        console.error(err);
-                        showToast("Erreur. Rechargement forcé.");
-                        location.reload();
-                    }
-                }
-            };
-
             window.zoomCalc = (delta) => {
                 calcScale += delta;
                 if (calcScale < 0.6) calcScale = 0.6;
@@ -3231,34 +3188,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- Auth / Login Modal (Hidden by default, shown by 5 clicks) -->
-        <div id="login-form-box" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="glass-card bg-gray-900 w-full max-w-sm p-8 border border-white/10 text-center relative">
-                <button onclick="document.getElementById('login-form-box').classList.add('hidden')" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
-                <div class="w-20 h-20 bg-rose-600/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-rose-500/20">
-                    <img src="fille.jpg" class="w-16 h-16 object-cover rounded-2xl" alt="Logo">
-                </div>
-                <h2 id="auth-subtitle" class="text-xl font-black text-white mb-2 uppercase">Famille Nour</h2>
-                <p class="text-xs text-gray-500 mb-8 font-bold uppercase tracking-widest">Accès Administrateur</p>
-                
-                <div class="space-y-4 text-left">
-                    <label class="text-[10px] uppercase font-black text-gray-400 ml-1">Email</label>
-                    <input type="email" id="auth-email" placeholder="votre@email.com" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-rose-500">
-                    <label class="text-[10px] uppercase font-black text-gray-400 ml-1">Mot de passe</label>
-                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-rose-500">
-                    <div id="auth-loading" class="hidden text-center py-2"><i class="fas fa-spinner animate-spin text-rose-500"></i></div>
-                    <button id="btn-auth-action" onclick="handleAuthAction()" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all">Se Connecter</button>
-                </div>
-            </div>
-        </div>
-        <!-- Debug Console -->
-        <div id="debug-console" class="hidden fixed bottom-0 left-0 right-0 z-[1000] bg-black text-[10px] font-mono p-2 max-h-40 overflow-y-auto border-t border-rose-500">
-            <div class="flex justify-between items-center mb-1 border-b border-white/10 pb-1">
-                <span class="text-rose-500 font-bold uppercase">Debug Console</span>
-                <button onclick="document.getElementById('debug-console').classList.add('hidden')" class="text-white">Fermer</button>
-            </div>
-            <div id="debug-log-content" class="text-gray-300"></div>
         </div>
     </div> <!-- End of app-content -->
 </body>
