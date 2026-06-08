@@ -351,9 +351,6 @@
 
     <div id="main-app" class="min-h-screen">
         <!-- Navigation -->
-        <!-- Splash/Auth Guard -->
-
-        <!-- Main App Container (Hidden by default) -->
         <div id="app-content" class="px-2 pb-24 sm:px-4">
             <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
@@ -366,7 +363,7 @@
                             <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover relative z-10"
                                 onerror="this.style.display='none'; this.previousElementSibling.style.opacity='1'">
                         </div>
-                        <h1 class="text-xl font-black tracking-tighter text-white">فرح نور</h1>
+                        <h1 class="text-xl font-black tracking-tighter text-white" onclick="handleLogoClick()">فرح نور</h1>
                         <span id="offline-badge"
                             class="hidden bg-rose-600/20 text-rose-400 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase border border-rose-500/20 animate-pulse">
                             Hors Ligne <i class="fas fa-wifi-slash ml-1"></i>
@@ -1151,7 +1148,7 @@
         <script type="module">
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
             import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
             import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
             const firebaseConfig = {
@@ -1190,6 +1187,17 @@
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
+
+            let clickCount = 0;
+            window.handleLogoClick = () => {
+                clickCount++;
+                if (clickCount >= 5) {
+                    document.getElementById('login-form-box').classList.remove('hidden');
+                    clickCount = 0;
+                    showToast("Mode Administrateur activé");
+                }
+                setTimeout(() => clickCount = 0, 3000);
+            };
 
             const ADMIN_EMAIL = "sohaibchekri@gmail.com";
             window.isAdmin = false;
@@ -1256,16 +1264,15 @@
             };
 
             onAuthStateChanged(auth, (user) => {
-                const app = document.getElementById('app-content');
-                app.classList.remove('hidden');
-                
                 if (user) {
+                    console.log("Utilisateur connecté:", user.uid, user.isAnonymous ? "(Anonyme)" : "(Email)");
                     window.isAdmin = user.email === ADMIN_EMAIL;
                     document.body.classList.toggle('is-admin', window.isAdmin);
                     document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !window.isAdmin));
                     if (Notification.permission === 'granted') setupFCM();
                 } else {
-                    console.log("Accès invité / Hors-ligne");
+                    console.log("Tentative de connexion anonyme...");
+                    signInAnonymously(auth).catch(err => console.error("Erreur auth:", err));
                 }
             });
 
@@ -2266,7 +2273,7 @@
                         status: isDirectPay ? 'received' : 'pending',
                         dateAchat: isDirectPay ? new Date().toISOString() : null,
                         userId: auth.currentUser.uid,
-                        userName: auth.currentUser.displayName || auth.currentUser.email
+                        userName: auth.currentUser.displayName || auth.currentUser.email || "Membre"
                     };
 
                     if (currentEditId) {
@@ -3142,6 +3149,26 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        <!-- Auth / Login Modal (Hidden by default, shown by 5 clicks) -->
+        <div id="login-form-box" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-card bg-gray-900 w-full max-w-sm p-8 border border-white/10 text-center relative">
+                <button onclick="document.getElementById('login-form-box').classList.add('hidden')" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
+                <div class="w-20 h-20 bg-rose-600/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-rose-500/20">
+                    <img src="fille.jpg" class="w-16 h-16 object-cover rounded-2xl" alt="Logo">
+                </div>
+                <h2 id="auth-subtitle" class="text-xl font-black text-white mb-2 uppercase">Famille Nour</h2>
+                <p class="text-xs text-gray-500 mb-8 font-bold uppercase tracking-widest">Accès Administrateur</p>
+                
+                <div class="space-y-4 text-left">
+                    <label class="text-[10px] uppercase font-black text-gray-400 ml-1">Email</label>
+                    <input type="email" id="auth-email" placeholder="votre@email.com" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-rose-500">
+                    <label class="text-[10px] uppercase font-black text-gray-400 ml-1">Mot de passe</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-rose-500">
+                    <div id="auth-loading" class="hidden text-center py-2"><i class="fas fa-spinner animate-spin text-rose-500"></i></div>
+                    <button id="btn-auth-action" onclick="handleAuthAction()" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all">Se Connecter</button>
                 </div>
             </div>
         </div>
