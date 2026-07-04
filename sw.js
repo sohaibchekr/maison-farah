@@ -1,5 +1,5 @@
-// ✅ VERSION v8 - Mode Hybride (Hors-Ligne & Synchronisation en Ligne)
-const APP_VERSION = 'v8';
+// ✅ VERSION v9 - Mode Hybride (Hors-Ligne & Synchronisation en Ligne)
+const APP_VERSION = 'v9';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
