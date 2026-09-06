@@ -192,8 +192,16 @@
 
         /* Responsive Modal Fix */
         .modal-container {
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
+            padding-bottom: 2rem;
+        }
+
+        @media (max-height: 600px) {
+            .modal-container {
+                max-height: 95vh;
+                padding-bottom: 1.5rem;
+            }
         }
 
         @media (max-width: 640px) {
@@ -305,7 +313,12 @@
             }
 
             .mobile-bottom-nav span {
-                font-size: 6.5px;
+                font-size: 6px;
+            }
+            
+            .mobile-bottom-nav button {
+                padding-left: 0.2rem;
+                padding-right: 0.2rem;
             }
 
             .mobile-fab {
@@ -614,18 +627,18 @@
 
             <!-- Bulk Bar -->
             <div id="bulk-action-bar"
-                class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-32 transition-all duration-300 hidden">
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-32 transition-all duration-300 hidden w-[95%] sm:w-auto">
                 <div
-                    class="glass-card bg-rose-600/95 text-white px-6 py-4 flex items-center gap-6 shadow-2xl border border-rose-400/30">
-                    <p class="font-bold text-sm"><span id="bulk-count">0</span> séléctionnés</p>
-                    <div class="flex gap-2">
+                    class="glass-card bg-rose-600/95 text-white px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-6 shadow-2xl border border-rose-400/30 w-full">
+                    <p class="font-bold text-sm mx-auto sm:mx-0"><span id="bulk-count">0</span> séléctionnés</p>
+                    <div class="flex gap-2 justify-center w-full sm:w-auto">
                         <button id="bulk-buy-btn" onclick="openBulkPriceModal()"
-                            class="bg-white text-rose-700 px-4 py-2 rounded-lg text-xs font-black uppercase">Acheter
+                            class="bg-white text-rose-700 px-3 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase flex-1 sm:flex-none whitespace-nowrap">Acheter
                             Ensemble</button>
                         <button onclick="bulkDelete()"
-                            class="admin-only hidden bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-black uppercase border border-white/20"><i
-                                class="fas fa-trash-alt mr-2"></i>Effacer</button>
-                        <button onclick="clearSelection()" class="bg-rose-500/50 p-2 rounded-lg"><i
+                            class="admin-only hidden bg-white/10 text-white px-3 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase border border-white/20 flex-1 sm:flex-none whitespace-nowrap"><i
+                                class="fas fa-trash-alt sm:mr-2"></i><span class="hidden sm:inline">Effacer</span></button>
+                        <button onclick="clearSelection()" class="bg-rose-500/50 px-3 py-2 rounded-lg"><i
                                 class="fas fa-times"></i></button>
                     </div>
                 </div>
@@ -885,13 +898,13 @@
                             </div>
                         </div>
                         <div class="flex flex-col gap-3">
-                            <div class="flex gap-2">
+                            <div class="flex gap-1 sm:gap-2">
                                 <button type="button" onclick="closePurchaseModal()"
-                                    class="flex-1 bg-white/5 hover:bg-white/10 rounded-xl py-3 font-bold uppercase text-[10px] transition-all">Annuler</button>
+                                    class="flex-1 bg-white/5 hover:bg-white/10 rounded-xl py-3 font-bold uppercase text-[9px] sm:text-[10px] transition-all leading-tight px-1 sm:px-0">Annuler</button>
                                 <button type="submit" id="ok-submit-btn"
-                                    class="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl py-3 font-bold uppercase text-[10px] transition-all shadow-lg">OK</button>
+                                    class="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl py-3 font-bold uppercase text-[9px] sm:text-[10px] transition-all shadow-lg leading-tight px-1 sm:px-0">OK</button>
                                 <button type="submit" id="main-submit-btn"
-                                    class="flex-[1.5] btn-premium text-white rounded-xl py-3 font-bold uppercase text-[10px] shadow-lg">Demander</button>
+                                    class="flex-[1.2] sm:flex-[1.5] btn-premium text-white rounded-xl py-3 font-bold uppercase text-[9px] sm:text-[10px] shadow-lg leading-tight px-1 sm:px-0">Demander</button>
                             </div>
                             <button type="button" id="continue-submit-btn" onclick="submitPurchase(event, true)"
                                 class="w-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl py-3 font-bold uppercase text-[10px] tracking-widest transition-all">
@@ -997,12 +1010,12 @@
                         </div>
 
                         <div id="budget-actions-standard" class="flex flex-col gap-2">
-                            <div class="flex gap-2">
+                            <div class="flex gap-1.5 sm:gap-2">
                                 <button type="submit" name="action" value="add"
-                                    class="flex-[2] bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/40">Ajouter
+                                    class="flex-[1.5] sm:flex-[2] bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-[10px] sm:text-xs tracking-widest hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/40 leading-tight">Ajouter
                                     Somme</button>
                                 <button type="submit" name="action" value="set"
-                                    class="flex-1 bg-white/10 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/20 transition-colors border border-white/10">Écraser
+                                    class="flex-1 bg-white/10 text-white py-3 rounded-xl font-black uppercase text-[9px] sm:text-[10px] tracking-tight hover:bg-white/20 transition-colors border border-white/10 leading-tight">Écraser
                                     Total</button>
                             </div>
                             <p class="text-[8px] text-gray-500 uppercase text-center font-bold px-2">"ÉCRASER TOTAL"
@@ -2861,8 +2874,8 @@
                                 <i class="fas ${a.status === 'received' ? 'fa-check' : (a.urgency === 'high' ? 'fa-fire' : 'fa-cart-shopping')} text-lg md:text-xl"></i>
                             </div>
                         `}
-                        <div class="flex-1 flex justify-between items-center">
-                                <div class="space-y-1 w-full overflow-hidden">
+                        <div class="flex-1 flex justify-between items-center min-w-0 gap-1.5 md:gap-2">
+                                <div class="space-y-1 overflow-hidden min-w-0">
                                     <div class="flex items-center gap-2 flex-wrap mb-1">
                                         <h3 class="font-black text-base uppercase tracking-wider leading-tight break-words" style="color: var(--text-primary)">${a.productName}</h3>
                                         ${a.store ? `<span class="text-[8px] bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded border border-indigo-500/10 uppercase font-black tracking-tighter shrink-0">${getStoreLabel(a.store)}</span>` : ''}
@@ -2881,8 +2894,8 @@
                                             <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-500 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
                                         </div>
                                     ` : `
-                                        <div class="flex flex-col items-end gap-2">
-                                            <button onclick="event.stopPropagation(); openPriceModal('${a.id}', '')" class="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:scale-105 text-white text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Acheter</button>
+                                        <div class="flex flex-col items-end gap-2 shrink-0">
+                                            <button onclick="event.stopPropagation(); openPriceModal('${a.id}', '')" class="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:scale-105 text-white text-[10px] font-black uppercase px-2.5 md:px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Acheter</button>
                                             <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-500 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
                                         </div>
                                     `}
