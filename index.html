@@ -8,6 +8,7 @@
     <title>فرح نور - Achats Famille</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -24,36 +25,72 @@
         }
 
         :root {
-            --bg-app: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
-            --bg-body: #0f172a;
-            --glass-bg: rgba(30, 41, 59, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --card-hover: rgba(30, 41, 59, 0.6);
-            --panel-bg: rgba(15, 23, 42, 0.6);
-            --input-bg: rgba(255, 255, 255, 0.03);
+            --bg-body: #050505;
+            --glass-bg: rgba(20, 20, 25, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #a1a1aa;
+            --card-hover: rgba(30, 30, 40, 0.6);
+            --panel-bg: rgba(10, 10, 15, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --accent-orb-1: rgba(225, 29, 72, 0.15);
+            --accent-orb-2: rgba(124, 58, 237, 0.15);
         }
 
         .light-mode {
-            --bg-app: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            --bg-body: #f8fafc;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(0, 0, 0, 0.08);
+            --bg-body: #f1f5f9;
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.6);
             --text-primary: #0f172a;
             --text-secondary: #475569;
             --card-hover: rgba(255, 255, 255, 0.9);
-            --panel-bg: rgba(255, 255, 255, 0.8);
+            --panel-bg: rgba(255, 255, 255, 0.85);
             --input-bg: rgba(0, 0, 0, 0.03);
+            --accent-orb-1: rgba(225, 29, 72, 0.1);
+            --accent-orb-2: rgba(124, 58, 237, 0.1);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-app);
+            font-family: 'Outfit', 'Inter', sans-serif;
+            background: var(--bg-body);
             background-attachment: fixed;
             min-height: 100vh;
             color: var(--text-primary);
-            transition: all 0.3s ease;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 70vw;
+            height: 70vw;
+            max-width: 600px;
+            max-height: 600px;
+            border-radius: 50%;
+            filter: blur(90px);
+            z-index: -1;
+            pointer-events: none;
+            animation: floatOrb 18s ease-in-out infinite alternate;
+        }
+
+        body::before {
+            top: -10%; left: -10%;
+            background: var(--accent-orb-2);
+        }
+
+        body::after {
+            bottom: -10%; right: -10%;
+            background: var(--accent-orb-1);
+            animation-delay: -9s;
+            animation-direction: alternate-reverse;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(5%, 10%) scale(1.1); }
+            66% { transform: translate(-5%, 5%) scale(0.9); }
+            100% { transform: translate(0, -10%) scale(1.05); }
         }
 
         .glass-panel {
@@ -352,7 +389,7 @@
     <div id="main-app" class="min-h-screen">
         <!-- Navigation -->
         <!-- Splash/Auth Guard -->
-        <div id="auth-loading-state" class="fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center justify-center p-4">
+        <div id="auth-loading-state" class="fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center justify-center p-4 hidden">
             <div class="text-center space-y-4">
                 <div class="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-500/20 mx-auto animate-pulse">
                     <i class="fas fa-heart text-rose-500 text-3xl animate-bounce"></i>
@@ -397,8 +434,8 @@
             </div>
         </div>
 
-        <!-- Main App Container (Hidden by default) -->
-        <div id="app-content" class="px-2 pb-24 sm:px-4 hidden">
+        <!-- Main App Container -->
+        <div id="app-content" class="px-2 pb-24 sm:px-4">
             <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <!-- Logo -->
@@ -636,7 +673,7 @@
                         <select id="filter-status" onchange="renderAchats()"
                             class="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-bold uppercase">
                             <option value="all">Statut: Tout</option>
-                            <option value="pending">🛒 À acheter</option>
+                            <option value="pending" selected>🛒 À acheter</option>
                             <option value="received">✅ Terminés</option>
                         </select>
                         <select id="filter-store" onchange="renderAchats()"
@@ -1195,7 +1232,7 @@
         <script type="module">
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
             import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
             import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
 
             const firebaseConfig = {
@@ -1305,22 +1342,20 @@
                 const loginBox = document.getElementById('login-form-box');
                 const authLoading = document.getElementById('auth-loading');
 
-                if (user) {
-                    if (app) app.classList.remove('hidden');
-                    if (loadingState) loadingState.classList.add('hidden');
-                    if (loginBox) loginBox.classList.add('hidden');
-                    if (authLoading) authLoading.classList.add('hidden');
+                if (app) app.classList.remove('hidden');
+                if (loadingState) loadingState.classList.add('hidden');
+                if (loginBox) loginBox.classList.add('hidden');
+                if (authLoading) authLoading.classList.add('hidden');
 
-                    window.isAdmin = user.email === ADMIN_EMAIL;
-                    document.body.classList.toggle('is-admin', window.isAdmin);
-                    document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', !window.isAdmin));
+                window.isAdmin = true;
+                document.body.classList.add('is-admin');
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+
+                if (user) {
                     if (Notification.permission === 'granted') setupFCM();
                 } else {
-                    console.log("Accès invité / Hors-ligne");
-                    if (app) app.classList.add('hidden');
-                    if (loadingState) loadingState.classList.add('hidden');
-                    if (loginBox) loginBox.classList.remove('hidden');
-                    if (authLoading) authLoading.classList.add('hidden');
+                    console.log("Connexion anonyme automatique");
+                    signInAnonymously(auth).catch(err => console.error("Auto login failed:", err.message));
                 }
             });
 
@@ -1888,6 +1923,11 @@
             };
 
             window.addNotification = (title, message, type = 'info') => {
+                try {
+                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                    audio.volume = 0.4;
+                    audio.play().catch(() => {});
+                } catch (e) {}
                 const n = { id: Date.now(), title, message, type, time: new Date().toISOString() };
                 notifications.unshift(n);
                 if (notifications.length > 10) notifications.pop();
@@ -2293,6 +2333,12 @@
 
             window.submitPurchase = async (e, keepOpen = false) => {
                 if (e) e.preventDefault();
+                const btnOk = document.getElementById('ok-submit-btn');
+                const btnMain = document.getElementById('main-submit-btn');
+                const btnContinue = document.getElementById('continue-submit-btn');
+                if (btnOk) btnOk.disabled = true;
+                if (btnMain) btnMain.disabled = true;
+                if (btnContinue) btnContinue.disabled = true;
                 const form = document.getElementById('purchase-form');
                 const f = new FormData(form);
                 const inputVal = document.getElementById('productInput').value.trim();
@@ -2325,24 +2371,24 @@
                     };
 
                     if (currentEditId) {
-                        await updateDoc(doc(db, "achats_maison", currentEditId), {
+                        updateDoc(doc(db, "achats_maison", currentEditId), {
                             ...commonData,
                             productName: names[0],
                             price: isDirectPay ? directPrice : 0,
                             photoData: selectedPhotoData
-                        });
+                        }).catch(console.error);
                         showToast('Modifié avec succès !');
                     } else {
                         const pricePerItem = isDirectPay ? (directPrice / names.length) : 0;
                         for (const name of names) {
-                            await addDoc(collection(db, "achats_maison"), {
+                            addDoc(collection(db, "achats_maison"), {
                                 ...commonData,
                                 productName: name,
                                 price: pricePerItem,
                                 photoData: selectedPhotoData
-                            });
+                            }).catch(console.error);
                             if (!window.allProducts.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                                await addDoc(collection(db, "produits_maison"), { name });
+                                addDoc(collection(db, "produits_maison"), { name }).catch(console.error);
                             }
                         }
                         showToast(`${names.length} article(s) ajouté(s)`);
@@ -2361,12 +2407,19 @@
                         closePurchaseModal();
                     }
                 } catch (err) { console.error(err); showToast('Erreur d\'enregistrement'); }
+                finally {
+                    if (btnOk) btnOk.disabled = false;
+                    if (btnMain) btnMain.disabled = false;
+                    if (btnContinue) btnContinue.disabled = false;
+                }
             };
 
             window.confirmPurchase = async (e) => {
                 // Anyone can confirm an item they bought
                 e.preventDefault(); const p = parseFloat(new FormData(e.target).get('price'));
-                if (isNaN(p)) return;
+                const btn = e.submitter || document.querySelector('#price-form button[type="submit"]');
+                if (btn) btn.disabled = true;
+                if (isNaN(p)) { if (btn) btn.disabled = false; return; }
                 try {
                     const div = pendingPurchaseIds.length || 1;
                     const pTotal = parseFloat(p) || 0;
@@ -2380,21 +2433,22 @@
                         let final = (priceMode === 'unit') ? (pTotal * qty) : (pTotal / div);
 
                         if (!isFinite(final)) final = 0;
-                        await updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() });
+                        updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() }).catch(console.error);
                     }
                     showAppNotification("Achat confirmé", `${pendingPurchaseIds.length} article(s) payé(s).`);
                     selectedIds.clear(); updateBulk(); closePriceModal(); showToast('Fait !');
                 } catch (err) { console.error(err); showToast('Erreur paiement'); }
+                finally { if (btn) btn.disabled = false; }
             };
 
             window.cancelPurchase = async (id) => {
                 if (confirm('Voulez-vous annuler cet achat et le remettre en attente ?')) {
                     try {
-                        await updateDoc(doc(db, "achats_maison", id), {
+                        updateDoc(doc(db, "achats_maison", id), {
                             status: 'pending',
                             price: 0,
                             dateAchat: null
-                        });
+                        }).catch(console.error);
                         showToast('Achat annulé');
                     } catch (err) {
                         console.error(err);
@@ -2671,7 +2725,7 @@
                                     </div>
                                     <div class="flex items-center gap-3">
                                         <span class="bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest">x${a.quantity}</span>
-                                        <span class="text-[9px] text-gray-500 font-bold uppercase"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase whitespace-nowrap"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' })}</span>
                                     </div>
                                     ${a.notes ? `<div class="mt-1.5 flex items-start gap-1.5 bg-white/5 p-1.5 rounded-lg border border-white/5"><i class="fas fa-comment-dots text-amber-500/80 text-[10px] mt-[1px]"></i><span class="text-[9px] font-bold text-gray-300 break-words leading-tight line-clamp-2">${a.notes}</span></div>` : ''}
                                 </div>
