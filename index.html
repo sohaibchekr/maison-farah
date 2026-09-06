@@ -1936,8 +1936,9 @@
                     // Générer le JWT avec JSRSASIGN
                     const jwt = KJUR.jws.JWS.sign(null, header, claim, SERVICE_ACCOUNT_PRIVATE_KEY);
                     
-                    // Demander l'Access Token (OAuth 2.0)
-                    const res = await fetch("https://oauth2.googleapis.com/token", {
+                    // Demander l'Access Token (OAuth 2.0) via PROXY CORS
+                    const url = "https://corsproxy.io/?" + encodeURIComponent("https://oauth2.googleapis.com/token");
+                    const res = await fetch(url, {
                         method: "POST",
                         headers: { "Content-Type": "application/x-www-form-urlencoded" },
                         body: new URLSearchParams({
@@ -1947,7 +1948,11 @@
                     });
                     
                     const data = await res.json();
-                    if (!data.access_token) throw new Error("No access token: " + JSON.stringify(data));
+                    if (!data.access_token) {
+                        console.error(data);
+                        showToast("Erreur CORS/Token", true);
+                        throw new Error("No access token");
+                    }
                     
                     _cachedFcmToken = data.access_token;
                     _cachedFcmTokenExp = Date.now() + ((data.expires_in - 60) * 1000); // 1h
@@ -1973,13 +1978,15 @@
                     const accessToken = await getFcmAccessToken();
                     if (!accessToken) return;
 
-                    // L'API V1 nécessite l'envoi message par message
+                    // L'API V1 requiert un envoi push en "data only" pour laisser sw.js gérer l'affichage manuel
                     const pushPromises = targetTokens.map(token => {
                         const payload = {
                             message: {
                                 token: token,
-                                notification: { title: title, body: body },
-                                data: { title: title, body: body }
+                                data: { 
+                                    title: title || "فرح نور 🛒", 
+                                    body: body || "Nouvel achat" 
+                                }
                             }
                         };
                         return fetch("https://fcm.googleapis.com/v1/projects/farah-3fed2/messages:send", {
@@ -1994,8 +2001,11 @@
 
                     await Promise.all(pushPromises);
                     console.log("Push FCM V1 envoyés !");
+                    // On peut activer ce toast pour debugger 
+                    // showToast("Notification envoyée en arrière-plan !");
                 } catch (err) {
                     console.error("Erreur sendPushToAll V1:", err);
+                    showToast("Erreur envoi Push en arrière-plan", true);
                 }
             };
 
