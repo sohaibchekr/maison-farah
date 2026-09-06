@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- JSRSASIGN for JWT Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.9.0/jsrsasign-all-min.js"></script>
     <style>
         html,
         body {
@@ -196,13 +198,13 @@
 
         @media (max-width: 640px) {
             .glass-card {
-                padding: 1rem;
-                border-radius: 1rem;
+                padding: 0.75rem;
+                border-radius: 0.875rem;
             }
 
             .input-premium {
-                padding-top: 0.75rem;
-                padding-bottom: 0.75rem;
+                padding-top: 0.6rem;
+                padding-bottom: 0.6rem;
             }
         }
 
@@ -278,12 +280,24 @@
             main {
                 padding-bottom: 7rem;
             }
+
+            /* Tighten app container on mobile */
+            #app-content {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            main.max-w-7xl {
+                padding-left: 0.6rem !important;
+                padding-right: 0.6rem !important;
+                padding-top: 0.75rem !important;
+            }
         }
 
         /* Small mobile adaptation */
         @media (max-width: 480px) {
             .mobile-bottom-nav {
-                height: 3.8rem;
+                height: 3.5rem;
             }
 
             .mobile-bottom-nav i {
@@ -291,37 +305,49 @@
             }
 
             .mobile-bottom-nav span {
-                font-size: 7px;
+                font-size: 6.5px;
             }
 
             .mobile-fab {
                 width: 3.2rem;
                 height: 3.2rem;
-                bottom: 4.8rem;
-                right: 1.2rem;
+                bottom: 4.6rem;
+                right: 0.75rem;
                 font-size: 1.2rem;
                 border-radius: 1.2rem;
             }
 
             .glass-panel .h-16 {
-                height: 3.5rem;
+                height: 3.2rem;
             }
 
             .product-img-size {
-                width: 2.8rem !important;
-                height: 2.8rem !important;
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+                min-width: 2.5rem !important;
             }
 
             .stat-value {
-                font-size: 1.1rem !important;
+                font-size: 1rem !important;
             }
 
             .stat-label {
-                font-size: 8px !important;
+                font-size: 7px !important;
             }
 
             .glass-card {
-                padding: 0.75rem !important;
+                padding: 0.6rem !important;
+            }
+
+            /* compact search/filter toolbar */
+            #search-input {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            }
+
+            .filter-btn {
+                padding: 0.4rem 0.6rem !important;
+                font-size: 9px !important;
             }
         }
 
@@ -435,7 +461,7 @@
         </div>
 
         <!-- Main App Container -->
-        <div id="app-content" class="px-2 pb-24 sm:px-4">
+        <div id="app-content" class="px-0 sm:px-4 pb-24">
             <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <!-- Logo -->
@@ -556,41 +582,33 @@
             </nav>
 
             <!-- Bottom Navigation (Mobile) -->
-            <div class="mobile-bottom-nav flex justify-around items-center">
+            <div class="mobile-bottom-nav flex justify-around items-center px-1">
                 <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-                    class="flex flex-col items-center gap-1 text-rose-400">
-                    <i class="fas fa-home text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Accueil</span>
+                    class="flex flex-col items-center gap-0.5 text-rose-400 px-3">
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Accueil</span>
                 </button>
-                <button onclick="toggleStatsModal()" class="flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-chart-pie text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Stats</span>
+                <button onclick="toggleStatsModal()" class="flex flex-col items-center gap-0.5 text-gray-500 px-3">
+                    <i class="fas fa-chart-pie text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Stats</span>
                 </button>
-                <button onclick="toggleHistoryModal()" class="flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-history text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Histoire</span>
-                </button>
-                <button onclick="toggleCalculator()" class="flex flex-col items-center gap-1 text-emerald-500 group">
-                    <div
-                        class="relative w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30 group-active:scale-90 transition-transform">
-                        <i class="fas fa-calculator text-lg"></i>
+                <button onclick="openPurchaseModal()" class="flex flex-col items-center gap-0.5 -mt-5">
+                    <div class="w-13 h-13 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-xl shadow-rose-600/40" style="width:52px;height:52px">
+                        <i class="fas fa-plus text-white text-xl"></i>
                     </div>
-                    <span class="text-[8px] font-black uppercase">Calcul</span>
                 </button>
-                <button onclick="toggleMembersModal()"
-                    class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-users-cog text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Famille</span>
+                <button onclick="toggleHistoryModal()" class="flex flex-col items-center gap-0.5 text-gray-500 px-3">
+                    <i class="fas fa-history text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Historique</span>
                 </button>
-                <button onclick="toggleManageModal()"
-                    class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-database text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Produits</span>
+                <button onclick="toggleCalculator()" class="flex flex-col items-center gap-0.5 text-emerald-500 px-3">
+                    <i class="fas fa-calculator text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Calc</span>
                 </button>
             </div>
 
-            <!-- Floating Action Button (Mobile) -->
-            <button onclick="openPurchaseModal()" class="mobile-fab">
+            <!-- Floating Action Button (Mobile) - hidden, replaced by center bottom nav btn -->
+            <button onclick="openPurchaseModal()" class="mobile-fab" style="display:none">
                 <i class="fas fa-plus"></i>
             </button>
 
@@ -615,23 +633,24 @@
 
             <!-- Main Content -->
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-8">
+                <!-- Stats cards: 2x2 compact on mobile -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-1.5 md:gap-4 mb-4 md:mb-8">
                     <div onclick="openBudgetModal('solde')"
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-rose-400" id="stat-budget-restant">---
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform flex flex-col justify-center min-h-[65px] md:min-h-[80px]">
+                        <h3 class="stat-value text-lg md:text-3xl font-bold text-rose-400" id="stat-budget-restant">---
                         </h3>
                         <p
-                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
-                            Solde restant <i class="fas fa-edit ml-1 opacity-30 text-[8px]"></i></p>
+                            class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
+                            Solde <i class="fas fa-edit ml-1 opacity-30 text-[7px]"></i></p>
                     </div>
                     <div
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-emerald-500/30 group relative flex flex-col justify-center min-h-[80px]">
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-emerald-500/30 group relative flex flex-col justify-center min-h-[65px] md:min-h-[80px]">
                         <div onclick="toggleStatsModal()" class="cursor-pointer hover:scale-105 transition-transform">
-                            <h3 class="stat-value text-xl md:text-3xl font-bold text-emerald-400"
+                            <h3 class="stat-value text-lg md:text-3xl font-bold text-emerald-400"
                                 id="stat-total-depense">---</h3>
                             <p
-                                class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
-                                Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
+                                class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
+                                Dépenses <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
                         </div>
                         <button onclick="openBudgetModal('expenses')"
                             class="admin-only hidden absolute top-1 right-1 w-5 h-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-[9px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
@@ -639,45 +658,46 @@
                         </button>
                     </div>
                     <div
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-orange-500/30 flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-orange-400" id="stat-pending">0</h3>
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-orange-500/30 flex flex-col justify-center min-h-[65px] md:min-h-[80px]">
+                        <h3 class="stat-value text-lg md:text-3xl font-bold text-orange-400" id="stat-pending">0</h3>
                         <p
-                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
+                            class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
                             À acheter</p>
                     </div>
                     <div
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-pink-500/30 flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-pink-400" id="stat-members-count">0
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-pink-500/30 flex flex-col justify-center min-h-[65px] md:min-h-[80px]">
+                        <h3 class="stat-value text-lg md:text-3xl font-bold text-pink-400" id="stat-members-count">0
                         </h3>
                         <p
-                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
+                            class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
                             Famille</p>
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-                    <div class="relative flex-1 w-full max-w-md">
-                        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                <!-- Search & Filters: compact on mobile -->
+                <div class="flex flex-col gap-2 mb-4 md:mb-8">
+                    <div class="relative w-full">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                         <input type="text" id="search-input" oninput="renderAchats()"
                             placeholder="Chercher un article..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 focus:border-rose-500 outline-none">
+                            class="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 focus:border-rose-500 outline-none text-sm">
                     </div>
-                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <div class="flex gap-1.5 flex-wrap">
                         <button onclick="shareListToWhatsApp()"
-                            class="flex-1 md:flex-none bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 rounded-xl px-4 py-2 text-xs font-bold uppercase text-emerald-500 flex items-center justify-center gap-2 transition-all">
-                            <i class="fab fa-whatsapp text-lg"></i> Transférer
+                            class="filter-btn flex-1 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 rounded-xl px-3 py-2 text-[10px] font-bold uppercase text-emerald-500 flex items-center justify-center gap-1.5 transition-all">
+                            <i class="fab fa-whatsapp text-sm"></i> WhatsApp
                         </button>
                         <button onclick="toggleBudgetHistory()"
-                            class="flex-1 md:flex-none bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold uppercase whitespace-nowrap"><i
-                                class="fas fa-history mr-2 text-rose-400"></i>Histoire</button>
+                            class="filter-btn flex-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase flex items-center justify-center gap-1.5"><i
+                                class="fas fa-history text-rose-400"></i>Historique</button>
                         <select id="filter-status" onchange="renderAchats()"
-                            class="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-bold uppercase">
-                            <option value="all">Statut: Tout</option>
+                            class="filter-btn flex-1 bg-white/5 border border-white/10 rounded-xl px-2 py-2 outline-none text-[10px] font-bold uppercase">
+                            <option value="all">Tout</option>
                             <option value="pending" selected>🛒 À acheter</option>
                             <option value="received">✅ Terminés</option>
                         </select>
                         <select id="filter-store" onchange="renderAchats()"
-                            class="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-bold uppercase">
+                            class="filter-btn flex-1 bg-white/5 border border-white/10 rounded-xl px-2 py-2 outline-none text-[10px] font-bold uppercase">
                             <option value="all">Lieu: Tout</option>
                             <option value="superrette">🏬 Superrette</option>
                             <option value="marche">🥦 Marché</option>
@@ -688,7 +708,7 @@
                     </div>
                 </div>
 
-                <div id="achats-container" class="space-y-4"></div>
+                <div id="achats-container" class="space-y-2.5 md:space-y-4"></div>
             </main>
         </div>
 
@@ -1352,7 +1372,19 @@
                 document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
 
                 if (user) {
-                    if (Notification.permission === 'granted') setupFCM();
+                    // Demander permission notifications automatiquement (silencieux si déjà accepté)
+                    if ('Notification' in window) {
+                        if (Notification.permission === 'granted') {
+                            setupFCM();
+                        } else if (Notification.permission === 'default') {
+                            // Demander après un court délai pour ne pas bloquer le chargement
+                            setTimeout(() => {
+                                Notification.requestPermission().then(perm => {
+                                    if (perm === 'granted') setupFCM();
+                                });
+                            }, 3000);
+                        }
+                    }
                 } else {
                     console.log("Connexion anonyme automatique");
                     signInAnonymously(auth).catch(err => console.error("Auto login failed:", err.message));
@@ -1831,11 +1863,13 @@
                 }
             };
 
+            // Clé serveur FCM pour envoyer les push à tous les appareils
+            // (Legacy Server Key from Firebase console > Project Settings > Cloud Messaging)
+            const FCM_SERVER_KEY = "AAAA_REMPLACER_PAR_VOTRE_CLE_SERVEUR_FCM";
+
             async function setupFCM() {
                 try {
-                    // Clé VAPID (Générée dans la console Firebase -> Paramètres -> Cloud Messaging)
                     const vapidKey = "BAVtGM5umTakbtHv1onNuzZCfXCwIm0FX-XL0gFk4vit2PFI-ON8e498G0B4BdZ6-67rU-Ggx2ETbRc71d1tphA";
-
                     const swRegistration = await navigator.serviceWorker.ready;
                     const currentToken = await getToken(messaging, {
                         serviceWorkerRegistration: swRegistration,
@@ -1851,14 +1885,22 @@
                             fcmStatus.classList.add('text-emerald-500');
                         }
 
-                        if (auth.currentUser) {
-                            await setDoc(doc(db, "famille_tokens", auth.currentUser.uid), {
-                                token: currentToken,
-                                email: auth.currentUser.email,
-                                device: navigator.userAgent,
-                                lastUpdate: new Date().toISOString()
-                            });
+                        // Générer un ID stable pour cet appareil (fonctionne aussi pour anonyme)
+                        let deviceId = localStorage.getItem('farah_device_id');
+                        if (!deviceId) {
+                            deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                            localStorage.setItem('farah_device_id', deviceId);
                         }
+
+                        // Sauvegarder le token avec l'ID appareil (marche pour tous les utilisateurs)
+                        await setDoc(doc(db, "famille_tokens", deviceId), {
+                            token: currentToken,
+                            uid: auth.currentUser?.uid || 'anonymous',
+                            device: navigator.userAgent.substring(0, 100),
+                            lastUpdate: new Date().toISOString()
+                        });
+                        window._fcmToken = currentToken;
+                        console.log("Token FCM sauvegardé pour appareil:", deviceId);
                     } else {
                         console.warn("Pas de token FCM");
                     }
@@ -1868,6 +1910,94 @@
                     if (fcmStatus) fcmStatus.textContent = "✗ Erreur Token: " + (err.message || 'Error');
                 }
             }
+
+            // --- CONFIGURATION DU COMPTE DE SERVICE POUR LES PUSH V1 ---
+            const SERVICE_ACCOUNT_EMAIL = "firebase-adminsdk-fbsvc@farah-3fed2.iam.gserviceaccount.com";
+            const SERVICE_ACCOUNT_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDTuYXGf1FbIcob\nZIyfu84n8cd/vOaMaxXURoUd2AbQTh29ZNrXSn6dbte59nAGPsoq0gts43TjWigk\nPlaLLcfvdgeLYpbukF0Ig2dmTZoo+S4kkLJD07exfuaNkQBS7Aa7GQsqTtAN8k2m\nqLa5tMd7SkIJsXsj5lRBSXI1nrxr092+IMnRx2/BiBZ4Io0X0nDPoKaYTFoWNGJU\nVf7OXNofTA7WUE7/DjIKfV1TGijlGyRVwFUPO2bn5X9UKYv51eyucKHM6AHcyYqa\nWlvUDoby2/PbUh5oMu9FFbvBV8NN5APU/3b6hW/+/kvOKpV//OD6dHuY96URG5H0\nzwcTnC0HAgMBAAECggEAKF97K/PBPsB9uqV8z0TPtfw7z5bk26fb3MOpxJwaCISs\n1R2zQVR6OmkVh+d/SyGUCYBOH3BsLKJXfznH5PhQ5M+79o9ROqKaqvHruK1ZlTCW\n5PAWnip0H8uUCTC6QBWz3t+Sqnmm4NHwjrQjS9w2IcNyPkjys1DLhjuMJL9lLKY8\nBvtKUkZQOGPjqWtkV4sh/hjEmTiYcNKuk1ZbwEZ6TfDHyx1Ff1wxYnJE2JlvL6rA\nMLaoCpxpdl0DvcbmOyzCA5VWtpvh6QQ41roCTnX/e3It9FEYW3rmLEFvtpWmPzfD\nPlWEauaktR34g73o2WLzDGgY+yhurShKxlbWhhQmqQKBgQDy4CMRqmG92VeXblCI\nMb8BTjqqXf1G4jrSC0XjWicifjQQzedKzMQ0bAZGWZ27pH/zRgXTj063pOy3Qo5f\nm+ZA/G8M/lGARD0PA8RETb1Fwz+hG3oDEpTwyPI5XCb+o785B/a/pVrcz+CB3wUj\ntvYbG7a97WzFGQc1yB3S7X44uwKBgQDfKnRsWR8if4eeFlCpahdrTSVxi4xPtPdC\n2h4y9Shep5su5DuHAAu+BU57juW0AVRg0qALW5M0esiO0VTzateJHBxelaCtNdmH\njW7CmuYEayrO4LiwiOf4461vWAghLV6xj7+CFXT78uW1agbOsuLqWK9VAeX+xCvg\nzS3Q9m9OJQKBgQDs8EpmDoEiE+lGuwDnjRhYrre+wsi3ITbe+M5qeOXa2aHzjtwI\ndfEnbwdEFGMzzsxgSTyf4puZvtSMB+sbTNz5Iws3cteRuYCTqEoNlIWEjHEDu+lx\nG+yfZnogCU2ld5uyiJlo52jYKBhOuoKqD/DSC1xgt0I4mi0Vg6/MuZI8xwKBgQCF\nnp3m4dXKiiFhfmr9hRBQpvhsa+mvL+N8m6zJRhDN2/0GrpEV2+kr9XFwebb/eGxV\nLMe3BTW2jm3XVW9P8ADtj29NEroJ+9wrVXuj+asPqjsPc24iBVcfpvMJX+Q+OTQh\njLhV4xMQZ/cyEDHTQTisqD0S4Pgc+shq6W8tVuB+IQKBgCOwQFgqSTZOQBRHMGa0\nqpm8MpQhAYqIKxJg/1SPParRESkF36BRHMBc1XPeWUwlM/VIGf0E06HCXMHCXOI5\nYN+QvQDYZUOavMeL5oiulVTxibLsTkqiemDzPfeCGvyRHddtqAzKljTYgx5TH8O2\n1QOCJv+mn5TCJCqwOqwsr1oO\n-----END PRIVATE KEY-----\n";
+
+            let _cachedFcmToken = null;
+            let _cachedFcmTokenExp = 0;
+
+            // Fonction pour générer le token OAuth2 directement dans le navigateur
+            async function getFcmAccessToken() {
+                if (_cachedFcmToken && Date.now() < _cachedFcmTokenExp) return _cachedFcmToken;
+                
+                try {
+                    const header = { alg: "RS256", typ: "JWT" };
+                    const now = Math.floor(Date.now() / 1000);
+                    const claim = {
+                        iss: SERVICE_ACCOUNT_EMAIL,
+                        scope: "https://www.googleapis.com/auth/firebase.messaging",
+                        aud: "https://oauth2.googleapis.com/token",
+                        exp: now + 3600,
+                        iat: now
+                    };
+                    
+                    // Générer le JWT avec JSRSASIGN
+                    const jwt = KJUR.jws.JWS.sign(null, header, claim, SERVICE_ACCOUNT_PRIVATE_KEY);
+                    
+                    // Demander l'Access Token (OAuth 2.0)
+                    const res = await fetch("https://oauth2.googleapis.com/token", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({
+                            grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                            assertion: jwt
+                        }).toString()
+                    });
+                    
+                    const data = await res.json();
+                    if (!data.access_token) throw new Error("No access token: " + JSON.stringify(data));
+                    
+                    _cachedFcmToken = data.access_token;
+                    _cachedFcmTokenExp = Date.now() + ((data.expires_in - 60) * 1000); // 1h
+                    return _cachedFcmToken;
+                } catch (e) {
+                    console.error("Erreur génération Token FCM V1:", e);
+                    return null;
+                }
+            }
+
+            // Envoyer un push à TOUS les appareils enregistrés via Firebase API V1
+            window.sendPushToAll = async (title, body) => {
+                try {
+                    const tokensSnap = await getDocs(collection(db, "famille_tokens"));
+                    const targetTokens = [];
+                    tokensSnap.forEach(d => {
+                        const t = d.data().token;
+                        if (t && t !== window._fcmToken) targetTokens.push(t);
+                    });
+
+                    if (targetTokens.length === 0) return;
+
+                    const accessToken = await getFcmAccessToken();
+                    if (!accessToken) return;
+
+                    // L'API V1 nécessite l'envoi message par message
+                    const pushPromises = targetTokens.map(token => {
+                        const payload = {
+                            message: {
+                                token: token,
+                                notification: { title: title, body: body },
+                                data: { title: title, body: body }
+                            }
+                        };
+                        return fetch("https://fcm.googleapis.com/v1/projects/farah-3fed2/messages:send", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": "Bearer " + accessToken,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                    });
+
+                    await Promise.all(pushPromises);
+                    console.log("Push FCM V1 envoyés !");
+                } catch (err) {
+                    console.error("Erreur sendPushToAll V1:", err);
+                }
+            };
 
             window.testNotification = () => {
                 showAppNotification("TEST 👋", "Si vous voyez ceci, les notifications locales fonctionnent !");
@@ -2393,6 +2523,10 @@
                         }
                         showToast(`${names.length} article(s) ajouté(s)`);
                         showAppNotification(isDirectPay ? "Nouvel achat" : "Nouvelle demande", `${names.length} article(s) par la famille.`);
+                        // Envoyer push à tous les autres appareils (app fermée ou ouverte)
+                        const pushTitle = isDirectPay ? '🛒 Achat effectué !' : '📦 Nouvelle demande !';
+                        const pushBody = `${names.map(n => n).join(', ')} - ${names.length} article(s) ajouté(s)`;
+                        window.sendPushToAll && window.sendPushToAll(pushTitle, pushBody).catch(()=>{});
                     }
 
                     if (keepOpen) {
