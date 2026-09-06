@@ -1,5 +1,5 @@
-// ✅ VERSION v10 - Mode Hybride + FCM Background Notifications
-const APP_VERSION = 'v10';
+// ✅ VERSION v11 - Force cache update for data-only push strategy
+const APP_VERSION = 'v11';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
