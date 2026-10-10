@@ -700,6 +700,10 @@
                             class="filter-btn flex-1 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 rounded-xl px-3 py-2 text-[10px] font-bold uppercase text-emerald-500 flex items-center justify-center gap-1.5 transition-all">
                             <i class="fab fa-whatsapp text-sm"></i> WhatsApp
                         </button>
+                        <button onclick="exportAchatsToExcel()"
+                            class="filter-btn flex-1 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 rounded-xl px-3 py-2 text-[10px] font-bold uppercase text-blue-500 flex items-center justify-center gap-1.5 transition-all">
+                            <i class="fas fa-file-excel text-sm"></i> Excel
+                        </button>
                         <button onclick="toggleBudgetHistory()"
                             class="filter-btn flex-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase flex items-center justify-center gap-1.5"><i
                                 class="fas fa-history text-rose-400"></i>Historique</button>
@@ -807,6 +811,13 @@
                                 <div id="suggestion-dropdown"
                                     class="absolute left-0 right-0 top-full mt-2 glass-card bg-gray-900/95 border border-white/10 rounded-2xl max-h-60 overflow-y-auto z-50 hidden shadow-2xl custom-scrollbar">
                                 </div>
+                            </div>
+                            <!-- Category Tabs -->
+                            <div id="quick-cat-tabs" class="flex gap-1 mt-2 overflow-x-auto pb-1 custom-scrollbar" style="scrollbar-width:thin">
+                                <!-- tabs inserted by JS -->
+                            </div>
+                            <div id="quick-products-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-1.5 max-h-[130px] overflow-y-auto custom-scrollbar p-1">
+                                <!-- Quick Select Buttons (POS style) -->
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -2083,11 +2094,7 @@
             };
 
             window.addNotification = (title, message, type = 'info') => {
-                try {
-                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                    audio.volume = 0.4;
-                    audio.play().catch(() => {});
-                } catch (e) {}
+                // Notification son (supprimée pour ne pas réveiller l'enfant)
                 const n = { id: Date.now(), title, message, type, time: new Date().toISOString() };
                 notifications.unshift(n);
                 if (notifications.length > 10) notifications.pop();
@@ -2138,6 +2145,8 @@
                 currentEditId = null;
                 selectedProducts.clear();
                 renderChips();
+                // Render Quick Products list initially
+                if(window.renderQuickProducts) window.renderQuickProducts();
                 document.getElementById('purchase-modal-title').textContent = "Demander un Achat";
                 document.getElementById('main-submit-btn').textContent = "Demander";
                 document.getElementById('ok-submit-btn').textContent = "Enregistrer";
@@ -2154,6 +2163,7 @@
 
             prodInput?.addEventListener('input', (e) => {
                 const val = e.target.value.toLowerCase().trim();
+                if (window.renderQuickProducts) window.renderQuickProducts(val);
                 if (!val) { sugDrop.classList.add('hidden'); return; }
                 const matches = window.allProducts.filter(p => p.name.toLowerCase().includes(val) && !selectedProducts.has(p.name));
                 if (matches.length > 0) {
@@ -2179,18 +2189,30 @@
                 }
             });
 
-            window.addChip = (name) => {
+            window.addChip = async (name) => {
                 if (!name) return;
-                selectedProducts.add(name);
+                // Check if it's a new product (not in allProducts)
+                const known = window.allProducts?.find(p => p.name.toLowerCase() === name.toLowerCase());
+                if (!known) {
+                    // New product — add to Firestore then ask category
+                    try {
+                        const ref = await addDoc(collection(db, "produits_maison"), { name: name.toUpperCase(), category: 'autre' });
+                        // Ask for category immediately
+                        window.openCategoryPicker(ref.id, name.toUpperCase());
+                    } catch(e) { console.warn('addChip product save err', e); }
+                }
+                selectedProducts.add(name.toUpperCase ? name.toUpperCase() : name);
                 prodInput.value = "";
                 sugDrop.classList.add('hidden');
                 renderChips();
+                if(window.renderQuickProducts) window.renderQuickProducts();
                 prodInput.focus();
             };
 
             window.removeChip = (name) => {
                 selectedProducts.delete(name);
                 renderChips();
+                if(window.renderQuickProducts) window.renderQuickProducts();
             };
 
             function renderChips() {
@@ -2203,6 +2225,107 @@
                 </div>
             `).join('');
             }
+
+            // ── Categories System ────────────────────────────────────────────
+            const CATEGORIES = [
+                { id: 'superette',   label: 'Supérette',   icon: '🏬', color: 'bg-blue-600 hover:bg-blue-500',     tab: 'bg-blue-600' },
+                { id: 'pharmacie',   label: 'Pharmacie',   icon: '💊', color: 'bg-emerald-600 hover:bg-emerald-500', tab: 'bg-emerald-600' },
+                { id: 'boulangerie', label: 'Boulangerie', icon: '🥖', color: 'bg-amber-600 hover:bg-amber-500',    tab: 'bg-amber-600' },
+                { id: 'marche',      label: 'Marché',      icon: '🥦', color: 'bg-lime-600 hover:bg-lime-500',      tab: 'bg-lime-600' },
+                { id: 'cosmetique',  label: 'Cosmétiques', icon: '💄', color: 'bg-fuchsia-600 hover:bg-fuchsia-500', tab: 'bg-fuchsia-600' },
+                { id: 'autre',       label: 'Autre',       icon: '✨', color: 'bg-gray-600 hover:bg-gray-500',      tab: 'bg-gray-600' },
+            ];
+            window.CATEGORIES = CATEGORIES;
+            let activeQuickCat = 'all';
+
+            window.renderQuickProducts = (filter = '') => {
+                const grid = document.getElementById('quick-products-grid');
+                const tabBar = document.getElementById('quick-cat-tabs');
+                if (!grid) return;
+                if (!window.allProducts) { grid.innerHTML = ''; return; }
+
+                // Frequency map
+                const freq = {};
+                if (window.achats) {
+                    window.achats.forEach(a => {
+                        const n = a.productName.toLowerCase().trim();
+                        freq[n] = (freq[n] || 0) + 1;
+                    });
+                }
+
+                let all = window.allProducts.filter(p =>
+                    !selectedProducts.has(p.name) && p.name.toLowerCase().includes(filter)
+                );
+                all.sort((a, b) => {
+                    const cA = freq[a.name.toLowerCase().trim()] || 0;
+                    const cB = freq[b.name.toLowerCase().trim()] || 0;
+                    return cB !== cA ? cB - cA : a.name.localeCompare(b.name);
+                });
+
+                // Render category tabs
+                if (tabBar) {
+                    const counts = {};
+                    all.forEach(p => { const c = p.category || 'autre'; counts[c] = (counts[c]||0)+1; });
+                    const allTab = `<button onclick="window.setQuickCat('all')" class="flex-shrink-0 px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${ activeQuickCat==='all' ? 'bg-white text-gray-900' : 'bg-white/10 text-gray-400 hover:bg-white/20'}">Tout (${all.length})</button>`;
+                    const catTabs = CATEGORIES.map(cat => {
+                        const cnt = counts[cat.id] || 0;
+                        if (cnt === 0) return '';
+                        const active = activeQuickCat === cat.id;
+                        return `<button onclick="window.setQuickCat('${cat.id}')" class="flex-shrink-0 px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${active ? cat.tab+' text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}">${cat.icon} ${cat.label} (${cnt})</button>`;
+                    }).join('');
+                    tabBar.innerHTML = allTab + catTabs;
+                }
+
+                // Filter by active cat
+                const matches = activeQuickCat === 'all' ? all : all.filter(p => (p.category||'autre') === activeQuickCat);
+
+                if (matches.length === 0) {
+                    grid.innerHTML = '<div class="col-span-4 text-center text-[9px] text-gray-600 font-bold uppercase py-4">Aucun produit</div>';
+                    return;
+                }
+
+                // 15 couleurs vivantes — chaque produit garde SA couleur unique
+                const PALETTES = [
+                    'bg-rose-600 hover:bg-rose-500',
+                    'bg-blue-600 hover:bg-blue-500',
+                    'bg-emerald-600 hover:bg-emerald-500',
+                    'bg-amber-600 hover:bg-amber-500',
+                    'bg-violet-600 hover:bg-violet-500',
+                    'bg-cyan-600 hover:bg-cyan-500',
+                    'bg-fuchsia-600 hover:bg-fuchsia-500',
+                    'bg-orange-600 hover:bg-orange-500',
+                    'bg-teal-600 hover:bg-teal-500',
+                    'bg-indigo-600 hover:bg-indigo-500',
+                    'bg-pink-600 hover:bg-pink-500',
+                    'bg-sky-600 hover:bg-sky-500',
+                    'bg-lime-600 hover:bg-lime-500',
+                    'bg-purple-600 hover:bg-purple-500',
+                    'bg-red-600 hover:bg-red-500'
+                ];
+
+                grid.innerHTML = matches.map(p => {
+                    const hash = p.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                    const btnColor = PALETTES[hash % PALETTES.length];
+                    return `
+                    <div class="relative">
+                        <button type="button" onclick="addChip('${p.name.replace(/'/g, "\\'")}')" 
+                            class="${btnColor} text-white w-full border-none rounded-xl py-3 px-1 text-[11px] font-black uppercase tracking-tight text-center transition-all shadow-md active:scale-95 flex items-center justify-center leading-tight">
+                            ${p.name}
+                        </button>
+                        ${window.isAdmin ? `
+                        <button type="button" onclick="event.stopPropagation(); deleteProduct('${p.id}')" 
+                            class="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-rose-600">
+                            <i class="fas fa-times text-[9px]"></i>
+                        </button>` : ''}
+                    </div>
+                    `;
+                }).join('');
+            };
+
+            window.setQuickCat = (catId) => {
+                activeQuickCat = catId;
+                renderQuickProducts(document.getElementById('productInput')?.value?.toLowerCase() || '');
+            };
 
             window.shareListToWhatsApp = () => {
                 let list = [];
@@ -2334,6 +2457,60 @@
                 }
             };
 
+            // -- Auto Classify Magic ---------------------------------------
+            window.autoClassifyAllProducts = async () => {
+                if (!window.isAdmin || !window.allProducts) return;
+                
+                const dict = {
+                    'pharmacie': [
+                        'Consultation', 'Cerazette', 'لاباراي', 'Hemo', 'Test de', 'Dolo', 'Nopain', 'Paracétamol', 'Crème', 'Certificat', 'Gants', 'Sérum', 'Sparadrap', 'Vitamine', 'Vit D', 'Ordonnance', 'Maxilase', 'Forlax', 'Phanasol', 'Phanazole', 'Xydol', 'Celectin', 'دواء', 'جال', 'ميكوسيد', 'فليطوكس', 'سيراج', 'بيافين', 'Biafine', 'Efferalgan', 'Suppo', 'Biarel', 'Lactofibre', 'Biovexe', 'Sro', 'Regulax', 'Duphalac', 'Eosine', 'Rifamycine', 'Paralgan', 'Bebethen', 'Myocten', 'Mysilum', 'Clinique', 'Généraliste', 'Pédiatre', 'Gynéco', 'Médicament', 'Pharmacie', 'Panadol', 'Doliprane', 'دوليبران', 'كاشتي', 'سيرو', 'بومادة', 'تيزانة', 'حجامة', 'ماء البحر', 'لالكول', 'لانيستيزي', 'براسيتامول', 'Antidouleur', 'Anti diarrhée'
+                    ],
+                    'boulangerie': [
+                        'خبز', 'باناكوتا', 'باتيسري', 'لامونا', 'كرواسون', 'كسرة', 'مطلوع', 'زلابية', 'قاطو', 'مادلان', 'قلبلوز', 'ساندويش', 'بيتزا', 'تورتيلا', 'Pâtisserie', 'Crêpes', 'شوصو', 'Pizza', 'Sandwich', 'غراتيني', 'بان دومي', 'Pain'
+                    ],
+                    'marche': [
+                        'تفاح', 'كورجات', 'بطاطا', 'خيار', 'زرودية', 'بصل', 'عنب', 'قرعة', 'بسباس', 'كابوية', 'طوماطيش', 'طماطم', 'ثوم', 'لحشيش', 'معدنوس', 'نعناع', 'خضرة', 'بنان', 'ماندارين', 'رمان', 'دلاعة', 'فلفل', 'زبيب', 'جلبانة', 'لوبيا', 'خوخ', 'بيطراف', 'لحم', 'كبدة', 'سكالوب', 'دجاج', 'صدر', 'كويس', 'جناحتين', 'ماريني', 'Escalope', 'خضر و فواكه', 'قرنون', 'لانجاص', 'شلاظة', 'باندجال', 'ستيك'
+                    ],
+                    'cosmetique': [
+                        'صابون', 'بابيي', 'كرام', 'لاف', 'شامبو', 'Lave', 'أنتيم', 'ريحة', 'ليكوش', 'لي كوش', 'Couche', 'اوان', 'Parfum', 'كوسميتيك', 'ازيس', 'جافال', 'نشاف', 'قطن', 'Coton', 'سوسات', 'شيتة', 'بروس', 'كراطة', 'لانجات', 'Lingette', 'بافات', 'Bavettes', 'جال دوش', 'أومو', 'إزيس', 'Papier', 'Sac', 'صاشي', 'Bain bébé', 'Écran total', 'كوبونغل', 'بونجا', 'فيزلين خشين', 'كوتونتيج'
+                    ],
+                    'superette': [
+                        'فرماج', 'كونديا', 'مقارون', 'شيبس', 'روز', 'لاتاي', 'جو', 'اللبن', 'قضيان', 'Thon', 'طون', 'الزيت', 'الخل', 'مرغرين', 'قهوة', 'سكر', 'ملح', 'زيتون', 'ماقارون', 'ڨاطو', 'حليب', 'شيكولة', 'ياغورت', 'ماء', 'زبدة', 'ديول', 'ياووغت', 'عسيلة', 'عدس', 'سپاغيتي', 'سباغيتي', 'عقاش', 'حبة حلاوة', 'كمون', 'كروية', 'ماييز', 'تونة', 'عصير', 'jus', 'فونتا', 'سبرايت', 'كاشير', 'باتي', 'Pâti', 'Lait', 'Fromage', 'Gofrite', 'بيمو', 'كرام شونتييي', 'Skyer', 'Actimer', 'عكري', 'رند', 'فاني', 'الماء فاردو', 'حاجة نستقهواو', 'Bimbo', 'اللوز', 'هريسة', 'رايب', 'بيض', 'حميصة', 'ديول', 'كركم', 'جوز', 'جلجلان', 'بشنة', 'بذور', 'عطر', 'رشتة', 'سميد', 'فرينة', 'شاربات', 'تريدة', 'خمارة', 'دادا', 'كاكاو', 'كاوكاو'
+                    ]
+                };
+
+                const btn = document.getElementById('auto-classify-btn');
+                if(btn) { btn.disabled = true; btn.textContent = "⚙️..."; }
+                
+                let count = 0;
+                for (const p of window.allProducts) {
+                    if (p.category && p.category !== 'autre') continue; 
+                    
+                    let newCat = 'autre';
+                    for (const [cat, words] of Object.entries(dict)) {
+                        for (const w of words) {
+                            if (p.name.toLowerCase().includes(w.toLowerCase())) {
+                                newCat = cat;
+                                break;
+                            }
+                        }
+                        if (newCat !== 'autre') break;
+                    }
+                    
+                    if (newCat !== 'autre') {
+                        try {
+                            await updateDoc(doc(db, "produits_maison", p.id), { category: newCat });
+                            count++;
+                        } catch(e) {}
+                    }
+                }
+                
+                showToast(count + ' produits auto-classés !');
+                if(btn) { btn.disabled = false; btn.textContent = "🤖 Auto-Classer"; }
+                if(window.renderQuickProducts) window.renderQuickProducts();
+                renderManageProducts();
+            };
+
             function renderManageProducts() {
                 const list = document.getElementById('manage-products-list');
                 const search = (document.getElementById('manage-products-search')?.value || "").toLowerCase();
@@ -2342,11 +2519,13 @@
                 const filtered = window.allProducts.filter(p => p.name.toLowerCase().includes(search));
                 list.innerHTML = filtered.map(p => {
                     const isFused = p.name.includes(',') || p.name.includes('،');
+                    const cat = (window.CATEGORIES || []).find(c => c.id === (p.category||'autre')) || { id:'autre', label:'Autre', icon:'✨', tab:'bg-gray-600' };
                     return `
-                <div class="bg-white/5 p-2 rounded-lg flex justify-between items-center group">
-                    <div class="flex-1 truncate mr-2">
+                <div class="bg-white/5 p-2 rounded-lg flex justify-between items-center group gap-2">
+                    <div class="flex-1 truncate">
                         <span class="text-[10px] font-bold uppercase ${isFused ? 'text-rose-400' : ''}">${p.name}</span>
                     </div>
+                    <button onclick="window.openCategoryPicker('${p.id}', '${p.name.replace(/'/g,"\\'")}')" title="Changer catégorie" class="${cat.tab} text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-lg flex-shrink-0 opacity-80 hover:opacity-100 transition-all">${cat.icon} ${cat.label}</button>
                     ${window.isAdmin ? `
                         <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                             ${isFused ? `<button onclick="splitProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" title="Découper" class="text-emerald-500/50 hover:text-emerald-400"><i class="fas fa-scissors text-[10px]"></i></button>` : ''}
@@ -2375,19 +2554,43 @@
 
             window.quickAddProduct = async () => {
                 const input = document.getElementById('new-product-input');
-                const name = input.value.trim();
+                const name = input.value.trim().toUpperCase();
                 if (!name) return;
                 try {
-                    await addDoc(collection(db, "produits_maison"), { name });
+                    const ref = await addDoc(collection(db, "produits_maison"), { name, category: 'autre' });
                     input.value = "";
+                    window.openCategoryPicker(ref.id, name);
                 } catch (err) { showToast('Erreur ajout'); }
             };
 
             window.deleteProduct = async (id) => {
                 if (!window.isAdmin) return;
-                if (confirm('Supprimer ce produit type ?')) {
-                    try { await deleteDoc(doc(db, "produits_maison", id)); } catch (err) { showToast('Erreur'); }
+                if (confirm('Supprimer ce produit ?')) {
+                    try { await deleteDoc(doc(db, "produits_maison", id)); if(window.renderQuickProducts) window.renderQuickProducts(); } catch (err) { showToast('Erreur'); }
                 }
+            };
+
+            // ── Category Picker Modal ────────────────────────────────────────
+            window.openCategoryPicker = (productId, productName) => {
+                const modal = document.getElementById('cat-picker-modal');
+                if (!modal) return;
+                document.getElementById('cat-picker-product-name').textContent = productName;
+                document.getElementById('cat-picker-product-id').value = productId;
+                modal.classList.remove('hidden');
+            };
+            window.closeCategoryPicker = () => {
+                document.getElementById('cat-picker-modal')?.classList.add('hidden');
+            };
+            window.assignCategory = async (catId) => {
+                const productId = document.getElementById('cat-picker-product-id').value;
+                if (!productId) return;
+                try {
+                    await updateDoc(doc(db, "produits_maison", productId), { category: catId });
+                    showToast('Catégorie enregistrée !');
+                } catch(e) { console.warn('assignCategory err', e); }
+                window.closeCategoryPicker();
+                if(window.renderQuickProducts) window.renderQuickProducts();
+                renderManageProducts();
             };
 
             window.processBulkImport = async () => {
@@ -2521,7 +2724,6 @@
                     const commonData = {
                         quantity: f.get('quantity') || '1',
                         urgency: f.get('urgency'),
-                        store: finalStore || '',
                         notes: f.get('notes'),
                         dateDemande: new Date(f.get('dateDemande')).toISOString(),
                         status: isDirectPay ? 'received' : 'pending',
@@ -2531,8 +2733,12 @@
                     };
 
                     if (currentEditId) {
+                        const known = window.allProducts?.find(p => p.name.toLowerCase() === names[0].toLowerCase());
+                        const resolvedStore = (known && known.category && known.category !== 'autre') ? known.category : (finalStore || '');
+
                         updateDoc(doc(db, "achats_maison", currentEditId), {
                             ...commonData,
+                            store: resolvedStore,
                             productName: names[0],
                             price: isDirectPay ? directPrice : 0,
                             photoData: selectedPhotoData
@@ -2541,14 +2747,21 @@
                     } else {
                         const pricePerItem = isDirectPay ? (directPrice / names.length) : 0;
                         for (const name of names) {
+                            const known = window.allProducts?.find(p => p.name.toLowerCase() === name.toLowerCase());
+                            const resolvedStore = (known && known.category) ? known.category : (finalStore || '');
+
                             addDoc(collection(db, "achats_maison"), {
                                 ...commonData,
+                                store: resolvedStore,
                                 productName: name,
                                 price: pricePerItem,
                                 photoData: selectedPhotoData
                             }).catch(console.error);
-                            if (!window.allProducts.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                                addDoc(collection(db, "produits_maison"), { name }).catch(console.error);
+                            
+                            if (!known) {
+                                addDoc(collection(db, "produits_maison"), { name: name.toUpperCase(), category: 'autre' }).then(ref => {
+                                    window.openCategoryPicker(ref.id, name.toUpperCase());
+                                }).catch(console.error);
                             }
                         }
                         showToast(`${names.length} article(s) ajouté(s)`);
@@ -3113,9 +3326,11 @@
             };
             window.exportAchatsToExcel = () => {
                 if (!window.achats || window.achats.length === 0) {
-                    showToast("Aucune donnée à exporter", true); return;
+                    showToast("Aucune donnée existante", true); return;
                 }
                 try {
+                    const wb = XLSX.utils.book_new();
+
                     const achatsData = window.achats.map(a => ({
                         'Produit': a.productName,
                         'Quantité': a.quantity || '1',
@@ -3128,21 +3343,44 @@
                         'Demandé par': a.userName || 'Anonyme',
                         'Notes': a.notes || ''
                     }));
+                    if (achatsData.length > 0) {
+                        const wsAchats = XLSX.utils.json_to_sheet(achatsData);
+                        XLSX.utils.book_append_sheet(wb, wsAchats, "Achats");
+                    }
+
                     const budgetData = (window.budgetHistory || []).map(b => ({
                         'Montant (DA)': b.amount,
                         'Date': b.displayDate || new Date(b.date).toLocaleString('fr-FR'),
                         'Type': b.type || 'Dépôt'
                     }));
-                    const wb = XLSX.utils.book_new();
-                    const wsAchats = XLSX.utils.json_to_sheet(achatsData);
-                    XLSX.utils.book_append_sheet(wb, wsAchats, "Achats");
                     if (budgetData.length > 0) {
                         const wsBudget = XLSX.utils.json_to_sheet(budgetData);
                         XLSX.utils.book_append_sheet(wb, wsBudget, "Historique Budget");
                     }
+
+                    if (window.allProducts && window.allProducts.length > 0) {
+                        const prodsData = window.allProducts.map((p, index) => ({
+                            'ID': p.id || index,
+                            'Nom': p.name || 'Inconnu'
+                        }));
+                        const wsProds = XLSX.utils.json_to_sheet(prodsData);
+                        XLSX.utils.book_append_sheet(wb, wsProds, "Produits");
+                    }
+
+                    if (window.familyMembers && window.familyMembers.length > 0) {
+                        const membersData = window.familyMembers.map(m => ({
+                            'Créé le': m.createdAt ? new Date(m.createdAt).toLocaleString('fr-FR') : '',
+                            'Nom': m.userName || '',
+                            'Rôle': m.role || '',
+                            'Token Périphérique': m.fcmToken ? 'Enregistré' : 'Aucun'
+                        }));
+                        const wsMembers = XLSX.utils.json_to_sheet(membersData);
+                        XLSX.utils.book_append_sheet(wb, wsMembers, "Membres");
+                    }
+
                     const dateStr = new Date().toISOString().split('T')[0];
-                    XLSX.writeFile(wb, `Sauvegarde_Achats_FarahNour_${dateStr}.xlsx`);
-                    showToast("Exportation réussie !");
+                    XLSX.writeFile(wb, `Sauvegarde_Data_FarahNour_${dateStr}.xlsx`);
+                    showToast("Exportation Excel de TOUT terminée !");
                 } catch (err) { console.error(err); showToast("Erreur lors de l'exportation", true); }
             };
 
@@ -3383,13 +3621,13 @@
                                 <button onclick="quickAddProduct()"
                                     class="bg-rose-600 text-white px-6 rounded-xl font-bold text-xs uppercase transition-all hover:bg-rose-500">Ajouter</button>
                             </div>
-                            <div class="relative">
+                            <div class="relative flex-1">
                                 <input type="text" id="manage-products-search" oninput="renderManageProducts()"
                                     placeholder="Rechercher un produit..."
                                     class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 underline-none focus:border-rose-500 text-xs text-gray-400">
-                                <i
-                                    class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500"></i>
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500"></i>
                             </div>
+                            <button id="auto-classify-btn" onclick="autoClassifyAllProducts()" class="bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-xs font-black uppercase transition-all shadow-md">🤖 Auto-Classer</button>
                         </div>
                         <div id="manage-products-list"
                             class="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-2 pr-2 custom-scrollbar">
@@ -3419,6 +3657,31 @@
             </div>
         </div>
     </div> <!-- End of app-content -->
+
+    <!-- ===================== CATEGORY PICKER MODAL ===================== -->
+    <div id="cat-picker-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeCategoryPicker()"></div>
+        <div class="relative glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl z-10 rounded-2xl">
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-tags text-indigo-400 text-xl"></i>
+                </div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-white">Classer ce produit</h3>
+                <p id="cat-picker-product-name" class="text-lg font-black text-rose-400 mt-1 uppercase"></p>
+                <p class="text-[9px] text-gray-500 font-bold uppercase mt-1">Ce classement sera mémorisé pour toujours</p>
+            </div>
+            <input type="hidden" id="cat-picker-product-id">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="assignCategory('superette')"   class="flex items-center gap-3 bg-blue-600    hover:bg-blue-500    text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">🏬 Supérette</button>
+                <button onclick="assignCategory('pharmacie')"   class="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">💊 Pharmacie</button>
+                <button onclick="assignCategory('boulangerie')" class="flex items-center gap-3 bg-amber-600   hover:bg-amber-500   text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">🥖 Boulangerie</button>
+                <button onclick="assignCategory('marche')"      class="flex items-center gap-3 bg-lime-600    hover:bg-lime-500    text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">🥦 Marché</button>
+                <button onclick="assignCategory('cosmetique')"  class="flex items-center gap-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">💄 Cosmétiques</button>
+                <button onclick="assignCategory('autre')"       class="flex items-center gap-3 bg-gray-600    hover:bg-gray-500    text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">✨ Autre</button>
+            </div>
+            <button onclick="closeCategoryPicker()" class="mt-4 w-full text-center text-[10px] text-gray-600 hover:text-gray-400 font-bold uppercase transition-colors">Ignorer</button>
+        </div>
+    </div>
 
     <!-- ===================== SCANNER MODAL ===================== -->
     <div id="scanner-modal" class="fixed inset-0 z-[90] hidden">
