@@ -1,15 +1,27 @@
-// ✅ VERSION v11 - Force cache update for data-only push strategy
-const APP_VERSION = 'v11';
+// ✅ VERSION v12 - Fix CORS: skip external APIs from cache
+const APP_VERSION = 'v12';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
     './',
     './index.html',
     './fille.jpg',
-    'https://cdn.tailwindcss.com',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+];
+
+// Domaines à NE PAS mettre en cache (APIs Firebase, CDN dynamiques...)
+const SKIP_CACHE_HOSTS = [
+    'firestore.googleapis.com',
+    'firebase.googleapis.com',
+    'identitytoolkit.googleapis.com',
+    'securetoken.googleapis.com',
+    'fcm.googleapis.com',
+    'www.gstatic.com',
+    'fonts.googleapis.com',
+    'fonts.gstatic.com',
+    'mixkit.co',
+    'cdn.jsdelivr.net',
+    'cdnjs.cloudflare.com',
+    'cdn.tailwindcss.com',
 ];
 
 self.addEventListener('install', (e) => {
@@ -31,22 +43,32 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-    // Stratégie hybride : cache rapide + mise à jour en fond
+    const url = new URL(e.request.url);
+
+    // Ne pas intercepter les requêtes Firebase/APIs externes (évite CORS)
+    if (SKIP_CACHE_HOSTS.some(host => url.hostname.includes(host))) {
+        return; // Laisse passer directement au réseau
+    }
+    // Ne pas mettre en cache les requêtes POST/PUT/DELETE
+    if (e.request.method !== 'GET') return;
+
+    // Stratégie cache-first pour les ressources locales
     e.respondWith(
         caches.match(e.request).then((cached) => {
-            const networked = fetch(e.request).then((req) => {
-                const clone = req.clone();
-                caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
-                return req;
-            }).catch(() => null);
-            return cached || networked;
+            if (cached) return cached;
+            return fetch(e.request).then((res) => {
+                if (res && res.status === 200 && res.type === 'basic') {
+                    const clone = res.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+                }
+                return res;
+            }).catch(() => cached);
         })
     );
 });
 
 // ─────────────────────────────────────────────
 // 📲 FCM BACKGROUND PUSH — App fermée / fond
-// Firebase envoie un "push" event que le SW intercepte
 // ─────────────────────────────────────────────
 self.addEventListener('push', (event) => {
     let title = 'فرح نور 🛒';
@@ -67,10 +89,11 @@ self.addEventListener('push', (event) => {
         body,
         icon,
         badge: icon,
-        vibrate: [200, 100, 200, 100, 200],
+        vibrate: [200, 100, 200],
         tag: 'farah-nour-push',
         renotify: true,
         requireInteraction: false,
+        silent: true, // Silencieux (pour ne pas réveiller)
         data: { url: self.registration.scope }
     };
 
