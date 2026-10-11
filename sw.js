@@ -1,5 +1,5 @@
-// ✅ VERSION v12 - Fix CORS: skip external APIs from cache
-const APP_VERSION = 'v12';
+// ✅ VERSION v13 - Performance: lazy loading + localStorage cache + pagination
+const APP_VERSION = 'v13';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
