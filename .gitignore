@@ -1,0 +1,9 @@
+# Firebase configuration
+.firebase/
+firestore.rules
+firestore.indexes.json
+functions/node_modules/
+
+# Image/Temp files
+*.tmp
+*.log
