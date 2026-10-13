@@ -71,33 +71,65 @@ self.addEventListener('fetch', (e) => {
 // 📲 FCM BACKGROUND PUSH — App fermée / fond
 // ─────────────────────────────────────────────
 self.addEventListener('push', (event) => {
-    let title = 'فرح نور 🛒';
-    let body = 'Nouvelle mise à jour !';
-    let icon = './fille.jpg';
+    console.log('[SW] push event received', event);
 
-    try {
-        if (event.data) {
-            const data = event.data.json();
-            title = data.notification?.title || data.title || title;
-            body = data.notification?.body || data.body || body;
+    const processPush = async () => {
+        let title = 'فرح نور 🛒';
+        let body = 'Nouvelle mise à jour !';
+        let icon = './fille.jpg';
+
+        try {
+            if (event.data) {
+                try {
+                    const data = event.data.json();
+                    console.log('[SW] push data (json):', data);
+                    title = data.notification?.title || data.title || title;
+                    body = data.notification?.body || data.body || body;
+                } catch (jsonErr) {
+                    console.warn('[SW] push data is not JSON, falling back to text', jsonErr);
+                    try {
+                        const text = event.data.text();
+                        console.log('[SW] push data (text):', text);
+                        body = text || body;
+                    } catch (textErr) {
+                        console.warn('[SW] failed to read push.text()', textErr);
+                    }
+                }
+            } else {
+                console.log('[SW] push event has no data');
+            }
+
+            const options = {
+                body,
+                icon,
+                badge: icon,
+                vibrate: [200, 100, 200],
+                tag: 'farah-nour-push',
+                renotify: true,
+                requireInteraction: false,
+                silent: false,
+                data: { url: self.registration.scope, receivedAt: Date.now() }
+            };
+
+            await self.registration.showNotification(title, options);
+            console.log('[SW] notification shown OK');
+        } catch (err) {
+            console.error('[SW] error handling push:', err);
+            try {
+                const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+                for (const client of allClients) {
+                    client.postMessage({
+                        type: 'SW_PUSH_ERROR',
+                        error: (err && err.message) ? err.message : String(err)
+                    });
+                }
+            } catch (postErr) {
+                console.error('[SW] failed to postMessage to clients', postErr);
+            }
         }
-    } catch (e) {
-        body = event.data ? event.data.text() : body;
-    }
-
-    const options = {
-        body,
-        icon,
-        badge: icon,
-        vibrate: [200, 100, 200],
-        tag: 'farah-nour-push',
-        renotify: true,
-        requireInteraction: false,
-        silent: true, // Silencieux (pour ne pas réveiller)
-        data: { url: self.registration.scope }
     };
 
-    event.waitUntil(self.registration.showNotification(title, options));
+    event.waitUntil(processPush());
 });
 
 // Ouvre l'app au clic sur la notification système
