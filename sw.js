@@ -1,5 +1,5 @@
-// ✅ VERSION v14 - Notifications envoyées via Cloud Function sécurisée
-const APP_VERSION = 'v14';
+// ✅ VERSION v15 - Optimisé Android : push et arrière-plan sécurisés
+const APP_VERSION = 'v15';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
@@ -73,7 +73,7 @@ self.addEventListener('fetch', (e) => {
 self.addEventListener('push', (event) => {
     let title = 'فرح نور 🛒';
     let body = 'Nouvelle mise à jour !';
-    let icon = './fille.jpg';
+    let icon = new URL('fille.jpg', self.registration.scope).href;
 
     try {
         if (event.data) {
@@ -93,11 +93,14 @@ self.addEventListener('push', (event) => {
         tag: 'farah-nour-push',
         renotify: true,
         requireInteraction: false,
-        silent: true, // Silencieux (pour ne pas réveiller)
         data: { url: self.registration.scope }
     };
 
-    event.waitUntil(self.registration.showNotification(title, options));
+    event.waitUntil(
+        self.registration.showNotification(title, options).catch((err) => {
+            console.warn("Échec d'affichage de la notification push en arrière-plan:", err);
+        })
+    );
 });
 
 // Ouvre l'app au clic sur la notification système
