@@ -1,11 +1,14 @@
-// ✅ VERSION v15 - Optimisé Android : push et arrière-plan sécurisés
-const APP_VERSION = 'v15';
+// ✅ VERSION v16 - Icônes PNG + corrections Android complètes
+const APP_VERSION = 'v16';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
     './',
     './index.html',
     './fille.jpg',
+    './icon-192.png',
+    './icon-512.png',
+    './manifest.json',
 ];
 
 // Domaines à NE PAS mettre en cache (APIs Firebase, CDN dynamiques...)
