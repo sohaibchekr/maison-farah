@@ -1,14 +1,14 @@
-// ✅ VERSION v16 - Icônes PNG + corrections Android complètes
-const APP_VERSION = 'v16';
+// ✅ VERSION v17 - Installation Android ultra-résiliente et push sécurisé
+const APP_VERSION = 'v17';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
     './',
     './index.html',
     './fille.jpg',
+    './manifest.json',
     './icon-192.png',
     './icon-512.png',
-    './manifest.json',
 ];
 
 // Domaines à NE PAS mettre en cache (APIs Firebase, CDN dynamiques...)
@@ -29,7 +29,15 @@ const SKIP_CACHE_HOSTS = [
 
 self.addEventListener('install', (e) => {
     e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+        caches.open(CACHE_NAME).then(async (cache) => {
+            for (const asset of ASSETS) {
+                try {
+                    await cache.add(asset);
+                } catch (err) {
+                    console.warn('Fichier de cache facultatif non trouvé:', asset);
+                }
+            }
+        })
     );
     self.skipWaiting();
 });
