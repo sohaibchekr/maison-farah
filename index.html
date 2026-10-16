@@ -6,14 +6,6 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>فرح نور - Achats Famille</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#e11d48">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FarahAchats">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" type="image/png" href="icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -436,6 +428,10 @@
             100% { transform: translateX(-100%); }
         }
     </style>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e1b4b">
+    <link rel="apple-touch-icon" href="fille.jpg">
 </head>
 
 <body class="text-gray-100">
@@ -1505,13 +1501,8 @@
 
             let isInitialLoad = true;
             onSnapshot(collection(db, "achats_maison"), (snap) => {
-                // 1. Mémoriser les anciennes données AVANT la mise à jour (pour détecter les changements)
                 const oldAchats = window.achats || [];
-
-                // 2. Mettre à jour window.achats immédiatement
                 window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
-
-                // 3. Mettre en cache local (sans bloquer l'UI)
                 try {
                     const toCache = window.achats.slice(0, 150).map(item => {
                         if (item.photoData && item.photoData.length > 25000) {
@@ -1522,12 +1513,9 @@
                     });
                     localStorage.setItem(CACHE_KEY_ACHATS, JSON.stringify(toCache));
                 } catch(e) {}
-
-                // 4. Mettre à jour l'interface (toujours, avant les notifications)
                 updateStoreFilters();
                 renderAchats(); renderPurchaseHistory(); updateAchatStats();
 
-                // 5. Notifications (isolées : une erreur ici ne bloque jamais l'affichage)
                 if (!isInitialLoad) {
                     try {
                         snap.docChanges().forEach(change => {
@@ -2203,8 +2191,7 @@
 
                 // Déclencher une notification système (OS) si autorisé
                 if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
-                    // Icône en URL absolue (obligatoire sur Android Chrome)
-                    const iconUrl = new URL('icon-192.png', location.href).href;
+                    const iconUrl = new URL('fille.jpg', location.href).href;
                     navigator.serviceWorker.ready.then(registration => {
                         return registration.showNotification(title, {
                             body: message,
@@ -2850,7 +2837,11 @@
                         quantity: f.get('quantity') || '1',
                         urgency: f.get('urgency'),
                         notes: f.get('notes'),
-                        dateDemande: new Date(f.get('dateDemande')).toISOString(),
+                        dateDemande: (() => {
+                            const raw = f.get('dateDemande');
+                            const d = raw ? new Date(raw) : new Date();
+                            return (isNaN(d.getTime()) ? new Date() : d).toISOString();
+                        })(),
                         status: isDirectPay ? 'received' : 'pending',
                         dateAchat: isDirectPay ? new Date().toISOString() : null,
                         userId: auth.currentUser ? auth.currentUser.uid : 'guest',
@@ -2871,8 +2862,6 @@
                         showToast('Modifié avec succès !');
                     } else {
                         const pricePerItem = isDirectPay ? (directPrice / names.length) : 0;
-                        const optIds = [];
-
                         for (const name of names) {
                             const known = window.allProducts?.find(p => p.name.toLowerCase() === name.toLowerCase());
                             const resolvedStore = (known && known.category) ? known.category : (finalStore || '');
@@ -2884,30 +2873,26 @@
                                 photoData: selectedPhotoData
                             };
 
-                            // Affichage optimiste immédiat (avant la réponse Firestore)
+                            // Affichage optimiste immédiat dans la liste des courses
                             const optId = 'opt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-                            optIds.push(optId);
                             window.achats = [{ id: optId, ...newDocData }, ...(window.achats || [])];
                             renderAchats();
+                            updateAchatStats();
 
                             await addDoc(collection(db, "achats_maison"), newDocData);
-
+                            
                             if (!known) {
                                 addDoc(collection(db, "produits_maison"), { name: name.toUpperCase(), category: 'autre' }).then(ref => {
                                     window.openCategoryPicker(ref.id, name.toUpperCase());
                                 }).catch(console.error);
                             }
                         }
-
-                        // Retirer les entrées optimistes (onSnapshot va insérer les vrais docs Firestore)
-                        window.achats = (window.achats || []).filter(a => !optIds.includes(a.id));
-                        renderAchats(); updateAchatStats();
                         showToast(`${names.length} article(s) ajouté(s)`);
                         try {
                             showAppNotification(isDirectPay ? "Nouvel achat" : "Nouvelle demande", `${names.length} article(s) par la famille.`);
                             const pushTitle = isDirectPay ? '🛒 Achat effectué !' : '📦 Nouvelle demande !';
-                            const pushBody = `${names.join(', ')} - ${names.length} article(s) ajouté(s)`;
-                            window.sendPushToAll && window.sendPushToAll(pushTitle, pushBody).catch(() => {});
+                            const pushBody = `${names.map(n => n).join(', ')} - ${names.length} article(s) ajouté(s)`;
+                            window.sendPushToAll && window.sendPushToAll(pushTitle, pushBody).catch(()=>{});
                         } catch (notifErr) {
                             console.warn("Notification push ignorée:", notifErr);
                         }
@@ -3220,11 +3205,15 @@
                 const search = (document.getElementById('search-input')?.value || "").toLowerCase().trim();
                 
                 const allItems = window.achats || [];
-                const data = allItems.filter(a =>
-                    (filt === 'all' || a.status === filt) &&
-                    (storeFilt === 'all' || a.store === storeFilt) &&
-                    (a.productName.toLowerCase().includes(search))
-                );
+                const data = allItems.filter(a => {
+                    if (!a) return false;
+                    const pName = (a.productName || a.name || '').toLowerCase();
+                    const aStatus = a.status || 'pending';
+                    const aStore = a.store || '';
+                    return (filt === 'all' || aStatus === filt) &&
+                           (storeFilt === 'all' || aStore === storeFilt) &&
+                           (pName.includes(search));
+                });
 
                 // Tri : En attente d'abord, puis par date décroissante
                 data.sort((a, b) => {
@@ -3602,7 +3591,7 @@
                 } catch (err) { console.error(err); showToast("Erreur lors de l'exportation", true); }
             };
 
-            window.APP_VERSION = 'v16';
+            window.APP_VERSION = 'v17';
             window.checkForUpdates = () => {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistration().then(reg => {
@@ -4365,3 +4354,5 @@
 </body>
 
 </html>
+
+
