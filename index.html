@@ -1384,8 +1384,6 @@
                 if (window.updateAchatStats) window.updateAchatStats();
                 if (window.updateStoreFilters) window.updateStoreFilters();
                 if (window.renderAchats) window.renderAchats();
-                if (window.renderPurchaseHistory) window.renderPurchaseHistory();
-                if (window.renderManageProducts) window.renderManageProducts();
             }, 10);
 
             // Gestion du mode hors-ligne UI
@@ -1504,17 +1502,14 @@
                 const oldAchats = window.achats || [];
                 window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
                 try {
-                    const toCache = window.achats.slice(0, 150).map(item => {
-                        if (item.photoData && item.photoData.length > 25000) {
-                            const { photoData, ...rest } = item;
-                            return rest;
-                        }
-                        return item;
+                    const toCache = window.achats.slice(0, 100).map(item => {
+                        const { photoData, ...rest } = item;
+                        return rest;
                     });
                     localStorage.setItem(CACHE_KEY_ACHATS, JSON.stringify(toCache));
                 } catch(e) {}
                 updateStoreFilters();
-                renderAchats(); renderPurchaseHistory(); updateAchatStats();
+                renderAchats(); updateAchatStats();
 
                 if (!isInitialLoad) {
                     try {
@@ -1586,6 +1581,8 @@
             });
 
             function renderBudgetHistory() {
+                const modal = document.getElementById('history-modal');
+                if (modal && modal.classList.contains('hidden')) return;
                 const search = (document.getElementById('history-search-input')?.value || "").toLowerCase();
                 const list = (window.budgetHistory || []).filter(d =>
                     d.amount.toString().includes(search) || d.displayDate.toLowerCase().includes(search)
@@ -1802,10 +1799,14 @@
             };
 
             function renderPurchaseHistory() {
+                const historyModal = document.getElementById('history-modal');
+                if (historyModal && historyModal.classList.contains('hidden')) return;
                 const search = (document.getElementById('history-search-input')?.value || "").toLowerCase();
-                const history = window.achats.filter(a => a.status === 'received' && a.productName.toLowerCase().includes(search))
-                    .sort((a, b) => new Date(b.dateAchat) - new Date(a.dateAchat));
-                document.getElementById('purchase-history-list').innerHTML = history.length > 0 ? history.map(a => `
+                const history = (window.achats || []).filter(a => a.status === 'received' && (a.productName || a.name || '').toLowerCase().includes(search))
+                    .sort((a, b) => new Date(b.dateAchat || 0) - new Date(a.dateAchat || 0));
+                const listEl = document.getElementById('purchase-history-list');
+                if (!listEl) return;
+                listEl.innerHTML = history.length > 0 ? history.slice(0, 50).map(a => `
                 <div onclick="toggleSelect('${a.id}')" class="glass-card p-4 border-l-4 ${selectedIds.has(a.id) ? 'border-rose-300 ring-2 ring-rose-500 bg-rose-500/10' : 'border-rose-500'} flex justify-between items-center cursor-pointer hover:bg-white/[0.05] transition-all">
                     <div class="flex items-center gap-4">
                         ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="product-img-size w-10 h-10 rounded-lg object-cover border border-white/10 opacity-60 hover:opacity-100 transition-all">` : ''}
@@ -2624,6 +2625,8 @@
             };
 
             function renderManageProducts() {
+                const modal = document.getElementById('manage-modal');
+                if (modal && modal.classList.contains('hidden')) return;
                 const list = document.getElementById('manage-products-list');
                 const search = (document.getElementById('manage-products-search')?.value || "").toLowerCase();
                 if (!list || !window.allProducts) return;
@@ -3161,9 +3164,9 @@
             window.toggleSelect = (id) => {
                 if (selectedIds.has(id)) selectedIds.delete(id);
                 else selectedIds.add(id);
-                updateBulk(); renderAchats(); renderPurchaseHistory();
+                updateBulk(); renderAchats();
             };
-            window.clearSelection = () => { selectedIds.clear(); updateBulk(); renderAchats(); renderPurchaseHistory(); };
+            window.clearSelection = () => { selectedIds.clear(); updateBulk(); renderAchats(); };
 
             function updateBulk() {
                 const b = document.getElementById('bulk-action-bar');
@@ -3591,7 +3594,7 @@
                 } catch (err) { console.error(err); showToast("Erreur lors de l'exportation", true); }
             };
 
-            window.APP_VERSION = 'v17';
+            window.APP_VERSION = 'v18';
             window.checkForUpdates = () => {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistration().then(reg => {
@@ -3650,13 +3653,14 @@
                 const installBtn = document.getElementById('pwa-install-btn');
                 if (installBtn) {
                     installBtn.classList.remove('hidden');
-                    installBtn.addEventListener('click', async () => {
+                    installBtn.onclick = async () => {
+                        if (!window.deferredPrompt) return;
                         installBtn.classList.add('hidden');
                         window.deferredPrompt.prompt();
                         const { outcome } = await window.deferredPrompt.userChoice;
                         console.log(`User response to install prompt: ${outcome}`);
                         window.deferredPrompt = null;
-                    });
+                    };
                 }
             });
 
