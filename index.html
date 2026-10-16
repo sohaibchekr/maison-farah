@@ -6,10 +6,32 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>فرح نور - Achats Famille</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e11d48">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FarahAchats">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Lazy script loader utility for maximum startup speed -->
+    <script>
+        window.loadScript = function(src) {
+            return new Promise(function(resolve, reject) {
+                if (document.querySelector('script[src="' + src + '"]')) return resolve();
+                var s = document.createElement('script');
+                s.src = src;
+                s.async = true;
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        };
+    </script>
     <style>
         html,
         body {
@@ -24,36 +46,72 @@
         }
 
         :root {
-            --bg-app: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
-            --bg-body: #0f172a;
-            --glass-bg: rgba(30, 41, 59, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --card-hover: rgba(30, 41, 59, 0.6);
-            --panel-bg: rgba(15, 23, 42, 0.6);
-            --input-bg: rgba(255, 255, 255, 0.03);
+            --bg-body: #050505;
+            --glass-bg: rgba(20, 20, 25, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #a1a1aa;
+            --card-hover: rgba(30, 30, 40, 0.6);
+            --panel-bg: rgba(10, 10, 15, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.04);
+            --accent-orb-1: rgba(225, 29, 72, 0.15);
+            --accent-orb-2: rgba(124, 58, 237, 0.15);
         }
 
         .light-mode {
-            --bg-app: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            --bg-body: #f8fafc;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(0, 0, 0, 0.08);
+            --bg-body: #f1f5f9;
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.6);
             --text-primary: #0f172a;
             --text-secondary: #475569;
             --card-hover: rgba(255, 255, 255, 0.9);
-            --panel-bg: rgba(255, 255, 255, 0.8);
+            --panel-bg: rgba(255, 255, 255, 0.85);
             --input-bg: rgba(0, 0, 0, 0.03);
+            --accent-orb-1: rgba(225, 29, 72, 0.1);
+            --accent-orb-2: rgba(124, 58, 237, 0.1);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-app);
+            font-family: 'Outfit', 'Inter', sans-serif;
+            background: var(--bg-body);
             background-attachment: fixed;
             min-height: 100vh;
             color: var(--text-primary);
-            transition: all 0.3s ease;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 70vw;
+            height: 70vw;
+            max-width: 600px;
+            max-height: 600px;
+            border-radius: 50%;
+            filter: blur(90px);
+            z-index: -1;
+            pointer-events: none;
+            animation: floatOrb 18s ease-in-out infinite alternate;
+        }
+
+        body::before {
+            top: -10%; left: -10%;
+            background: var(--accent-orb-2);
+        }
+
+        body::after {
+            bottom: -10%; right: -10%;
+            background: var(--accent-orb-1);
+            animation-delay: -9s;
+            animation-direction: alternate-reverse;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(5%, 10%) scale(1.1); }
+            66% { transform: translate(-5%, 5%) scale(0.9); }
+            100% { transform: translate(0, -10%) scale(1.05); }
         }
 
         .glass-panel {
@@ -153,19 +211,27 @@
 
         /* Responsive Modal Fix */
         .modal-container {
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
+            padding-bottom: 2rem;
+        }
+
+        @media (max-height: 600px) {
+            .modal-container {
+                max-height: 95vh;
+                padding-bottom: 1.5rem;
+            }
         }
 
         @media (max-width: 640px) {
             .glass-card {
-                padding: 1rem;
-                border-radius: 1rem;
+                padding: 0.75rem;
+                border-radius: 0.875rem;
             }
 
             .input-premium {
-                padding-top: 0.75rem;
-                padding-bottom: 0.75rem;
+                padding-top: 0.6rem;
+                padding-bottom: 0.6rem;
             }
         }
 
@@ -241,12 +307,24 @@
             main {
                 padding-bottom: 7rem;
             }
+
+            /* Tighten app container on mobile */
+            #app-content {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            main.max-w-7xl {
+                padding-left: 0.6rem !important;
+                padding-right: 0.6rem !important;
+                padding-top: 0.75rem !important;
+            }
         }
 
         /* Small mobile adaptation */
         @media (max-width: 480px) {
             .mobile-bottom-nav {
-                height: 3.8rem;
+                height: 3.5rem;
             }
 
             .mobile-bottom-nav i {
@@ -254,37 +332,54 @@
             }
 
             .mobile-bottom-nav span {
-                font-size: 7px;
+                font-size: 6px;
+            }
+            
+            .mobile-bottom-nav button {
+                padding-left: 0.2rem;
+                padding-right: 0.2rem;
             }
 
             .mobile-fab {
                 width: 3.2rem;
                 height: 3.2rem;
-                bottom: 4.8rem;
-                right: 1.2rem;
+                bottom: 4.6rem;
+                right: 0.75rem;
                 font-size: 1.2rem;
                 border-radius: 1.2rem;
             }
 
             .glass-panel .h-16 {
-                height: 3.5rem;
+                height: 3.2rem;
             }
 
             .product-img-size {
-                width: 2.8rem !important;
-                height: 2.8rem !important;
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+                min-width: 2.5rem !important;
             }
 
             .stat-value {
-                font-size: 1.1rem !important;
+                font-size: 1rem !important;
             }
 
             .stat-label {
-                font-size: 8px !important;
+                font-size: 7px !important;
             }
 
             .glass-card {
-                padding: 0.75rem !important;
+                padding: 0.6rem !important;
+            }
+
+            /* compact search/filter toolbar */
+            #search-input {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            }
+
+            .filter-btn {
+                padding: 0.4rem 0.6rem !important;
+                font-size: 9px !important;
             }
         }
 
@@ -335,11 +430,12 @@
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
     </style>
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e1b4b">
-    <link rel="apple-touch-icon" href="fille.jpg">
 </head>
 
 <body class="text-gray-100">
@@ -347,47 +443,53 @@
     <div id="main-app" class="min-h-screen">
         <!-- Navigation -->
         <!-- Splash/Auth Guard -->
-        <div id="auth-overlay" class="fixed inset-0 z-[1000] bg-gray-950 flex items-center justify-center p-4">
-            <div class="glass-card bg-gray-900 w-full max-w-sm p-8 border border-white/10 shadow-2xl scale-in-center">
-                <div class="text-center mb-8">
-                    <div
-                        class="w-20 h-20 mx-auto bg-white/5 rounded-3xl flex items-center justify-center shadow-lg shadow-rose-500/10 overflow-hidden border border-white/10 relative mb-4">
-                        <img src="fille.jpg" alt="Farah" class="w-full h-full object-cover">
-                    </div>
-                    <h1 class="text-2xl font-black text-white tracking-tighter">Gestion des courses</h1>
-                    <p id="auth-subtitle" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
-                        Accès Sécurisé - Famille Nour</p>
+        <div id="auth-loading-state" class="fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center justify-center p-4 hidden">
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-500/20 mx-auto animate-pulse">
+                    <i class="fas fa-heart text-rose-500 text-3xl animate-bounce"></i>
                 </div>
+                <h2 class="text-xl font-bold tracking-tighter text-white">فرح نور</h2>
+                <div class="h-1 w-24 bg-rose-500/20 rounded-full mx-auto overflow-hidden">
+                    <div class="h-full bg-rose-500 animate-[loading_1.5s_infinite] w-1/2 rounded-full"></div>
+                </div>
+                <p class="text-xs text-gray-500 uppercase font-black tracking-widest animate-pulse">Chargement...</p>
+                <button onclick="showManualLogin()" class="text-indigo-400 text-xs font-bold uppercase hover:underline mt-4">Connexion manuelle</button>
+            </div>
+        </div>
 
-                <div id="login-form-box" class="space-y-4">
-                    <div class="space-y-1">
-                        <input type="email" id="auth-email" placeholder="Email..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
+        <div id="login-form-box" class="fixed inset-0 bg-gray-900 z-[100] flex items-center justify-center p-4 hidden">
+            <div class="glass-card bg-gray-900/90 w-full max-w-sm p-6 border border-white/10 shadow-2xl flex flex-col space-y-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center border border-rose-500/20 mx-auto mb-4">
+                        <i class="fas fa-heart text-rose-500 text-3xl"></i>
                     </div>
-                    <div class="space-y-1">
-                        <input type="password" id="auth-password" placeholder="Mot de passe..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none text-white transition-all">
-                    </div>
-                    <div class="flex flex-col gap-3 pt-2">
-                        <button id="btn-auth-action" onclick="handleAuthAction()"
-                            class="w-full bg-gradient-to-r from-rose-600 to-pink-500 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-rose-900/40 hover:scale-[1.02] transition-all disabled:opacity-50">Se
-                            Connecter</button>
-                        <button id="btn-toggle-auth" onclick="toggleAuthMode()"
-                            class="text-[9px] text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors">Pas
-                            de compte ? S'inscrire</button>
-                    </div>
+                    <img src="fille.jpg" alt="Farah" class="w-12 h-12 rounded-full mx-auto mb-2 hidden" id="login-avatar" onerror="this.classList.add('hidden')">
+                    <h2 class="text-xl font-black text-white" id="auth-subtitle">Accès Sécurisé - Famille Nour</h2>
                 </div>
-                <div id="auth-loading" class="hidden py-10 text-center">
-                    <div
-                        class="w-8 h-8 border-4 border-rose-500/20 border-t-rose-500 rounded-full animate-spin mx-auto mb-4">
-                    </div>
-                    <p class="text-[10px] text-gray-500 font-bold uppercase">Connexion en cours...</p>
+                <div class="space-y-4">
+                    <input type="email" id="auth-email" placeholder="Email..." required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none placeholder:text-gray-600 text-white">
+                    <input type="password" id="auth-password" placeholder="Mot de passe..." required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-rose-500 outline-none placeholder:text-gray-600 text-white">
+                    <button onclick="handleAuthAction()" id="btn-auth-action"
+                        class="w-full py-3 bg-gradient-to-r from-rose-600 to-pink-500 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg shadow-rose-900/40 hover:scale-105 active:scale-95 transition-all">Se Connecter</button>
+                    <button onclick="toggleAuthMode()" id="btn-toggle-auth"
+                        class="w-full text-center text-xs text-gray-500 hover:text-white transition-colors">Pas de compte ? S'inscrire</button>
                 </div>
             </div>
         </div>
 
-        <!-- Main App Container (Hidden by default) -->
-        <div id="app-content" class="hidden">
+        <div id="auth-loading" class="fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center justify-center p-4 hidden">
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20 mx-auto animate-pulse">
+                    <i class="fas fa-lock text-indigo-400 text-3xl animate-bounce"></i>
+                </div>
+                <p class="text-xs text-gray-500 uppercase font-black tracking-widest animate-pulse">Connexion en cours...</p>
+            </div>
+        </div>
+
+        <!-- Main App Container -->
+        <div id="app-content" class="px-0 sm:px-4 pb-24">
             <nav class="glass-panel sticky top-0 z-40 border-b border-white/10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <!-- Logo -->
@@ -472,7 +574,7 @@
                                     <div id="sw-status-box"
                                         class="p-2 border-t border-white/5 text-center flex flex-col gap-1">
                                         <p id="sw-status-text" class="text-[8px] text-gray-600 uppercase font-black">
-                                            Version v5 - Prête</p>
+                                            Version v9 - Prête</p>
                                         <p id="fcm-status-text" class="text-[7px] text-gray-500 uppercase font-bold">
                                             FCM Non Initialisé</p>
                                         <div class="flex gap-1 justify-center mt-1">
@@ -508,58 +610,50 @@
             </nav>
 
             <!-- Bottom Navigation (Mobile) -->
-            <div class="mobile-bottom-nav flex justify-around items-center">
+            <div class="mobile-bottom-nav flex justify-around items-center px-1">
                 <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-                    class="flex flex-col items-center gap-1 text-rose-400">
-                    <i class="fas fa-home text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Accueil</span>
+                    class="flex flex-col items-center gap-0.5 text-rose-400 px-3">
+                    <i class="fas fa-home text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Accueil</span>
                 </button>
-                <button onclick="toggleStatsModal()" class="flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-chart-pie text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Stats</span>
+                <button onclick="toggleStatsModal()" class="flex flex-col items-center gap-0.5 text-gray-500 px-3">
+                    <i class="fas fa-chart-pie text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Stats</span>
                 </button>
-                <button onclick="toggleHistoryModal()" class="flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-history text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Histoire</span>
-                </button>
-                <button onclick="toggleCalculator()" class="flex flex-col items-center gap-1 text-emerald-500 group">
-                    <div
-                        class="relative w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/30 group-active:scale-90 transition-transform">
-                        <i class="fas fa-calculator text-lg"></i>
+                <button onclick="openPurchaseModal()" class="flex flex-col items-center gap-0.5 -mt-5">
+                    <div class="w-13 h-13 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-xl shadow-rose-600/40" style="width:52px;height:52px">
+                        <i class="fas fa-plus text-white text-xl"></i>
                     </div>
-                    <span class="text-[8px] font-black uppercase">Calcul</span>
                 </button>
-                <button onclick="toggleMembersModal()"
-                    class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-users-cog text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Famille</span>
+                <button onclick="openScannerModal()" class="flex flex-col items-center gap-0.5 text-violet-400 px-3">
+                    <i class="fas fa-camera text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Scanner</span>
                 </button>
-                <button onclick="toggleManageModal()"
-                    class="admin-only hidden flex flex-col items-center gap-1 text-gray-500">
-                    <i class="fas fa-database text-xl"></i>
-                    <span class="text-[8px] font-black uppercase">Produits</span>
+                <button onclick="toggleCalculator()" class="flex flex-col items-center gap-0.5 text-emerald-500 px-3">
+                    <i class="fas fa-calculator text-lg"></i>
+                    <span class="text-[6.5px] font-black uppercase">Calc</span>
                 </button>
             </div>
 
-            <!-- Floating Action Button (Mobile) -->
-            <button onclick="openPurchaseModal()" class="mobile-fab">
+            <!-- Floating Action Button (Mobile) - hidden, replaced by center bottom nav btn -->
+            <button onclick="openPurchaseModal()" class="mobile-fab" style="display:none">
                 <i class="fas fa-plus"></i>
             </button>
 
             <!-- Bulk Bar -->
             <div id="bulk-action-bar"
-                class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-32 transition-all duration-300 hidden">
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transform translate-y-32 transition-all duration-300 hidden w-[95%] sm:w-auto">
                 <div
-                    class="glass-card bg-rose-600/95 text-white px-6 py-4 flex items-center gap-6 shadow-2xl border border-rose-400/30">
-                    <p class="font-bold text-sm"><span id="bulk-count">0</span> séléctionnés</p>
-                    <div class="flex gap-2">
+                    class="glass-card bg-rose-600/95 text-white px-3 sm:px-6 py-3 sm:py-4 flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-6 shadow-2xl border border-rose-400/30 w-full">
+                    <p class="font-bold text-sm mx-auto sm:mx-0"><span id="bulk-count">0</span> séléctionnés</p>
+                    <div class="flex gap-2 justify-center w-full sm:w-auto">
                         <button id="bulk-buy-btn" onclick="openBulkPriceModal()"
-                            class="bg-white text-rose-700 px-4 py-2 rounded-lg text-xs font-black uppercase">Acheter
+                            class="bg-white text-rose-700 px-3 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase flex-1 sm:flex-none whitespace-nowrap">Acheter
                             Ensemble</button>
                         <button onclick="bulkDelete()"
-                            class="admin-only hidden bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-black uppercase border border-white/20"><i
-                                class="fas fa-trash-alt mr-2"></i>Effacer</button>
-                        <button onclick="clearSelection()" class="bg-rose-500/50 p-2 rounded-lg"><i
+                            class="admin-only hidden bg-white/10 text-white px-3 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase border border-white/20 flex-1 sm:flex-none whitespace-nowrap"><i
+                                class="fas fa-trash-alt sm:mr-2"></i><span class="hidden sm:inline">Effacer</span></button>
+                        <button onclick="clearSelection()" class="bg-rose-500/50 px-3 py-2 rounded-lg"><i
                                 class="fas fa-times"></i></button>
                     </div>
                 </div>
@@ -567,69 +661,75 @@
 
             <!-- Main Content -->
             <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-8">
+                <!-- Stats cards: 2x2 compact on mobile -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-1.5 md:gap-4 mb-4 md:mb-8">
                     <div onclick="openBudgetModal('solde')"
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-rose-400" id="stat-budget-restant">---
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-rose-500/30 cursor-pointer hover:scale-105 transition-transform flex flex-col justify-center min-h-[65px] md:min-h-[80px]">
+                        <h3 class="stat-value text-lg md:text-3xl font-bold text-rose-400" id="stat-budget-restant">---
                         </h3>
                         <p
-                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
-                            Solde restant <i class="fas fa-edit ml-1 opacity-30 text-[8px]"></i></p>
+                            class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
+                            Solde <i class="fas fa-edit ml-1 opacity-30 text-[7px]"></i></p>
                     </div>
                     <div
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-emerald-500/30 group relative flex flex-col justify-center min-h-[80px]">
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-emerald-500/30 group relative flex flex-col justify-center min-h-[65px] md:min-h-[80px]">
                         <div onclick="toggleStatsModal()" class="cursor-pointer hover:scale-105 transition-transform">
-                            <h3 class="stat-value text-xl md:text-3xl font-bold text-emerald-400"
+                            <h3 class="stat-value text-lg md:text-3xl font-bold text-emerald-400"
                                 id="stat-total-depense">---</h3>
                             <p
-                                class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
-                                Dépenses (Mois) <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
+                                class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
+                                Dépenses <i class="fas fa-chart-line ml-1 opacity-50"></i></p>
                         </div>
                         <button onclick="openBudgetModal('expenses')"
                             class="admin-only hidden absolute top-1 right-1 w-5 h-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-[9px] text-emerald-500/50 hover:text-emerald-400 opacity-0 group-hover:opacity-100 transition-all">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
-                    <div
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-orange-500/30 flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-orange-400" id="stat-pending">0</h3>
+                    <div onclick="const fs=document.getElementById('filter-status'); fs.value = (fs.value === 'pending' ? 'all' : 'pending'); renderAchats(true);"
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-orange-500/30 flex flex-col justify-center min-h-[65px] md:min-h-[80px] cursor-pointer hover:scale-105 active:scale-95 transition-all" title="Cliquer pour filtrer">
+                        <h3 class="stat-value text-lg md:text-3xl font-bold text-orange-400" id="stat-pending">0</h3>
                         <p
-                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
-                            À acheter</p>
+                            class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
+                            À acheter <i class="fas fa-filter ml-1 opacity-40 text-[7px]"></i></p>
                     </div>
                     <div
-                        class="glass-card p-3 md:p-6 text-center border-b-2 border-pink-500/30 flex flex-col justify-center min-h-[80px]">
-                        <h3 class="stat-value text-xl md:text-3xl font-bold text-pink-400" id="stat-members-count">0
+                        class="glass-card p-2.5 md:p-6 text-center border-b-2 border-pink-500/30 flex flex-col justify-center min-h-[65px] md:min-h-[80px]">
+                        <h3 class="stat-value text-lg md:text-3xl font-bold text-pink-400" id="stat-members-count">0
                         </h3>
                         <p
-                            class="stat-label text-gray-500 text-[9px] md:text-xs uppercase font-bold tracking-widest mt-1">
+                            class="stat-label text-gray-500 text-[8px] md:text-xs uppercase font-bold tracking-widest mt-0.5">
                             Famille</p>
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-                    <div class="relative flex-1 w-full max-w-md">
-                        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
-                        <input type="text" id="search-input" oninput="renderAchats()"
+                <!-- Search & Filters: compact on mobile -->
+                <div class="flex flex-col gap-2 mb-4 md:mb-8">
+                    <div class="relative w-full">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="search-input" oninput="_debouncedSearch()"
                             placeholder="Chercher un article..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 focus:border-rose-500 outline-none">
+                            class="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 focus:border-rose-500 outline-none text-sm">
                     </div>
-                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <div class="flex gap-1.5 flex-wrap">
                         <button onclick="shareListToWhatsApp()"
-                            class="flex-1 md:flex-none bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 rounded-xl px-4 py-2 text-xs font-bold uppercase text-emerald-500 flex items-center justify-center gap-2 transition-all">
-                            <i class="fab fa-whatsapp text-lg"></i> Transférer
+                            class="filter-btn flex-1 bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 rounded-xl px-3 py-2 text-[10px] font-bold uppercase text-emerald-500 flex items-center justify-center gap-1.5 transition-all">
+                            <i class="fab fa-whatsapp text-sm"></i> WhatsApp
+                        </button>
+                        <button onclick="exportAchatsToExcel()"
+                            class="filter-btn flex-1 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 rounded-xl px-3 py-2 text-[10px] font-bold uppercase text-blue-500 flex items-center justify-center gap-1.5 transition-all">
+                            <i class="fas fa-file-excel text-sm"></i> Excel
                         </button>
                         <button onclick="toggleBudgetHistory()"
-                            class="flex-1 md:flex-none bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold uppercase whitespace-nowrap"><i
-                                class="fas fa-history mr-2 text-rose-400"></i>Histoire</button>
-                        <select id="filter-status" onchange="renderAchats()"
-                            class="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-bold uppercase">
-                            <option value="all">Statut: Tout</option>
+                            class="filter-btn flex-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-[10px] font-bold uppercase flex items-center justify-center gap-1.5"><i
+                                class="fas fa-history text-rose-400"></i>Historique</button>
+                        <select id="filter-status" onchange="renderAchats(true)"
+                            class="filter-btn flex-1 bg-white/5 border border-white/10 rounded-xl px-2 py-2 outline-none text-[10px] font-bold uppercase cursor-pointer">
+                            <option value="all" selected>📋 Tout afficher</option>
                             <option value="pending">🛒 À acheter</option>
-                            <option value="received">✅ Terminés</option>
+                            <option value="received">✅ Achats réglés</option>
                         </select>
-                        <select id="filter-store" onchange="renderAchats()"
-                            class="flex-1 md:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-bold uppercase">
+                        <select id="filter-store" onchange="renderAchats(true)"
+                            class="filter-btn flex-1 bg-white/5 border border-white/10 rounded-xl px-2 py-2 outline-none text-[10px] font-bold uppercase">
                             <option value="all">Lieu: Tout</option>
                             <option value="superrette">🏬 Superrette</option>
                             <option value="marche">🥦 Marché</option>
@@ -640,7 +740,7 @@
                     </div>
                 </div>
 
-                <div id="achats-container" class="space-y-4"></div>
+                <div id="achats-container" class="space-y-2.5 md:space-y-4"></div>
             </main>
         </div>
 
@@ -684,7 +784,7 @@
                     <div id="members-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
                     <div class="mt-4 pt-4 border-t border-white/5 text-center flex flex-col items-center gap-1">
                         <p class="text-[9px] text-gray-700 font-black uppercase tracking-widest opacity-40">Achats
-                            Famille - v5</p>
+                            Famille - v9</p>
                         <button onclick="checkForUpdates()"
                             class="text-[7px] text-indigo-500 hover:text-indigo-400 font-bold uppercase underline">Vérifier
                             les mises à jour</button>
@@ -710,15 +810,29 @@
                             <div class="relative">
                                 <input type="text" id="productInput" name="productName" autocomplete="off"
                                     placeholder="Que voulez-vous acheter ?"
-                                    class="w-full input-premium px-4 py-4 pr-12 text-sm font-bold placeholder:text-gray-500 uppercase tracking-wide">
-                                <button type="button"
-                                    onclick="const v = document.getElementById('productInput').value.trim(); if(v) addChip(v);"
-                                    class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-indigo-500/20 text-indigo-400 rounded-xl hover:bg-indigo-500 hover:text-white transition-all">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                                    class="w-full input-premium px-4 py-4 pr-24 text-sm font-bold placeholder:text-gray-500 uppercase tracking-wide">
+                                <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1.5">
+                                    <button type="button" onclick="openScannerIntoInput()"
+                                        title="Scanner le produit"
+                                        class="w-10 h-10 flex items-center justify-center bg-violet-500/20 text-violet-400 rounded-xl hover:bg-violet-500 hover:text-white transition-all">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                    <button type="button"
+                                        onclick="const v = document.getElementById('productInput').value.trim(); if(v) addChip(v);"
+                                        class="w-10 h-10 flex items-center justify-center bg-indigo-500/20 text-indigo-400 rounded-xl hover:bg-indigo-500 hover:text-white transition-all">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
                                 <div id="suggestion-dropdown"
                                     class="absolute left-0 right-0 top-full mt-2 glass-card bg-gray-900/95 border border-white/10 rounded-2xl max-h-60 overflow-y-auto z-50 hidden shadow-2xl custom-scrollbar">
                                 </div>
+                            </div>
+                            <!-- Category Tabs -->
+                            <div id="quick-cat-tabs" class="flex gap-1 mt-2 overflow-x-auto pb-1 custom-scrollbar" style="scrollbar-width:thin">
+                                <!-- tabs inserted by JS -->
+                            </div>
+                            <div id="quick-products-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-1.5 max-h-[130px] overflow-y-auto custom-scrollbar p-1">
+                                <!-- Quick Select Buttons (POS style) -->
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -817,13 +931,13 @@
                             </div>
                         </div>
                         <div class="flex flex-col gap-3">
-                            <div class="flex gap-2">
+                            <div class="flex gap-1 sm:gap-2">
                                 <button type="button" onclick="closePurchaseModal()"
-                                    class="flex-1 bg-white/5 hover:bg-white/10 rounded-xl py-3 font-bold uppercase text-[10px] transition-all">Annuler</button>
+                                    class="flex-1 bg-white/5 hover:bg-white/10 rounded-xl py-3 font-bold uppercase text-[9px] sm:text-[10px] transition-all leading-tight px-1 sm:px-0">Annuler</button>
                                 <button type="submit" id="ok-submit-btn"
-                                    class="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl py-3 font-bold uppercase text-[10px] transition-all shadow-lg">OK</button>
+                                    class="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl py-3 font-bold uppercase text-[9px] sm:text-[10px] transition-all shadow-lg leading-tight px-1 sm:px-0">OK</button>
                                 <button type="submit" id="main-submit-btn"
-                                    class="flex-[1.5] btn-premium text-white rounded-xl py-3 font-bold uppercase text-[10px] shadow-lg">Demander</button>
+                                    class="flex-[1.2] sm:flex-[1.5] btn-premium text-white rounded-xl py-3 font-bold uppercase text-[9px] sm:text-[10px] shadow-lg leading-tight px-1 sm:px-0">Demander</button>
                             </div>
                             <button type="button" id="continue-submit-btn" onclick="submitPurchase(event, true)"
                                 class="w-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl py-3 font-bold uppercase text-[10px] tracking-widest transition-all">
@@ -929,12 +1043,12 @@
                         </div>
 
                         <div id="budget-actions-standard" class="flex flex-col gap-2">
-                            <div class="flex gap-2">
+                            <div class="flex gap-1.5 sm:gap-2">
                                 <button type="submit" name="action" value="add"
-                                    class="flex-[2] bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/40">Ajouter
+                                    class="flex-[1.5] sm:flex-[2] bg-emerald-600 text-white py-3 rounded-xl font-black uppercase text-[10px] sm:text-xs tracking-widest hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/40 leading-tight">Ajouter
                                     Somme</button>
                                 <button type="submit" name="action" value="set"
-                                    class="flex-1 bg-white/10 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-white/20 transition-colors border border-white/10">Écraser
+                                    class="flex-1 bg-white/10 text-white py-3 rounded-xl font-black uppercase text-[9px] sm:text-[10px] tracking-tight hover:bg-white/20 transition-colors border border-white/10 leading-tight">Écraser
                                     Total</button>
                             </div>
                             <p class="text-[8px] text-gray-500 uppercase text-center font-bold px-2">"ÉCRASER TOTAL"
@@ -1184,8 +1298,28 @@
         <script type="module">
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
             import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, increment, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+            import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
             import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-messaging.js";
+
+            // ─── Utilitaires performance ─────────────────────────────────────
+            function debounce(fn, delay) {
+                let timer;
+                return function(...args) {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => fn.apply(this, args), delay);
+                };
+            }
+            window._debouncedSearch = debounce(() => {
+                if (window.renderAchats) window.renderAchats(true);
+            }, 150);
+
+            window.loadScript = (src) => new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+                const s = document.createElement('script');
+                s.src = src; s.onload = resolve; s.onerror = reject;
+                document.head.appendChild(s);
+            });
+            // ─────────────────────────────────────────────────────────────────
 
             const firebaseConfig = {
                 apiKey: "AIzaSyD0fjLIAu-tUbwRncOKJSKtd422s0UhCNY",
@@ -1201,10 +1335,9 @@
             const auth = getAuth(app);
             const messaging = getMessaging(app);
 
-            // Activer la persistance hors-ligne pour Firestore
-            enableIndexedDbPersistence(db).catch((err) => {
-                if (err.code == 'failed-precondition') console.warn("Persistance échouée: onglets multiples");
-                else if (err.code == 'unimplemented') console.warn("Navigateur ne supporte pas la persistance");
+            // Firestore Persistence with Online/Offline sync
+            enableIndexedDbPersistence(db, { forceOwnership: true }).catch((err) => {
+                console.warn("Firestore Persistence:", err.code);
             });
 
             // Persistance de l'authentification (pour rester connecté même hors-ligne)
@@ -1212,6 +1345,52 @@
 
             window.db = db;
             window.auth = auth;
+
+            // ─── INSTANT LOCALSTORAGE CACHE (Démarrage ultra-rapide < 50ms) ───
+            const CACHE_KEY_ACHATS = 'farah_cache_achats_v1';
+            const CACHE_KEY_BUDGET = 'farah_cache_budget_v1';
+            const CACHE_KEY_PRODUCTS = 'farah_cache_prods_v1';
+            const CACHE_KEY_MEMBERS = 'farah_cache_members_v1';
+
+            window.achats = [];
+            window.allProducts = [];
+            window.currentBudget = 0;
+            window.monthlyOffsets = {};
+            window.soldeOffsets = {};
+            window.familyMembers = [];
+
+            try {
+                const cAchats = localStorage.getItem(CACHE_KEY_ACHATS);
+                if (cAchats) window.achats = JSON.parse(cAchats);
+                const cBudget = localStorage.getItem(CACHE_KEY_BUDGET);
+                if (cBudget) {
+                    const b = JSON.parse(cBudget);
+                    window.currentBudget = b.amount || 0;
+                    window.monthlyOffsets = b.monthlyOffsets || {};
+                    window.soldeOffsets = b.soldeOffsets || {};
+                    const nb = document.getElementById('nav-budget');
+                    if (nb) nb.textContent = Math.round(window.currentBudget).toLocaleString() + ' DA';
+                }
+                const cProds = localStorage.getItem(CACHE_KEY_PRODUCTS);
+                if (cProds) window.allProducts = JSON.parse(cProds);
+                const cMembers = localStorage.getItem(CACHE_KEY_MEMBERS);
+                if (cMembers) {
+                    window.familyMembers = JSON.parse(cMembers);
+                    const sm = document.getElementById('stat-members-count');
+                    if (sm) sm.textContent = window.familyMembers.length;
+                }
+            } catch (e) {
+                console.warn('Erreur lecture cache local:', e);
+            }
+
+            // Exécution immédiate au chargement pour affichage instantané dès l'entrée !
+            setTimeout(() => {
+                if (window.updateAchatStats) window.updateAchatStats();
+                if (window.updateStoreFilters) window.updateStoreFilters();
+                if (window.renderAchats) window.renderAchats();
+                if (window.renderPurchaseHistory) window.renderPurchaseHistory();
+                if (window.renderManageProducts) window.renderManageProducts();
+            }, 10);
 
             // Gestion du mode hors-ligne UI
             function updateOnlineStatus() {
@@ -1284,81 +1463,132 @@
                 }
             };
 
+            window.showManualLogin = () => {
+                document.getElementById('auth-loading-state').classList.add('hidden');
+                document.getElementById('login-form-box').classList.remove('hidden');
+            };
+
             onAuthStateChanged(auth, (user) => {
-                const overlay = document.getElementById('auth-overlay');
                 const app = document.getElementById('app-content');
+                const loadingState = document.getElementById('auth-loading-state');
+                const loginBox = document.getElementById('login-form-box');
+                const authLoading = document.getElementById('auth-loading');
+
+                if (app) app.classList.remove('hidden');
+                if (loadingState) loadingState.classList.add('hidden');
+                if (loginBox) loginBox.classList.add('hidden');
+                if (authLoading) authLoading.classList.add('hidden');
+
+                window.isAdmin = true;
+                document.body.classList.add('is-admin');
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+
                 if (user) {
-                    overlay.classList.add('hidden');
-                    app.classList.remove('hidden');
-
-                    window.isAdmin = user.email === ADMIN_EMAIL;
-                    document.body.classList.toggle('is-admin', window.isAdmin);
-
-                    // Hide/Show admin specific elements in navbar
-                    document.querySelectorAll('.admin-only').forEach(el => {
-                        el.classList.toggle('hidden', !window.isAdmin);
-                    });
-
-                    console.log("Logged in as:", user.email, "Admin:", window.isAdmin);
-
-                    // Si déjà autorisé, rafraîchir le token FCM
-                    if (Notification.permission === 'granted') {
-                        setupFCM();
+                    // Demander permission notifications automatiquement (silencieux si déjà accepté)
+                    if ('Notification' in window) {
+                        if (Notification.permission === 'granted') {
+                            setupFCM();
+                        } else if (Notification.permission === 'default') {
+                            // Demander après un court délai pour ne pas bloquer le chargement
+                            setTimeout(() => {
+                                Notification.requestPermission().then(perm => {
+                                    if (perm === 'granted') setupFCM();
+                                });
+                            }, 3000);
+                        }
                     }
                 } else {
-                    overlay.classList.remove('hidden');
-                    app.classList.add('hidden');
-                    document.getElementById('login-form-box').classList.remove('hidden');
-                    document.getElementById('auth-loading').classList.add('hidden');
+                    console.log("Connexion anonyme automatique");
+                    signInAnonymously(auth).catch(err => console.error("Auto login failed:", err.message));
                 }
             });
 
             let isInitialLoad = true;
             onSnapshot(collection(db, "achats_maison"), (snap) => {
-                if (!isInitialLoad) {
-                    snap.docChanges().forEach(change => {
-                        const data = change.doc.data();
-                        if (change.type === "added") {
-                            if (data.userId !== auth.currentUser?.uid && data.productName) {
-                                const sender = data.userName || "Un membre";
-                                showAppNotification("Nouveau produit !", `${sender} a ajouté : ${data.productName}`);
-                            }
-                        } else if (change.type === "modified") {
-                            // Detect if status changed to 'received'
-                            const oldItem = window.achats?.find(a => a.id === change.doc.id);
-                            if (oldItem && oldItem.status === 'pending' && data.status === 'received') {
-                                if (data.userId !== auth.currentUser?.uid) {
-                                    showAppNotification("Produit acheté !", `${data.productName} a été payé.`);
-                                }
-                            }
-                        }
-                    });
-                }
-                isInitialLoad = false;
+                // 1. Mémoriser les anciennes données AVANT la mise à jour (pour détecter les changements)
+                const oldAchats = window.achats || [];
+
+                // 2. Mettre à jour window.achats immédiatement
                 window.achats = snap.docs.filter(d => d.id !== 'config_budget').map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // 3. Mettre en cache local (sans bloquer l'UI)
+                try {
+                    const toCache = window.achats.slice(0, 150).map(item => {
+                        if (item.photoData && item.photoData.length > 25000) {
+                            const { photoData, ...rest } = item;
+                            return rest;
+                        }
+                        return item;
+                    });
+                    localStorage.setItem(CACHE_KEY_ACHATS, JSON.stringify(toCache));
+                } catch(e) {}
+
+                // 4. Mettre à jour l'interface (toujours, avant les notifications)
                 updateStoreFilters();
                 renderAchats(); renderPurchaseHistory(); updateAchatStats();
+
+                // 5. Notifications (isolées : une erreur ici ne bloque jamais l'affichage)
+                if (!isInitialLoad) {
+                    try {
+                        snap.docChanges().forEach(change => {
+                            const data = change.doc.data();
+                            if (change.type === "added") {
+                                if (data.userId !== auth.currentUser?.uid && data.productName) {
+                                    const sender = data.userName || "Un membre";
+                                    showAppNotification("Nouveau produit !", `${sender} a ajouté : ${data.productName}`);
+                                }
+                            } else if (change.type === "modified") {
+                                const oldItem = oldAchats.find(a => a.id === change.doc.id);
+                                if (oldItem && oldItem.status === 'pending' && data.status === 'received') {
+                                    if (data.userId !== auth.currentUser?.uid) {
+                                        showAppNotification("Produit acheté !", `${data.productName} a été payé.`);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (notifErr) {
+                        console.warn("Notification snapshot ignorée:", notifErr);
+                    }
+                }
+                isInitialLoad = false;
+            }, (error) => {
+                console.error("Erreur Firestore onSnapshot:", error);
             });
 
             window.currentBudget = 0;
             window.monthlyOffsets = {};
 
             onSnapshot(doc(db, "achats_maison", "config_budget"), (snap) => {
-                const data = snap.exists() ? snap.data() : { amount: 0, monthlyOffsets: {} };
+                const data = snap.exists() ? snap.data() : { amount: 0, monthlyOffsets: {}, soldeOffsets: {} };
                 window.currentBudget = data.amount || 0;
                 window.monthlyOffsets = data.monthlyOffsets || {};
+                window.soldeOffsets = data.soldeOffsets || {};
+                try {
+                    localStorage.setItem(CACHE_KEY_BUDGET, JSON.stringify({
+                        amount: window.currentBudget,
+                        monthlyOffsets: window.monthlyOffsets,
+                        soldeOffsets: window.soldeOffsets
+                    }));
+                } catch(e) {}
                 document.getElementById('nav-budget').textContent = Math.round(window.currentBudget).toLocaleString() + ' DA';
                 updateAchatStats();
             });
 
             onSnapshot(collection(db, "famille_membres"), (snap) => {
                 const members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                window.familyMembers = members;
+                try {
+                    localStorage.setItem(CACHE_KEY_MEMBERS, JSON.stringify(members));
+                } catch(e) {}
                 document.getElementById('stat-members-count').textContent = members.length;
                 renderMembersList(members);
             });
 
             onSnapshot(collection(db, "produits_maison"), (snap) => {
                 window.allProducts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                try {
+                    localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify(window.allProducts));
+                } catch(e) {}
                 renderManageProducts();
             });
 
@@ -1627,7 +1857,7 @@
                 const allReceived = (window.achats || []).filter(a => a.status === 'received');
                 const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
                 const now = new Date();
-                
+
                 const monthlySum = activeReceived.filter(a => {
                     if (!a.dateAchat) return false;
                     const d = new Date(a.dateAchat);
@@ -1636,10 +1866,12 @@
                     const v = parseFloat(a.price);
                     return s + (isFinite(v) ? v : 0);
                 }, 0);
-                
+
                 const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                 const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                const currentBalance = (window.currentBudget || 0) - (monthlySum + offset);
+                const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+                const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
 
                 if (mode === 'solde') {
                     actionInput.value = 'set_solde';
@@ -1782,11 +2014,13 @@
                 }
             };
 
+            // Clé serveur FCM pour envoyer les push à tous les appareils
+            // (Legacy Server Key from Firebase console > Project Settings > Cloud Messaging)
+            const FCM_SERVER_KEY = "AAAA_REMPLACER_PAR_VOTRE_CLE_SERVEUR_FCM";
+
             async function setupFCM() {
                 try {
-                    // Clé VAPID (Générée dans la console Firebase -> Paramètres -> Cloud Messaging)
                     const vapidKey = "BAVtGM5umTakbtHv1onNuzZCfXCwIm0FX-XL0gFk4vit2PFI-ON8e498G0B4BdZ6-67rU-Ggx2ETbRc71d1tphA";
-
                     const swRegistration = await navigator.serviceWorker.ready;
                     const currentToken = await getToken(messaging, {
                         serviceWorkerRegistration: swRegistration,
@@ -1802,14 +2036,22 @@
                             fcmStatus.classList.add('text-emerald-500');
                         }
 
-                        if (auth.currentUser) {
-                            await setDoc(doc(db, "famille_tokens", auth.currentUser.uid), {
-                                token: currentToken,
-                                email: auth.currentUser.email,
-                                device: navigator.userAgent,
-                                lastUpdate: new Date().toISOString()
-                            });
+                        // Générer un ID stable pour cet appareil (fonctionne aussi pour anonyme)
+                        let deviceId = localStorage.getItem('farah_device_id');
+                        if (!deviceId) {
+                            deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                            localStorage.setItem('farah_device_id', deviceId);
                         }
+
+                        // Sauvegarder le token avec l'ID appareil (marche pour tous les utilisateurs)
+                        await setDoc(doc(db, "famille_tokens", deviceId), {
+                            token: currentToken,
+                            uid: auth.currentUser?.uid || 'anonymous',
+                            device: navigator.userAgent.substring(0, 100),
+                            lastUpdate: new Date().toISOString()
+                        });
+                        window._fcmToken = currentToken;
+                        console.log("Token FCM sauvegardé pour appareil:", deviceId);
                     } else {
                         console.warn("Pas de token FCM");
                     }
@@ -1819,6 +2061,107 @@
                     if (fcmStatus) fcmStatus.textContent = "✗ Erreur Token: " + (err.message || 'Error');
                 }
             }
+
+            // --- CONFIGURATION DU COMPTE DE SERVICE POUR LES PUSH V1 ---
+            const SERVICE_ACCOUNT_EMAIL = "firebase-adminsdk-fbsvc@farah-3fed2.iam.gserviceaccount.com";
+            const SERVICE_ACCOUNT_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDTuYXGf1FbIcob\nZIyfu84n8cd/vOaMaxXURoUd2AbQTh29ZNrXSn6dbte59nAGPsoq0gts43TjWigk\nPlaLLcfvdgeLYpbukF0Ig2dmTZoo+S4kkLJD07exfuaNkQBS7Aa7GQsqTtAN8k2m\nqLa5tMd7SkIJsXsj5lRBSXI1nrxr092+IMnRx2/BiBZ4Io0X0nDPoKaYTFoWNGJU\nVf7OXNofTA7WUE7/DjIKfV1TGijlGyRVwFUPO2bn5X9UKYv51eyucKHM6AHcyYqa\nWlvUDoby2/PbUh5oMu9FFbvBV8NN5APU/3b6hW/+/kvOKpV//OD6dHuY96URG5H0\nzwcTnC0HAgMBAAECggEAKF97K/PBPsB9uqV8z0TPtfw7z5bk26fb3MOpxJwaCISs\n1R2zQVR6OmkVh+d/SyGUCYBOH3BsLKJXfznH5PhQ5M+79o9ROqKaqvHruK1ZlTCW\n5PAWnip0H8uUCTC6QBWz3t+Sqnmm4NHwjrQjS9w2IcNyPkjys1DLhjuMJL9lLKY8\nBvtKUkZQOGPjqWtkV4sh/hjEmTiYcNKuk1ZbwEZ6TfDHyx1Ff1wxYnJE2JlvL6rA\nMLaoCpxpdl0DvcbmOyzCA5VWtpvh6QQ41roCTnX/e3It9FEYW3rmLEFvtpWmPzfD\nPlWEauaktR34g73o2WLzDGgY+yhurShKxlbWhhQmqQKBgQDy4CMRqmG92VeXblCI\nMb8BTjqqXf1G4jrSC0XjWicifjQQzedKzMQ0bAZGWZ27pH/zRgXTj063pOy3Qo5f\nm+ZA/G8M/lGARD0PA8RETb1Fwz+hG3oDEpTwyPI5XCb+o785B/a/pVrcz+CB3wUj\ntvYbG7a97WzFGQc1yB3S7X44uwKBgQDfKnRsWR8if4eeFlCpahdrTSVxi4xPtPdC\n2h4y9Shep5su5DuHAAu+BU57juW0AVRg0qALW5M0esiO0VTzateJHBxelaCtNdmH\njW7CmuYEayrO4LiwiOf4461vWAghLV6xj7+CFXT78uW1agbOsuLqWK9VAeX+xCvg\nzS3Q9m9OJQKBgQDs8EpmDoEiE+lGuwDnjRhYrre+wsi3ITbe+M5qeOXa2aHzjtwI\ndfEnbwdEFGMzzsxgSTyf4puZvtSMB+sbTNz5Iws3cteRuYCTqEoNlIWEjHEDu+lx\nG+yfZnogCU2ld5uyiJlo52jYKBhOuoKqD/DSC1xgt0I4mi0Vg6/MuZI8xwKBgQCF\nnp3m4dXKiiFhfmr9hRBQpvhsa+mvL+N8m6zJRhDN2/0GrpEV2+kr9XFwebb/eGxV\nLMe3BTW2jm3XVW9P8ADtj29NEroJ+9wrVXuj+asPqjsPc24iBVcfpvMJX+Q+OTQh\njLhV4xMQZ/cyEDHTQTisqD0S4Pgc+shq6W8tVuB+IQKBgCOwQFgqSTZOQBRHMGa0\nqpm8MpQhAYqIKxJg/1SPParRESkF36BRHMBc1XPeWUwlM/VIGf0E06HCXMHCXOI5\nYN+QvQDYZUOavMeL5oiulVTxibLsTkqiemDzPfeCGvyRHddtqAzKljTYgx5TH8O2\n1QOCJv+mn5TCJCqwOqwsr1oO\n-----END PRIVATE KEY-----\n";
+
+            let _cachedFcmToken = null;
+            let _cachedFcmTokenExp = 0;
+
+            // Fonction pour générer le token OAuth2 directement dans le navigateur
+            async function getFcmAccessToken() {
+                if (_cachedFcmToken && Date.now() < _cachedFcmTokenExp) return _cachedFcmToken;
+                
+                try {
+                    if (typeof KJUR === 'undefined') {
+                        await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.9.0/jsrsasign-all-min.js");
+                    }
+                    const header = { alg: "RS256", typ: "JWT" };
+                    const now = Math.floor(Date.now() / 1000);
+                    const claim = {
+                        iss: SERVICE_ACCOUNT_EMAIL,
+                        scope: "https://www.googleapis.com/auth/firebase.messaging",
+                        aud: "https://oauth2.googleapis.com/token",
+                        exp: now + 3600,
+                        iat: now
+                    };
+                    
+                    // Générer le JWT avec JSRSASIGN
+                    const jwt = KJUR.jws.JWS.sign(null, header, claim, SERVICE_ACCOUNT_PRIVATE_KEY);
+                    
+                    // Demander l'Access Token (OAuth 2.0) via PROXY CORS
+                    const url = "https://corsproxy.io/?" + encodeURIComponent("https://oauth2.googleapis.com/token");
+                    const res = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({
+                            grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                            assertion: jwt
+                        }).toString()
+                    });
+                    
+                    const data = await res.json();
+                    if (!data.access_token) {
+                        console.error(data);
+                        showToast("Erreur CORS/Token", true);
+                        throw new Error("No access token");
+                    }
+                    
+                    _cachedFcmToken = data.access_token;
+                    _cachedFcmTokenExp = Date.now() + ((data.expires_in - 60) * 1000); // 1h
+                    return _cachedFcmToken;
+                } catch (e) {
+                    console.error("Erreur génération Token FCM V1:", e);
+                    return null;
+                }
+            }
+
+            // Envoyer un push à TOUS les appareils enregistrés via Firebase API V1
+            window.sendPushToAll = async (title, body) => {
+                try {
+                    const tokensSnap = await getDocs(collection(db, "famille_tokens"));
+                    const targetTokens = [];
+                    tokensSnap.forEach(d => {
+                        const t = d.data().token;
+                        if (t && t !== window._fcmToken) targetTokens.push(t);
+                    });
+
+                    if (targetTokens.length === 0) return;
+
+                    const accessToken = await getFcmAccessToken();
+                    if (!accessToken) return;
+
+                    // L'API V1 requiert un envoi push en "data only" pour laisser sw.js gérer l'affichage manuel
+                    const pushPromises = targetTokens.map(token => {
+                        const payload = {
+                            message: {
+                                token: token,
+                                data: { 
+                                    title: title || "فرح نور 🛒", 
+                                    body: body || "Nouvel achat" 
+                                }
+                            }
+                        };
+                        return fetch("https://fcm.googleapis.com/v1/projects/farah-3fed2/messages:send", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": "Bearer " + accessToken,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                    });
+
+                    await Promise.all(pushPromises);
+                    console.log("Push FCM V1 envoyés !");
+                    // On peut activer ce toast pour debugger 
+                    // showToast("Notification envoyée en arrière-plan !");
+                } catch (err) {
+                    console.error("Erreur sendPushToAll V1:", err);
+                    showToast("Erreur envoi Push en arrière-plan", true);
+                }
+            };
 
             window.testNotification = () => {
                 showAppNotification("TEST 👋", "Si vous voyez ceci, les notifications locales fonctionnent !");
@@ -1856,35 +2199,27 @@
             });
 
             window.showAppNotification = (title, message) => {
-                try {
-                    window.addNotification(title, message);
-                } catch (e) {
-                    console.warn("Notification interne ignorée:", e);
-                }
+                window.addNotification(title, message);
 
                 // Déclencher une notification système (OS) si autorisé
-                try {
-                    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
-                        navigator.serviceWorker.ready.then(registration => {
-                            if (registration && registration.showNotification) {
-                                const iconUrl = new URL('fille.jpg', window.location.href).href;
-                                return registration.showNotification(title, {
-                                    body: message,
-                                    icon: iconUrl,
-                                    badge: iconUrl,
-                                    vibrate: [200, 100, 200],
-                                    tag: 'achat-notification',
-                                    renotify: true
-                                });
-                            }
-                        }).catch(err => console.warn("Erreur Notification SW en arrière-plan ignorée:", err));
-                    }
-                } catch (err) {
-                    console.warn("Notification système ignorée:", err);
+                if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+                    // Icône en URL absolue (obligatoire sur Android Chrome)
+                    const iconUrl = new URL('icon-192.png', location.href).href;
+                    navigator.serviceWorker.ready.then(registration => {
+                        return registration.showNotification(title, {
+                            body: message,
+                            icon: iconUrl,
+                            badge: iconUrl,
+                            vibrate: [200, 100, 200],
+                            tag: 'achat-notification',
+                            renotify: true
+                        });
+                    }).catch(err => console.warn("Notification SW ignorée:", err));
                 }
             };
 
             window.addNotification = (title, message, type = 'info') => {
+                // Notification son (supprimée pour ne pas réveiller l'enfant)
                 const n = { id: Date.now(), title, message, type, time: new Date().toISOString() };
                 notifications.unshift(n);
                 if (notifications.length > 10) notifications.pop();
@@ -1935,6 +2270,8 @@
                 currentEditId = null;
                 selectedProducts.clear();
                 renderChips();
+                // Render Quick Products list initially
+                if(window.renderQuickProducts) window.renderQuickProducts();
                 document.getElementById('purchase-modal-title').textContent = "Demander un Achat";
                 document.getElementById('main-submit-btn').textContent = "Demander";
                 document.getElementById('ok-submit-btn').textContent = "Enregistrer";
@@ -1951,6 +2288,7 @@
 
             prodInput?.addEventListener('input', (e) => {
                 const val = e.target.value.toLowerCase().trim();
+                if (window.renderQuickProducts) window.renderQuickProducts(val);
                 if (!val) { sugDrop.classList.add('hidden'); return; }
                 const matches = window.allProducts.filter(p => p.name.toLowerCase().includes(val) && !selectedProducts.has(p.name));
                 if (matches.length > 0) {
@@ -1976,18 +2314,30 @@
                 }
             });
 
-            window.addChip = (name) => {
+            window.addChip = async (name) => {
                 if (!name) return;
-                selectedProducts.add(name);
+                // Check if it's a new product (not in allProducts)
+                const known = window.allProducts?.find(p => p.name.toLowerCase() === name.toLowerCase());
+                if (!known) {
+                    // New product — add to Firestore then ask category
+                    try {
+                        const ref = await addDoc(collection(db, "produits_maison"), { name: name.toUpperCase(), category: 'autre' });
+                        // Ask for category immediately
+                        window.openCategoryPicker(ref.id, name.toUpperCase());
+                    } catch(e) { console.warn('addChip product save err', e); }
+                }
+                selectedProducts.add(name.toUpperCase ? name.toUpperCase() : name);
                 prodInput.value = "";
                 sugDrop.classList.add('hidden');
                 renderChips();
+                if(window.renderQuickProducts) window.renderQuickProducts();
                 prodInput.focus();
             };
 
             window.removeChip = (name) => {
                 selectedProducts.delete(name);
                 renderChips();
+                if(window.renderQuickProducts) window.renderQuickProducts();
             };
 
             function renderChips() {
@@ -2000,6 +2350,107 @@
                 </div>
             `).join('');
             }
+
+            // ── Categories System ────────────────────────────────────────────
+            const CATEGORIES = [
+                { id: 'superette',   label: 'Supérette',   icon: '🏬', color: 'bg-blue-600 hover:bg-blue-500',     tab: 'bg-blue-600' },
+                { id: 'pharmacie',   label: 'Pharmacie',   icon: '💊', color: 'bg-emerald-600 hover:bg-emerald-500', tab: 'bg-emerald-600' },
+                { id: 'boulangerie', label: 'Boulangerie', icon: '🥖', color: 'bg-amber-600 hover:bg-amber-500',    tab: 'bg-amber-600' },
+                { id: 'marche',      label: 'Marché',      icon: '🥦', color: 'bg-lime-600 hover:bg-lime-500',      tab: 'bg-lime-600' },
+                { id: 'cosmetique',  label: 'Cosmétiques', icon: '💄', color: 'bg-fuchsia-600 hover:bg-fuchsia-500', tab: 'bg-fuchsia-600' },
+                { id: 'autre',       label: 'Autre',       icon: '✨', color: 'bg-gray-600 hover:bg-gray-500',      tab: 'bg-gray-600' },
+            ];
+            window.CATEGORIES = CATEGORIES;
+            let activeQuickCat = 'all';
+
+            window.renderQuickProducts = (filter = '') => {
+                const grid = document.getElementById('quick-products-grid');
+                const tabBar = document.getElementById('quick-cat-tabs');
+                if (!grid) return;
+                if (!window.allProducts) { grid.innerHTML = ''; return; }
+
+                // Frequency map
+                const freq = {};
+                if (window.achats) {
+                    window.achats.forEach(a => {
+                        const n = a.productName.toLowerCase().trim();
+                        freq[n] = (freq[n] || 0) + 1;
+                    });
+                }
+
+                let all = window.allProducts.filter(p =>
+                    !selectedProducts.has(p.name) && p.name.toLowerCase().includes(filter)
+                );
+                all.sort((a, b) => {
+                    const cA = freq[a.name.toLowerCase().trim()] || 0;
+                    const cB = freq[b.name.toLowerCase().trim()] || 0;
+                    return cB !== cA ? cB - cA : a.name.localeCompare(b.name);
+                });
+
+                // Render category tabs
+                if (tabBar) {
+                    const counts = {};
+                    all.forEach(p => { const c = p.category || 'autre'; counts[c] = (counts[c]||0)+1; });
+                    const allTab = `<button onclick="window.setQuickCat('all')" class="flex-shrink-0 px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${ activeQuickCat==='all' ? 'bg-white text-gray-900' : 'bg-white/10 text-gray-400 hover:bg-white/20'}">Tout (${all.length})</button>`;
+                    const catTabs = CATEGORIES.map(cat => {
+                        const cnt = counts[cat.id] || 0;
+                        if (cnt === 0) return '';
+                        const active = activeQuickCat === cat.id;
+                        return `<button onclick="window.setQuickCat('${cat.id}')" class="flex-shrink-0 px-3 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${active ? cat.tab+' text-white' : 'bg-white/10 text-gray-400 hover:bg-white/20'}">${cat.icon} ${cat.label} (${cnt})</button>`;
+                    }).join('');
+                    tabBar.innerHTML = allTab + catTabs;
+                }
+
+                // Filter by active cat
+                const matches = activeQuickCat === 'all' ? all : all.filter(p => (p.category||'autre') === activeQuickCat);
+
+                if (matches.length === 0) {
+                    grid.innerHTML = '<div class="col-span-4 text-center text-[9px] text-gray-600 font-bold uppercase py-4">Aucun produit</div>';
+                    return;
+                }
+
+                // 15 couleurs vivantes — chaque produit garde SA couleur unique
+                const PALETTES = [
+                    'bg-rose-600 hover:bg-rose-500',
+                    'bg-blue-600 hover:bg-blue-500',
+                    'bg-emerald-600 hover:bg-emerald-500',
+                    'bg-amber-600 hover:bg-amber-500',
+                    'bg-violet-600 hover:bg-violet-500',
+                    'bg-cyan-600 hover:bg-cyan-500',
+                    'bg-fuchsia-600 hover:bg-fuchsia-500',
+                    'bg-orange-600 hover:bg-orange-500',
+                    'bg-teal-600 hover:bg-teal-500',
+                    'bg-indigo-600 hover:bg-indigo-500',
+                    'bg-pink-600 hover:bg-pink-500',
+                    'bg-sky-600 hover:bg-sky-500',
+                    'bg-lime-600 hover:bg-lime-500',
+                    'bg-purple-600 hover:bg-purple-500',
+                    'bg-red-600 hover:bg-red-500'
+                ];
+
+                grid.innerHTML = matches.map(p => {
+                    const hash = p.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                    const btnColor = PALETTES[hash % PALETTES.length];
+                    return `
+                    <div class="relative">
+                        <button type="button" onclick="addChip('${p.name.replace(/'/g, "\\'")}')" 
+                            class="${btnColor} text-white w-full border-none rounded-xl py-3 px-1 text-[11px] font-black uppercase tracking-tight text-center transition-all shadow-md active:scale-95 flex items-center justify-center leading-tight">
+                            ${p.name}
+                        </button>
+                        ${window.isAdmin ? `
+                        <button type="button" onclick="event.stopPropagation(); deleteProduct('${p.id}')" 
+                            class="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-rose-600">
+                            <i class="fas fa-times text-[9px]"></i>
+                        </button>` : ''}
+                    </div>
+                    `;
+                }).join('');
+            };
+
+            window.setQuickCat = (catId) => {
+                activeQuickCat = catId;
+                renderQuickProducts(document.getElementById('productInput')?.value?.toLowerCase() || '');
+            };
 
             window.shareListToWhatsApp = () => {
                 let list = [];
@@ -2131,6 +2582,60 @@
                 }
             };
 
+            // -- Auto Classify Magic ---------------------------------------
+            window.autoClassifyAllProducts = async () => {
+                if (!window.isAdmin || !window.allProducts) return;
+                
+                const dict = {
+                    'pharmacie': [
+                        'Consultation', 'Cerazette', 'لاباراي', 'Hemo', 'Test de', 'Dolo', 'Nopain', 'Paracétamol', 'Crème', 'Certificat', 'Gants', 'Sérum', 'Sparadrap', 'Vitamine', 'Vit D', 'Ordonnance', 'Maxilase', 'Forlax', 'Phanasol', 'Phanazole', 'Xydol', 'Celectin', 'دواء', 'جال', 'ميكوسيد', 'فليطوكس', 'سيراج', 'بيافين', 'Biafine', 'Efferalgan', 'Suppo', 'Biarel', 'Lactofibre', 'Biovexe', 'Sro', 'Regulax', 'Duphalac', 'Eosine', 'Rifamycine', 'Paralgan', 'Bebethen', 'Myocten', 'Mysilum', 'Clinique', 'Généraliste', 'Pédiatre', 'Gynéco', 'Médicament', 'Pharmacie', 'Panadol', 'Doliprane', 'دوليبران', 'كاشتي', 'سيرو', 'بومادة', 'تيزانة', 'حجامة', 'ماء البحر', 'لالكول', 'لانيستيزي', 'براسيتامول', 'Antidouleur', 'Anti diarrhée'
+                    ],
+                    'boulangerie': [
+                        'خبز', 'باناكوتا', 'باتيسري', 'لامونا', 'كرواسون', 'كسرة', 'مطلوع', 'زلابية', 'قاطو', 'مادلان', 'قلبلوز', 'ساندويش', 'بيتزا', 'تورتيلا', 'Pâtisserie', 'Crêpes', 'شوصو', 'Pizza', 'Sandwich', 'غراتيني', 'بان دومي', 'Pain'
+                    ],
+                    'marche': [
+                        'تفاح', 'كورجات', 'بطاطا', 'خيار', 'زرودية', 'بصل', 'عنب', 'قرعة', 'بسباس', 'كابوية', 'طوماطيش', 'طماطم', 'ثوم', 'لحشيش', 'معدنوس', 'نعناع', 'خضرة', 'بنان', 'ماندارين', 'رمان', 'دلاعة', 'فلفل', 'زبيب', 'جلبانة', 'لوبيا', 'خوخ', 'بيطراف', 'لحم', 'كبدة', 'سكالوب', 'دجاج', 'صدر', 'كويس', 'جناحتين', 'ماريني', 'Escalope', 'خضر و فواكه', 'قرنون', 'لانجاص', 'شلاظة', 'باندجال', 'ستيك'
+                    ],
+                    'cosmetique': [
+                        'صابون', 'بابيي', 'كرام', 'لاف', 'شامبو', 'Lave', 'أنتيم', 'ريحة', 'ليكوش', 'لي كوش', 'Couche', 'اوان', 'Parfum', 'كوسميتيك', 'ازيس', 'جافال', 'نشاف', 'قطن', 'Coton', 'سوسات', 'شيتة', 'بروس', 'كراطة', 'لانجات', 'Lingette', 'بافات', 'Bavettes', 'جال دوش', 'أومو', 'إزيس', 'Papier', 'Sac', 'صاشي', 'Bain bébé', 'Écran total', 'كوبونغل', 'بونجا', 'فيزلين خشين', 'كوتونتيج'
+                    ],
+                    'superette': [
+                        'فرماج', 'كونديا', 'مقارون', 'شيبس', 'روز', 'لاتاي', 'جو', 'اللبن', 'قضيان', 'Thon', 'طون', 'الزيت', 'الخل', 'مرغرين', 'قهوة', 'سكر', 'ملح', 'زيتون', 'ماقارون', 'ڨاطو', 'حليب', 'شيكولة', 'ياغورت', 'ماء', 'زبدة', 'ديول', 'ياووغت', 'عسيلة', 'عدس', 'سپاغيتي', 'سباغيتي', 'عقاش', 'حبة حلاوة', 'كمون', 'كروية', 'ماييز', 'تونة', 'عصير', 'jus', 'فونتا', 'سبرايت', 'كاشير', 'باتي', 'Pâti', 'Lait', 'Fromage', 'Gofrite', 'بيمو', 'كرام شونتييي', 'Skyer', 'Actimer', 'عكري', 'رند', 'فاني', 'الماء فاردو', 'حاجة نستقهواو', 'Bimbo', 'اللوز', 'هريسة', 'رايب', 'بيض', 'حميصة', 'ديول', 'كركم', 'جوز', 'جلجلان', 'بشنة', 'بذور', 'عطر', 'رشتة', 'سميد', 'فرينة', 'شاربات', 'تريدة', 'خمارة', 'دادا', 'كاكاو', 'كاوكاو'
+                    ]
+                };
+
+                const btn = document.getElementById('auto-classify-btn');
+                if(btn) { btn.disabled = true; btn.textContent = "⚙️..."; }
+                
+                let count = 0;
+                for (const p of window.allProducts) {
+                    if (p.category && p.category !== 'autre') continue; 
+                    
+                    let newCat = 'autre';
+                    for (const [cat, words] of Object.entries(dict)) {
+                        for (const w of words) {
+                            if (p.name.toLowerCase().includes(w.toLowerCase())) {
+                                newCat = cat;
+                                break;
+                            }
+                        }
+                        if (newCat !== 'autre') break;
+                    }
+                    
+                    if (newCat !== 'autre') {
+                        try {
+                            await updateDoc(doc(db, "produits_maison", p.id), { category: newCat });
+                            count++;
+                        } catch(e) {}
+                    }
+                }
+                
+                showToast(count + ' produits auto-classés !');
+                if(btn) { btn.disabled = false; btn.textContent = "🤖 Auto-Classer"; }
+                if(window.renderQuickProducts) window.renderQuickProducts();
+                renderManageProducts();
+            };
+
             function renderManageProducts() {
                 const list = document.getElementById('manage-products-list');
                 const search = (document.getElementById('manage-products-search')?.value || "").toLowerCase();
@@ -2139,11 +2644,13 @@
                 const filtered = window.allProducts.filter(p => p.name.toLowerCase().includes(search));
                 list.innerHTML = filtered.map(p => {
                     const isFused = p.name.includes(',') || p.name.includes('،');
+                    const cat = (window.CATEGORIES || []).find(c => c.id === (p.category||'autre')) || { id:'autre', label:'Autre', icon:'✨', tab:'bg-gray-600' };
                     return `
-                <div class="bg-white/5 p-2 rounded-lg flex justify-between items-center group">
-                    <div class="flex-1 truncate mr-2">
+                <div class="bg-white/5 p-2 rounded-lg flex justify-between items-center group gap-2">
+                    <div class="flex-1 truncate">
                         <span class="text-[10px] font-bold uppercase ${isFused ? 'text-rose-400' : ''}">${p.name}</span>
                     </div>
+                    <button onclick="window.openCategoryPicker('${p.id}', '${p.name.replace(/'/g,"\\'")}')" title="Changer catégorie" class="${cat.tab} text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-lg flex-shrink-0 opacity-80 hover:opacity-100 transition-all">${cat.icon} ${cat.label}</button>
                     ${window.isAdmin ? `
                         <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                             ${isFused ? `<button onclick="splitProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" title="Découper" class="text-emerald-500/50 hover:text-emerald-400"><i class="fas fa-scissors text-[10px]"></i></button>` : ''}
@@ -2172,19 +2679,43 @@
 
             window.quickAddProduct = async () => {
                 const input = document.getElementById('new-product-input');
-                const name = input.value.trim();
+                const name = input.value.trim().toUpperCase();
                 if (!name) return;
                 try {
-                    await addDoc(collection(db, "produits_maison"), { name });
+                    const ref = await addDoc(collection(db, "produits_maison"), { name, category: 'autre' });
                     input.value = "";
+                    window.openCategoryPicker(ref.id, name);
                 } catch (err) { showToast('Erreur ajout'); }
             };
 
             window.deleteProduct = async (id) => {
                 if (!window.isAdmin) return;
-                if (confirm('Supprimer ce produit type ?')) {
-                    try { await deleteDoc(doc(db, "produits_maison", id)); } catch (err) { showToast('Erreur'); }
+                if (confirm('Supprimer ce produit ?')) {
+                    try { await deleteDoc(doc(db, "produits_maison", id)); if(window.renderQuickProducts) window.renderQuickProducts(); } catch (err) { showToast('Erreur'); }
                 }
+            };
+
+            // ── Category Picker Modal ────────────────────────────────────────
+            window.openCategoryPicker = (productId, productName) => {
+                const modal = document.getElementById('cat-picker-modal');
+                if (!modal) return;
+                document.getElementById('cat-picker-product-name').textContent = productName;
+                document.getElementById('cat-picker-product-id').value = productId;
+                modal.classList.remove('hidden');
+            };
+            window.closeCategoryPicker = () => {
+                document.getElementById('cat-picker-modal')?.classList.add('hidden');
+            };
+            window.assignCategory = async (catId) => {
+                const productId = document.getElementById('cat-picker-product-id').value;
+                if (!productId) return;
+                try {
+                    await updateDoc(doc(db, "produits_maison", productId), { category: catId });
+                    showToast('Catégorie enregistrée !');
+                } catch(e) { console.warn('assignCategory err', e); }
+                window.closeCategoryPicker();
+                if(window.renderQuickProducts) window.renderQuickProducts();
+                renderManageProducts();
             };
 
             window.processBulkImport = async () => {
@@ -2296,7 +2827,6 @@
                 if (btnOk) btnOk.disabled = true;
                 if (btnMain) btnMain.disabled = true;
                 if (btnContinue) btnContinue.disabled = true;
-
                 const form = document.getElementById('purchase-form');
                 const f = new FormData(form);
                 const inputVal = document.getElementById('productInput').value.trim();
@@ -2306,13 +2836,7 @@
                     names.push(...parts);
                 }
 
-                if (names.length === 0) {
-                    showToast('Ajoutez au moins un produit', true);
-                    if (btnOk) btnOk.disabled = false;
-                    if (btnMain) btnMain.disabled = false;
-                    if (btnContinue) btnContinue.disabled = false;
-                    return;
-                }
+                if (names.length === 0) { showToast('Ajoutez au moins un produit', true); return; }
 
                 const isDirectPay = document.getElementById('direct-pay-check').checked;
                 const priceRaw = document.getElementById('direct-price').value.replace(',', '.');
@@ -2322,26 +2846,24 @@
                     const storeVal = f.get('store');
                     const finalStore = storeVal === 'autre' ? document.getElementById('custom-store-input').value.trim() : storeVal;
 
-                    const rawDate = f.get('dateDemande');
-                    const parsedDate = rawDate ? new Date(rawDate) : new Date();
-                    const validDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
-
-                    const currentUser = auth.currentUser;
                     const commonData = {
                         quantity: f.get('quantity') || '1',
-                        urgency: f.get('urgency') || 'medium',
-                        store: finalStore || '',
-                        notes: f.get('notes') || '',
-                        dateDemande: validDate.toISOString(),
+                        urgency: f.get('urgency'),
+                        notes: f.get('notes'),
+                        dateDemande: new Date(f.get('dateDemande')).toISOString(),
                         status: isDirectPay ? 'received' : 'pending',
                         dateAchat: isDirectPay ? new Date().toISOString() : null,
-                        userId: currentUser ? currentUser.uid : 'invite',
-                        userName: currentUser ? (currentUser.displayName || currentUser.email || 'Membre') : 'Invité'
+                        userId: auth.currentUser ? auth.currentUser.uid : 'guest',
+                        userName: auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email) : 'Invité'
                     };
 
                     if (currentEditId) {
+                        const known = window.allProducts?.find(p => p.name.toLowerCase() === names[0].toLowerCase());
+                        const resolvedStore = (known && known.category && known.category !== 'autre') ? known.category : (finalStore || '');
+
                         await updateDoc(doc(db, "achats_maison", currentEditId), {
                             ...commonData,
+                            store: resolvedStore,
                             productName: names[0],
                             price: isDirectPay ? directPrice : 0,
                             photoData: selectedPhotoData
@@ -2349,22 +2871,45 @@
                         showToast('Modifié avec succès !');
                     } else {
                         const pricePerItem = isDirectPay ? (directPrice / names.length) : 0;
+                        const optIds = [];
+
                         for (const name of names) {
-                            await addDoc(collection(db, "achats_maison"), {
+                            const known = window.allProducts?.find(p => p.name.toLowerCase() === name.toLowerCase());
+                            const resolvedStore = (known && known.category) ? known.category : (finalStore || '');
+                            const newDocData = {
                                 ...commonData,
+                                store: resolvedStore,
                                 productName: name,
                                 price: pricePerItem,
                                 photoData: selectedPhotoData
-                            });
-                            if (!window.allProducts.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                                await addDoc(collection(db, "produits_maison"), { name });
+                            };
+
+                            // Affichage optimiste immédiat (avant la réponse Firestore)
+                            const optId = 'opt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+                            optIds.push(optId);
+                            window.achats = [{ id: optId, ...newDocData }, ...(window.achats || [])];
+                            renderAchats();
+
+                            await addDoc(collection(db, "achats_maison"), newDocData);
+
+                            if (!known) {
+                                addDoc(collection(db, "produits_maison"), { name: name.toUpperCase(), category: 'autre' }).then(ref => {
+                                    window.openCategoryPicker(ref.id, name.toUpperCase());
+                                }).catch(console.error);
                             }
                         }
+
+                        // Retirer les entrées optimistes (onSnapshot va insérer les vrais docs Firestore)
+                        window.achats = (window.achats || []).filter(a => !optIds.includes(a.id));
+                        renderAchats(); updateAchatStats();
                         showToast(`${names.length} article(s) ajouté(s)`);
                         try {
                             showAppNotification(isDirectPay ? "Nouvel achat" : "Nouvelle demande", `${names.length} article(s) par la famille.`);
+                            const pushTitle = isDirectPay ? '🛒 Achat effectué !' : '📦 Nouvelle demande !';
+                            const pushBody = `${names.join(', ')} - ${names.length} article(s) ajouté(s)`;
+                            window.sendPushToAll && window.sendPushToAll(pushTitle, pushBody).catch(() => {});
                         } catch (notifErr) {
-                            console.warn("Notification push en arrière-plan ignorée:", notifErr);
+                            console.warn("Notification push ignorée:", notifErr);
                         }
                     }
 
@@ -2373,14 +2918,14 @@
                         renderChips();
                         document.getElementById('productInput').value = "";
                         document.getElementById('productInput').focus();
+                        // Optional: Reset photo but keep other form fields for fast entry
+                        // removeSelectedPhoto(); 
                     } else {
                         removeSelectedPhoto();
                         closePurchaseModal();
                     }
-                } catch (err) {
-                    console.error(err);
-                    showToast('Erreur : ' + (err.message || 'enregistrement impossible'), true);
-                } finally {
+                } catch (err) { console.error(err); showToast('Erreur d\'enregistrement'); }
+                finally {
                     if (btnOk) btnOk.disabled = false;
                     if (btnMain) btnMain.disabled = false;
                     if (btnContinue) btnContinue.disabled = false;
@@ -2390,7 +2935,9 @@
             window.confirmPurchase = async (e) => {
                 // Anyone can confirm an item they bought
                 e.preventDefault(); const p = parseFloat(new FormData(e.target).get('price'));
-                if (isNaN(p)) return;
+                const btn = e.submitter || document.querySelector('#price-form button[type="submit"]');
+                if (btn) btn.disabled = true;
+                if (isNaN(p)) { if (btn) btn.disabled = false; return; }
                 try {
                     const div = pendingPurchaseIds.length || 1;
                     const pTotal = parseFloat(p) || 0;
@@ -2404,21 +2951,22 @@
                         let final = (priceMode === 'unit') ? (pTotal * qty) : (pTotal / div);
 
                         if (!isFinite(final)) final = 0;
-                        await updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() });
+                        updateDoc(doc(db, "achats_maison", id), { status: 'received', price: final, dateAchat: new Date().toISOString() }).catch(console.error);
                     }
                     showAppNotification("Achat confirmé", `${pendingPurchaseIds.length} article(s) payé(s).`);
                     selectedIds.clear(); updateBulk(); closePriceModal(); showToast('Fait !');
                 } catch (err) { console.error(err); showToast('Erreur paiement'); }
+                finally { if (btn) btn.disabled = false; }
             };
 
             window.cancelPurchase = async (id) => {
                 if (confirm('Voulez-vous annuler cet achat et le remettre en attente ?')) {
                     try {
-                        await updateDoc(doc(db, "achats_maison", id), {
+                        updateDoc(doc(db, "achats_maison", id), {
                             status: 'pending',
                             price: 0,
                             dateAchat: null
-                        });
+                        }).catch(console.error);
                         showToast('Achat annulé');
                     } catch (err) {
                         console.error(err);
@@ -2450,7 +2998,7 @@
                     // Stats references for calculations
                     const allReceived = (window.achats || []).filter(a => a.status === 'received');
                     const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
-                    
+
                     const monthlySum = activeReceived.filter(a => {
                         if (!a.dateAchat) return false;
                         const d = new Date(a.dateAchat);
@@ -2459,18 +3007,19 @@
                         const v = parseFloat(a.price);
                         return s + (isFinite(v) ? v : 0);
                     }, 0);
-                    
+
                     const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                    const currentBalance = (window.currentBudget || 0) - (monthlySum + offset);
+                    const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                    const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+
+                    const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
 
                     if (action === 'set_solde') {
-                        // Adjust 'offset' to keep Total Budget frozen when Solde changes
-                        // Target Solde = val. Known: Solde = currentBudget - (monthlySum + offset)
-                        // => newOffset = currentBudget - val - monthlySum
+                        // Modifie uniquement le Solde, sans affecter les dépenses (monthlyOffsets)
                         const currentBudget = window.currentBudget || 0;
-                        const newOffset = currentBudget - val - monthlySum;
-                        if (isNaN(newOffset)) throw new Error("Calcul invalide (NaN)");
-                        updateData = { [`monthlyOffsets.${key}`]: newOffset };
+                        const newSoldeOffset = val - currentBudget + monthlySum;
+                        if (isNaN(newSoldeOffset)) throw new Error("Calcul invalide (NaN)");
+                        updateData = { soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset } };
                         historyAmount = val - currentBalance;
                         historyType = 'balance_adj';
                     } else if (action === 'set_expenses') {
@@ -2484,7 +3033,7 @@
                         const newOffset = val - monthlySum;
                         if (isNaN(newOffset)) throw new Error("Calcul invalide (NaN)");
                         // Fix nested update for Firestore
-                        updateData = { [`monthlyOffsets.${key}`]: newOffset };
+                        updateData = { monthlyOffsets: { ...window.monthlyOffsets, [key]: newOffset } };
                         historyAmount = val;
                         historyType = 'expense_adj';
                     } else if (action === 'set') {
@@ -2527,10 +3076,10 @@
                     const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                     const targetBudget = 44000;
                     const targetSolde = 37000;
-                    
+
                     const allReceived = (window.achats || []).filter(a => a.status === 'received');
                     const activeReceived = allReceived.filter(a => !a.isLegacy && a.notes !== 'Importé de Legacy');
-                    
+
                     const monthlySum = activeReceived.filter(a => {
                         if (!a.dateAchat) return false;
                         const d = new Date(a.dateAchat);
@@ -2539,15 +3088,15 @@
                         const val = parseFloat(a.price);
                         return s + (isFinite(val) ? val : 0);
                     }, 0);
-                    
-                    const newOffset = targetBudget - targetSolde - monthlySum;
+
+                    const newSoldeOffset = targetSolde - targetBudget + monthlySum;
 
                     await setDoc(doc(db, "achats_maison", "config_budget"), {
                         amount: targetBudget,
-                        [`monthlyOffsets.${key}`]: newOffset
+                        soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset }
                     }, { merge: true });
-                    
-                    closeBudgetModal(); 
+
+                    closeBudgetModal();
                     showToast('Automatisé: Budget 44000 et Solde 37000 appliqués !');
                 } catch (err) { console.error(err); showToast('Erreur: ' + err.message); }
             };
@@ -2585,12 +3134,17 @@
                             return s + (isFinite(v) ? v : 0);
                         }, 0);
                         const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                        const offset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
-                        const newBudget = monthlySum + offset;
-                        if (isNaN(newBudget)) throw new Error("Calcul invalide");
-                        await setDoc(doc(db, "achats_maison", "config_budget"), { amount: newBudget }, { merge: true });
+
+                        const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                        const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+                        const currentBalance = (window.currentBudget || 0) - monthlySum + soldeOffset;
+
+                        const newSoldeOffset = -(window.currentBudget || 0) + monthlySum;
+
+                        if (isNaN(newSoldeOffset)) throw new Error("Calcul invalide");
+                        await setDoc(doc(db, "achats_maison", "config_budget"), { soldeOffsets: { ...window.soldeOffsets, [key]: newSoldeOffset } }, { merge: true });
                         await addDoc(collection(db, "budget_history"), {
-                            amount: newBudget - (window.currentBudget || 0),
+                            amount: -currentBalance,
                             date: now.toISOString(),
                             displayDate: now.toLocaleString('fr-FR'),
                             type: 'balance_reset'
@@ -2613,7 +3167,7 @@
                             return a.status === 'received' && d.getMonth() === curMonth && d.getFullYear() === curYear;
                         }).reduce((s, a) => s + (parseFloat(a.price) || 0), 0);
 
-                        await setDoc(doc(db, "achats_maison", "config_budget"), { [`monthlyOffsets.${key}`]: -monthlySum }, { merge: true });
+                        await setDoc(doc(db, "achats_maison", "config_budget"), { monthlyOffsets: { ...window.monthlyOffsets, [key]: -monthlySum } }, { merge: true });
                         closeBudgetModal(); showToast('Dépenses effacées');
                     } catch (err) { console.error(err); showToast('Erreur'); }
                 }
@@ -2654,62 +3208,131 @@
                 }
             };
 
-            window.renderAchats = () => {
-                const filt = document.getElementById('filter-status').value;
-                const storeFilt = document.getElementById('filter-store').value;
-                const search = document.getElementById('search-input').value.toLowerCase();
-                const data = window.achats.filter(a =>
+            let renderAchatsLimit = 40;
+
+            window.renderAchats = (resetLimit = false) => {
+                if (resetLimit) renderAchatsLimit = 40;
+                const container = document.getElementById('achats-container');
+                if (!container) return;
+
+                const filt = document.getElementById('filter-status')?.value || 'all';
+                const storeFilt = document.getElementById('filter-store')?.value || 'all';
+                const search = (document.getElementById('search-input')?.value || "").toLowerCase().trim();
+                
+                const allItems = window.achats || [];
+                const data = allItems.filter(a =>
                     (filt === 'all' || a.status === filt) &&
                     (storeFilt === 'all' || a.store === storeFilt) &&
                     (a.productName.toLowerCase().includes(search))
                 );
-                // Sort: pending first, then by date
+
+                // Tri : En attente d'abord, puis par date décroissante
                 data.sort((a, b) => {
                     if (a.status !== b.status) return a.status === 'pending' ? -1 : 1;
-                    return new Date(b.dateDemande) - new Date(a.dateDemande);
+                    const dateA = a.status === 'received' && a.dateAchat ? new Date(a.dateAchat) : new Date(a.dateDemande || 0);
+                    const dateB = b.status === 'received' && b.dateAchat ? new Date(b.dateAchat) : new Date(b.dateDemande || 0);
+                    return dateB - dateA;
                 });
 
-                document.getElementById('achats-container').innerHTML = data.map(a => `
-                <div onclick="openDetailsModal('${a.id}')" class="glass-card p-4 md:p-5 border-l-4 ${a.urgency === 'high' ? 'border-rose-500 shadow-lg shadow-rose-500/10' : a.urgency === 'medium' ? 'border-amber-500' : 'border-indigo-500'} ${a.status === 'received' ? 'opacity-60 grayscale-[0.3]' : ''} ${selectedIds.has(a.id) ? 'ring-2 ring-indigo-500' : ''} cursor-pointer hover:bg-white/[0.05] transition-all">
-                    <div class="flex items-center gap-3 md:gap-5">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" onclick="event.stopPropagation(); toggleSelect('${a.id}')" ${selectedIds.has(a.id) ? 'checked' : ''} class="w-5 h-5 accent-indigo-500 cursor-pointer">
-                            ${a.status === 'received' ? '<div class="text-emerald-500 text-xs"><i class="fas fa-check-circle"></i></div>' : ''}
-                        </div>
-                        ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="product-img-size w-14 h-14 rounded-xl md:rounded-2xl object-cover border border-white/10 shrink-0 shadow-xl">` : `
-                            <div class="product-img-size w-14 h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg ${a.status === 'received' ? 'bg-gradient-to-br from-emerald-400 to-teal-600 shadow-emerald-500/20' : (a.urgency === 'high' ? 'bg-gradient-to-br from-rose-500 to-pink-700 shadow-rose-500/20' : 'bg-gradient-to-br from-indigo-500 to-violet-700 shadow-indigo-500/20')} transition-all">
-                                <i class="fas ${a.status === 'received' ? 'fa-check' : (a.urgency === 'high' ? 'fa-fire' : 'fa-cart-shopping')} text-lg md:text-xl"></i>
+                if (data.length === 0) {
+                    if (filt === 'pending') {
+                        container.innerHTML = `
+                        <div class="glass-card p-6 md:p-8 text-center my-4 border border-emerald-500/20 bg-gradient-to-b from-emerald-500/10 to-transparent rounded-2xl animate-fade-in">
+                            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl shadow-lg shadow-emerald-500/20">
+                                <i class="fas fa-check-double"></i>
                             </div>
-                        `}
-                        <div class="flex-1 flex justify-between items-center">
-                                <div class="space-y-1 w-full overflow-hidden">
-                                    <div class="flex items-center gap-2 flex-wrap mb-1">
-                                        <h3 class="font-black text-base uppercase tracking-wider leading-tight break-words" style="color: var(--text-primary)">${a.productName}</h3>
-                                        ${a.store ? `<span class="text-[8px] bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded border border-indigo-500/10 uppercase font-black tracking-tighter shrink-0">${getStoreLabel(a.store)}</span>` : ''}
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest">x${a.quantity}</span>
-                                        <span class="text-[9px] text-gray-500 font-bold uppercase"><i class="far fa-clock mr-1"></i>${new Date(a.dateDemande).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
-                                    </div>
+                            <h3 class="text-sm md:text-base font-black uppercase text-white tracking-wider">Tout est réglé !</h3>
+                            <p class="text-xs text-gray-400 mt-1">Aucun achat en attente pour le moment.</p>
+                            <div class="mt-4 flex flex-wrap justify-center gap-2">
+                                <button onclick="document.getElementById('filter-status').value='received'; renderAchats(true);" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-black uppercase tracking-wider shadow-lg shadow-indigo-600/30 transition-all active:scale-95 flex items-center gap-1.5">
+                                    <i class="fas fa-receipt"></i> Voir les achats réglés
+                                </button>
+                                <button onclick="document.getElementById('filter-status').value='all'; renderAchats(true);" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5">
+                                    <i class="fas fa-list"></i> Tout afficher
+                                </button>
+                                <button onclick="openPurchaseModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-black uppercase tracking-wider shadow-lg shadow-rose-600/30 transition-all active:scale-95 flex items-center gap-1.5">
+                                    <i class="fas fa-plus"></i> Demander
+                                </button>
+                            </div>
+                        </div>`;
+                    } else if (filt === 'received') {
+                        container.innerHTML = `
+                        <div class="glass-card p-6 md:p-8 text-center my-4 border border-white/5 rounded-2xl">
+                            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 text-2xl">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <h3 class="text-sm font-black uppercase text-white tracking-wider">Aucun achat réglé trouvé</h3>
+                            <p class="text-xs text-gray-400 mt-1">Les achats marqués comme achetés apparaîtront ici.</p>
+                        </div>`;
+                    } else {
+                        container.innerHTML = `
+                        <div class="glass-card p-6 text-center my-4 border border-white/5 rounded-2xl">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Aucun article trouvé</p>
+                        </div>`;
+                    }
+                    return;
+                }
+
+                const displayed = data.slice(0, renderAchatsLimit);
+                const itemsHtml = displayed.map(a => {
+                    const isRec = a.status === 'received';
+                    const displayDate = isRec && a.dateAchat ? new Date(a.dateAchat) : new Date(a.dateDemande || Date.now());
+                    const borderCls = isRec ? 'border-emerald-500/60 bg-emerald-500/[0.02]' : (a.urgency === 'high' ? 'border-rose-500 shadow-lg shadow-rose-500/10 bg-rose-500/[0.03]' : a.urgency === 'medium' ? 'border-amber-500 bg-amber-500/[0.02]' : 'border-indigo-500 bg-indigo-500/[0.02]');
+
+                    return `
+                    <div onclick="openDetailsModal('${a.id}')" class="glass-card p-3.5 md:p-5 border-l-4 ${borderCls} ${selectedIds.has(a.id) ? 'ring-2 ring-indigo-500' : ''} cursor-pointer hover:bg-white/[0.05] transition-all">
+                        <div class="flex items-center gap-3 md:gap-5">
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" onclick="event.stopPropagation(); toggleSelect('${a.id}')" ${selectedIds.has(a.id) ? 'checked' : ''} class="w-5 h-5 accent-indigo-500 cursor-pointer">
+                            </div>
+                            ${a.photoData ? `<img src="${a.photoData}" onclick="event.stopPropagation(); openPhotoZoom('${a.photoData}')" class="product-img-size w-13 h-13 md:w-14 md:h-14 rounded-xl md:rounded-2xl object-cover border border-white/10 shrink-0 shadow-xl">` : `
+                                <div class="product-img-size w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg ${isRec ? 'bg-gradient-to-br from-emerald-500 to-teal-700 shadow-emerald-500/20' : (a.urgency === 'high' ? 'bg-gradient-to-br from-rose-500 to-pink-700 shadow-rose-500/20' : 'bg-gradient-to-br from-indigo-500 to-violet-700 shadow-indigo-500/20')} transition-all">
+                                    <i class="fas ${isRec ? 'fa-check' : (a.urgency === 'high' ? 'fa-fire' : 'fa-cart-shopping')} text-base md:text-xl"></i>
                                 </div>
-                                <div class="text-right shrink-0 flex flex-col items-end gap-2">
-                                    ${a.status === 'received' ? `
-                                        <p class="text-lg font-black text-emerald-500">${Math.round(a.price || 0).toLocaleString()} <span class="text-[10px]">DA</span></p>
-                                        <div class="flex gap-2">
-                                            <button onclick="event.stopPropagation(); window.cancelPurchase('${a.id}')" class="bg-rose-500/10 hover:bg-rose-500 text-rose-500 text-[9px] font-black uppercase px-2 py-1 rounded-lg transition-all border border-rose-500/20">Annuler</button>
-                                            <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-500 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                            `}
+                            <div class="flex-1 flex justify-between items-center min-w-0 gap-1.5 md:gap-2">
+                                <div class="space-y-1 overflow-hidden min-w-0">
+                                    <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                        <h3 class="font-black text-sm md:text-base uppercase tracking-wider leading-tight break-words" style="color: var(--text-primary)">${a.productName}</h3>
+                                        ${isRec ? `<span class="text-[8px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-md uppercase font-black tracking-tight shrink-0"><i class="fas fa-check-circle mr-1"></i>Réglé</span>` : `<span class="text-[8px] ${a.urgency === 'high' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-orange-500/15 text-orange-400 border border-orange-500/20'} px-1.5 py-0.5 rounded-md uppercase font-black tracking-tight shrink-0">À acheter</span>`}
+                                        ${a.store ? `<span class="text-[8px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/15 uppercase font-black tracking-tighter shrink-0">${getStoreLabel(a.store)}</span>` : ''}
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest">x${a.quantity || '1'}</span>
+                                        <span class="text-[8px] md:text-[9px] text-gray-400 font-bold uppercase whitespace-nowrap"><i class="${isRec ? 'fas fa-check text-emerald-400' : 'far fa-clock'} mr-1"></i>${displayDate.toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' })}</span>
+                                    </div>
+                                    ${a.notes ? `<div class="mt-1 flex items-start gap-1 bg-white/5 p-1 rounded border border-white/5"><i class="fas fa-comment-dots text-amber-500/80 text-[9px] mt-[1px]"></i><span class="text-[8px] md:text-[9px] font-bold text-gray-300 break-words leading-tight line-clamp-1">${a.notes}</span></div>` : ''}
+                                </div>
+                                <div class="text-right shrink-0 flex flex-col items-end gap-1.5 md:gap-2">
+                                    ${isRec ? `
+                                        <p class="text-base md:text-lg font-black text-emerald-400">${Math.round(a.price || 0).toLocaleString()} <span class="text-[9px]">DA</span></p>
+                                        <div class="flex gap-1.5">
+                                            <button onclick="event.stopPropagation(); window.cancelPurchase('${a.id}')" class="bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white text-[8px] md:text-[9px] font-black uppercase px-2 py-1 rounded-lg transition-all border border-rose-500/20">Annuler</button>
+                                            <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-400 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
                                         </div>
                                     ` : `
-                                        <div class="flex flex-col items-end gap-2">
-                                            <button onclick="event.stopPropagation(); openPriceModal('${a.id}', '')" class="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:scale-105 text-white text-[10px] font-black uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/20">Acheter</button>
-                                            <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-500 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                                        <div class="flex flex-col items-end gap-1.5 shrink-0">
+                                            <button onclick="event.stopPropagation(); openPriceModal('${a.id}', '')" class="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:scale-105 active:scale-95 text-white text-[9px] md:text-[10px] font-black uppercase px-3 py-1.5 md:py-2 rounded-xl transition-all shadow-lg shadow-indigo-600/30">Acheter</button>
+                                            <button onclick="event.stopPropagation(); window.deleteAchat('${a.id}', '${a.userId}')" class="text-gray-500 hover:text-rose-400 p-1 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
                                         </div>
                                     `}
                                 </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            `).join('');
+                    </div>`;
+                }).join('');
+
+                let moreHtml = '';
+                if (data.length > renderAchatsLimit) {
+                    moreHtml = `
+                    <div class="text-center py-4">
+                        <button onclick="renderAchatsLimit += 40; renderAchats();" class="bg-white/10 hover:bg-white/20 text-white text-xs font-black uppercase px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2 mx-auto">
+                            <i class="fas fa-chevron-down"></i> Afficher plus (${data.length - renderAchatsLimit} restants)
+                        </button>
+                    </div>`;
+                }
+
+                container.innerHTML = itemsHtml + moreHtml;
             };
 
             window.openDetailsModal = (id) => {
@@ -2793,9 +3416,14 @@
                     const rawOffset = (window.monthlyOffsets && window.monthlyOffsets[key]) ? window.monthlyOffsets[key] : 0;
                     const offset = isFinite(parseFloat(rawOffset)) ? parseFloat(rawOffset) : 0;
 
+                    const rawSoldeOffset = (window.soldeOffsets && window.soldeOffsets[key]) ? window.soldeOffsets[key] : 0;
+                    const soldeOffset = isFinite(parseFloat(rawSoldeOffset)) ? parseFloat(rawSoldeOffset) : 0;
+
                     const monthlySpent = monthlySum + offset;
                     const budgetVal = isFinite(parseFloat(window.currentBudget)) ? parseFloat(window.currentBudget) : 0;
-                    const rem = budgetVal - monthlySpent;
+
+                    // Decoupled Solde calculation: uses its own offset instead of being strictly Budget - Dépenses
+                    const rem = budgetVal - monthlySum + soldeOffset;
 
                     const statBalance = document.getElementById('stat-budget-restant');
                     const statExpense = document.getElementById('stat-total-depense');
@@ -2905,11 +3533,22 @@
                     } catch (err) { showToast('Erreur: ' + err.message, true); }
                 }
             };
-            window.exportAchatsToExcel = () => {
+            window.exportAchatsToExcel = async () => {
                 if (!window.achats || window.achats.length === 0) {
-                    showToast("Aucune donnée à exporter", true); return;
+                    showToast("Aucune donnée existante", true); return;
+                }
+                if (typeof XLSX === 'undefined') {
+                    showToast("Chargement module Excel...");
+                    try {
+                        await window.loadScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
+                    } catch (e) {
+                        showToast("Erreur chargement Excel", true);
+                        return;
+                    }
                 }
                 try {
+                    const wb = XLSX.utils.book_new();
+
                     const achatsData = window.achats.map(a => ({
                         'Produit': a.productName,
                         'Quantité': a.quantity || '1',
@@ -2922,25 +3561,48 @@
                         'Demandé par': a.userName || 'Anonyme',
                         'Notes': a.notes || ''
                     }));
+                    if (achatsData.length > 0) {
+                        const wsAchats = XLSX.utils.json_to_sheet(achatsData);
+                        XLSX.utils.book_append_sheet(wb, wsAchats, "Achats");
+                    }
+
                     const budgetData = (window.budgetHistory || []).map(b => ({
                         'Montant (DA)': b.amount,
                         'Date': b.displayDate || new Date(b.date).toLocaleString('fr-FR'),
                         'Type': b.type || 'Dépôt'
                     }));
-                    const wb = XLSX.utils.book_new();
-                    const wsAchats = XLSX.utils.json_to_sheet(achatsData);
-                    XLSX.utils.book_append_sheet(wb, wsAchats, "Achats");
                     if (budgetData.length > 0) {
                         const wsBudget = XLSX.utils.json_to_sheet(budgetData);
                         XLSX.utils.book_append_sheet(wb, wsBudget, "Historique Budget");
                     }
+
+                    if (window.allProducts && window.allProducts.length > 0) {
+                        const prodsData = window.allProducts.map((p, index) => ({
+                            'ID': p.id || index,
+                            'Nom': p.name || 'Inconnu'
+                        }));
+                        const wsProds = XLSX.utils.json_to_sheet(prodsData);
+                        XLSX.utils.book_append_sheet(wb, wsProds, "Produits");
+                    }
+
+                    if (window.familyMembers && window.familyMembers.length > 0) {
+                        const membersData = window.familyMembers.map(m => ({
+                            'Créé le': m.createdAt ? new Date(m.createdAt).toLocaleString('fr-FR') : '',
+                            'Nom': m.userName || '',
+                            'Rôle': m.role || '',
+                            'Token Périphérique': m.fcmToken ? 'Enregistré' : 'Aucun'
+                        }));
+                        const wsMembers = XLSX.utils.json_to_sheet(membersData);
+                        XLSX.utils.book_append_sheet(wb, wsMembers, "Membres");
+                    }
+
                     const dateStr = new Date().toISOString().split('T')[0];
-                    XLSX.writeFile(wb, `Sauvegarde_Achats_FarahNour_${dateStr}.xlsx`);
-                    showToast("Exportation réussie !");
+                    XLSX.writeFile(wb, `Sauvegarde_Data_FarahNour_${dateStr}.xlsx`);
+                    showToast("Exportation Excel de TOUT terminée !");
                 } catch (err) { console.error(err); showToast("Erreur lors de l'exportation", true); }
             };
 
-            window.APP_VERSION = 'v15';
+            window.APP_VERSION = 'v16';
             window.checkForUpdates = () => {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistration().then(reg => {
@@ -3177,13 +3839,13 @@
                                 <button onclick="quickAddProduct()"
                                     class="bg-rose-600 text-white px-6 rounded-xl font-bold text-xs uppercase transition-all hover:bg-rose-500">Ajouter</button>
                             </div>
-                            <div class="relative">
+                            <div class="relative flex-1">
                                 <input type="text" id="manage-products-search" oninput="renderManageProducts()"
                                     placeholder="Rechercher un produit..."
                                     class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 underline-none focus:border-rose-500 text-xs text-gray-400">
-                                <i
-                                    class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500"></i>
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-500"></i>
                             </div>
+                            <button id="auto-classify-btn" onclick="autoClassifyAllProducts()" class="bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-xs font-black uppercase transition-all shadow-md">🤖 Auto-Classer</button>
                         </div>
                         <div id="manage-products-list"
                             class="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-2 pr-2 custom-scrollbar">
@@ -3213,6 +3875,493 @@
             </div>
         </div>
     </div> <!-- End of app-content -->
+
+    <!-- ===================== CATEGORY PICKER MODAL ===================== -->
+    <div id="cat-picker-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeCategoryPicker()"></div>
+        <div class="relative glass-card bg-gray-900 w-full max-w-sm p-6 border border-white/10 shadow-2xl z-10 rounded-2xl">
+            <div class="text-center mb-5">
+                <div class="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-tags text-indigo-400 text-xl"></i>
+                </div>
+                <h3 class="text-sm font-black uppercase tracking-widest text-white">Classer ce produit</h3>
+                <p id="cat-picker-product-name" class="text-lg font-black text-rose-400 mt-1 uppercase"></p>
+                <p class="text-[9px] text-gray-500 font-bold uppercase mt-1">Ce classement sera mémorisé pour toujours</p>
+            </div>
+            <input type="hidden" id="cat-picker-product-id">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="assignCategory('superette')"   class="flex items-center gap-3 bg-blue-600    hover:bg-blue-500    text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">🏬 Supérette</button>
+                <button onclick="assignCategory('pharmacie')"   class="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">💊 Pharmacie</button>
+                <button onclick="assignCategory('boulangerie')" class="flex items-center gap-3 bg-amber-600   hover:bg-amber-500   text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">🥖 Boulangerie</button>
+                <button onclick="assignCategory('marche')"      class="flex items-center gap-3 bg-lime-600    hover:bg-lime-500    text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">🥦 Marché</button>
+                <button onclick="assignCategory('cosmetique')"  class="flex items-center gap-3 bg-fuchsia-600 hover:bg-fuchsia-500 text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">💄 Cosmétiques</button>
+                <button onclick="assignCategory('autre')"       class="flex items-center gap-3 bg-gray-600    hover:bg-gray-500    text-white rounded-xl px-4 py-3 font-black text-sm uppercase transition-all active:scale-95 shadow-lg">✨ Autre</button>
+            </div>
+            <button onclick="closeCategoryPicker()" class="mt-4 w-full text-center text-[10px] text-gray-600 hover:text-gray-400 font-bold uppercase transition-colors">Ignorer</button>
+        </div>
+    </div>
+
+    <!-- ===================== SCANNER MODAL ===================== -->
+    <div id="scanner-modal" class="fixed inset-0 z-[90] hidden">
+        <div class="absolute inset-0 bg-black" style="background:#060608"></div>
+        <div class="absolute inset-0 flex flex-col" style="padding-top: env(safe-area-inset-top);">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 py-3 flex-shrink-0" style="background:rgba(0,0,0,0.7)">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
+                        <i class="fas fa-camera text-violet-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-black uppercase tracking-widest text-white">Scanner Produit</h2>
+                        <p class="text-[8px] text-gray-600 font-bold uppercase tracking-wider">Prenez la photo → sélectionnez le nom</p>
+                    </div>
+                </div>
+                <button onclick="closeScannerModal()" class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- === STEP 1: CAMERA VIEW === -->
+            <div id="scanner-step-camera" class="flex-1 flex flex-col overflow-hidden">
+                <!-- Live video -->
+                <div class="relative flex-1 overflow-hidden bg-black">
+                    <video id="scanner-video" autoplay playsinline muted
+                        class="absolute inset-0 w-full h-full object-cover"></video>
+                    <!-- Target frame overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div class="relative" style="width:85vw; max-width:400px; height:55vw; max-height:220px;">
+                            <div class="absolute top-0 left-0 w-7 h-7 border-t-[3px] border-l-[3px] border-violet-400 rounded-tl-md"></div>
+                            <div class="absolute top-0 right-0 w-7 h-7 border-t-[3px] border-r-[3px] border-violet-400 rounded-tr-md"></div>
+                            <div class="absolute bottom-0 left-0 w-7 h-7 border-b-[3px] border-l-[3px] border-violet-400 rounded-bl-md"></div>
+                            <div class="absolute bottom-0 right-0 w-7 h-7 border-b-[3px] border-r-[3px] border-violet-400 rounded-br-md"></div>
+                            <div class="absolute inset-x-2" id="scan-sweep-line"
+                                style="height:2px; background: linear-gradient(90deg,transparent,#a78bfa,transparent); top:50%; animation: sweepLine 1.8s ease-in-out infinite;"></div>
+                        </div>
+                    </div>
+                    <!-- Hint -->
+                    <p class="absolute bottom-3 left-0 right-0 text-center text-[9px] font-bold uppercase text-gray-400 tracking-wider">
+                        Cadrez l'étiquette du produit
+                    </p>
+                </div>
+
+                <!-- Capture button -->
+                <div class="flex-shrink-0 flex flex-col items-center gap-2 py-5" style="background:rgba(0,0,0,0.85)">
+                    <button id="scan-capture-btn" onclick="capturePhoto()"
+                        class="w-[68px] h-[68px] rounded-full flex items-center justify-center border-4 border-white/20 active:scale-90 transition-transform"
+                        style="background: linear-gradient(135deg, #7c3aed, #a855f7); box-shadow: 0 0 30px rgba(139,92,246,0.5)">
+                        <i class="fas fa-camera text-white text-2xl"></i>
+                    </button>
+                    <p class="text-[8px] text-gray-600 font-bold uppercase tracking-widest">Appuyez pour capturer</p>
+                </div>
+
+                <!-- History (compact) -->
+                <div class="flex-shrink-0 border-t border-white/5 px-4 pt-2 pb-3" style="background:rgba(0,0,0,0.6); max-height:35vh; overflow-y:auto;">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[8px] font-black uppercase tracking-widest text-gray-600">Derniers produits scannés</p>
+                        <button onclick="clearScanHistory()" class="text-[7px] text-rose-600 font-bold uppercase">Effacer</button>
+                    </div>
+                    <div id="scan-history-list" class="grid grid-cols-2 gap-1.5"></div>
+                </div>
+            </div>
+
+            <!-- === STEP 2: SELECT TEXT === -->
+            <div id="scanner-step-select" class="hidden flex-1 flex flex-col overflow-hidden">
+                <!-- Photo preview (small) -->
+                <div class="relative flex-shrink-0" style="height: 30vh; background:#000">
+                    <img id="scanner-photo-preview" src="" class="w-full h-full object-contain">
+                    <div id="scanner-ocr-overlay" class="absolute inset-0">
+                        <!-- OCR loading / word chips drawn here -->
+                    </div>
+                    <!-- Retake -->
+                    <button onclick="retakePhoto()"
+                        class="absolute top-2 left-2 flex items-center gap-1.5 bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 text-[9px] font-bold text-gray-300 uppercase">
+                        <i class="fas fa-redo text-violet-400" style="font-size:9px"></i> Reprendre
+                    </button>
+                </div>
+
+                <!-- Word chips zone -->
+                <div class="flex-1 overflow-y-auto px-4 pt-3 pb-2" style="background:#0a0a0f">
+                    <p class="text-[9px] font-black uppercase tracking-widest text-violet-400 mb-2">
+                        <i class="fas fa-hand-pointer mr-1"></i>Touchez le nom du produit
+                    </p>
+                    <div id="scanner-word-chips" class="flex flex-wrap gap-2 mb-3">
+                        <!-- chips inserted by JS -->
+                    </div>
+                    <!-- Manual input fallback -->
+                    <p class="text-[8px] text-gray-700 font-bold uppercase mb-1.5">Ou tapez manuellement</p>
+                    <div class="flex gap-2">
+                        <input id="scanner-result-input" type="text" placeholder="Nom du produit..."
+                            class="flex-1 bg-white/5 border border-violet-500/30 rounded-xl px-3 py-2.5 text-sm font-bold text-white outline-none focus:border-violet-400 uppercase tracking-wide"
+                            oninput="this.value = this.value.toUpperCase()">
+                        <button onclick="confirmScanResult()"
+                            class="px-4 py-2 rounded-xl font-black text-white text-sm active:scale-95 transition-all"
+                            style="background:linear-gradient(135deg,#7c3aed,#a855f7); box-shadow:0 4px 15px rgba(124,58,237,0.3)">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Price + Save row -->
+                <div class="flex-shrink-0 px-4 py-3 border-t border-white/5 flex gap-2" style="background:#040406">
+                    <input id="scanner-price-input" type="number" inputmode="decimal" placeholder="Prix DA..."
+                        class="flex-1 bg-white/5 border border-emerald-500/20 rounded-xl px-3 py-2.5 text-sm font-bold text-emerald-400 outline-none focus:border-emerald-400">
+                    <button onclick="saveScanWithPrice()"
+                        class="px-5 py-2.5 rounded-xl font-black text-white text-sm active:scale-95 transition-all flex items-center gap-2"
+                        style="background:linear-gradient(135deg,#059669,#10b981); box-shadow:0 4px 15px rgba(5,150,105,0.3)">
+                        <i class="fas fa-save"></i> Sauvegarder
+                    </button>
+                </div>
+            </div>
+
+            <!-- OCR Canvas (hidden) -->
+            <canvas id="scanner-canvas" class="hidden"></canvas>
+        </div>
+    </div>
+
+    <!-- Tesseract.js (Chargé dynamiquement à la demande pour démarrage instantané) -->
+
+    <style>
+        @keyframes sweepLine {
+            0%, 100% { top: 8%; }
+            50% { top: 88%; }
+        }
+        .word-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 1.5px solid rgba(139,92,246,0.25);
+            background: rgba(139,92,246,0.08);
+            color: #e2e8f0;
+            transition: all 0.15s;
+            letter-spacing: 0.04em;
+            user-select: none;
+        }
+        .word-chip:active, .word-chip.selected {
+            background: rgba(139,92,246,0.35);
+            border-color: rgba(139,92,246,0.7);
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 12px rgba(139,92,246,0.4);
+        }
+        .scanner-loading-spinner {
+            width: 28px; height: 28px;
+            border: 3px solid rgba(139,92,246,0.2);
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+    // ====================================================================
+    // SCANNER MODULE v2 — Photo → Sélection manuelle du nom
+    // ====================================================================
+    (function () {
+        const SCAN_HISTORY_KEY = 'achats_scan_history_v2';
+        let scanStream = null;
+        let scanTarget = null;
+        let tesseractWorker = null;
+        let isProcessing = false;
+
+        // ─── Tesseract: Chargé uniquement à la demande ───
+        async function getWorker() {
+            if (tesseractWorker) return tesseractWorker;
+            if (typeof Tesseract === 'undefined') {
+                await window.loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");
+            }
+            tesseractWorker = await Tesseract.createWorker('fra', 1, { logger: () => {} });
+            // Mode PSM 11 : Sparse text (idéal pour trouver tout texte éparpillé sans ordre précis, parfait pour les étiquettes de produits)
+            await tesseractWorker.setParameters({
+                tessedit_pageseg_mode: '11', 
+            });
+            return tesseractWorker;
+        }
+
+        // ─── History ───
+        function getHistory() {
+            try { return JSON.parse(localStorage.getItem(SCAN_HISTORY_KEY) || '[]'); }
+            catch { return []; }
+        }
+        function saveHistory(h) {
+            localStorage.setItem(SCAN_HISTORY_KEY, JSON.stringify(h.slice(0, 80)));
+        }
+        function addHistory(name, price) {
+            const h = getHistory();
+            const idx = h.findIndex(i => i.name === name.toUpperCase());
+            if (idx !== -1) h.splice(idx, 1);
+            h.unshift({ name: name.toUpperCase(), price: price || '', date: Date.now() });
+            saveHistory(h);
+        }
+        window.clearScanHistory = function () {
+            if (confirm("Effacer l'historique des scans ?")) {
+                localStorage.removeItem(SCAN_HISTORY_KEY);
+                renderHistory();
+            }
+        };
+
+        function renderHistory() {
+            const list = document.getElementById('scan-history-list');
+            if (!list) return;
+            const h = getHistory();
+            if (!h.length) {
+                list.innerHTML = '<p class="col-span-2 text-center text-[8px] text-gray-700 font-bold uppercase py-2">Aucun produit scanné</p>';
+                return;
+            }
+            list.innerHTML = h.map(item => `
+                <div onclick="pickHistoryItem('${item.name.replace(/'/g, "\\'")}',${ item.price || 0})"
+                    class="flex flex-col px-2.5 py-2 rounded-xl cursor-pointer active:scale-95 transition-all"
+                    style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06)">
+                    <span class="text-[10px] font-black text-white uppercase truncate">${item.name}</span>
+                    ${item.price ? `<span class="text-[8px] font-bold text-emerald-400 mt-0.5">${parseFloat(item.price).toLocaleString()} DA</span>` : ''}
+                </div>`).join('');
+        }
+
+        window.pickHistoryItem = function (name, price) {
+            document.getElementById('scanner-result-input').value = name;
+            if (price) document.getElementById('scanner-price-input').value = price;
+            // If we're in camera step, go to select step showing history pick
+            showSelectStep();
+            highlightChip(name);
+        };
+
+        // ─── Camera ───
+        async function startCamera() {
+            if (scanStream) return;
+            try {
+                scanStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
+                    audio: false
+                });
+                const vid = document.getElementById('scanner-video');
+                vid.srcObject = scanStream;
+                await vid.play();
+            } catch (e) {
+                alert('Caméra non accessible. HTTPS requis sur mobile.');
+            }
+        }
+        function stopCamera() {
+            if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+            const vid = document.getElementById('scanner-video');
+            if (vid) vid.srcObject = null;
+        }
+
+        // ─── Open / Close ───
+        window.openScannerModal = function (target) {
+            scanTarget = target || 'modal';
+            document.getElementById('scanner-modal').classList.remove('hidden');
+            showCameraStep();
+            renderHistory();
+            startCamera();
+        };
+        window.openScannerIntoInput = function () { window.openScannerModal('input'); };
+        window.closeScannerModal = function () {
+            stopCamera();
+            document.getElementById('scanner-modal').classList.add('hidden');
+        };
+
+        function showCameraStep() {
+            document.getElementById('scanner-step-camera').classList.remove('hidden');
+            document.getElementById('scanner-step-select').classList.add('hidden');
+            document.getElementById('scanner-result-input').value = '';
+            document.getElementById('scanner-price-input').value = '';
+        }
+        function showSelectStep() {
+            document.getElementById('scanner-step-camera').classList.add('hidden');
+            document.getElementById('scanner-step-select').classList.remove('hidden');
+        }
+
+        // ─── Capture photo → run OCR → show chips ───
+        window.capturePhoto = async function () {
+            if (isProcessing) return;
+            const video = document.getElementById('scanner-video');
+            const canvas = document.getElementById('scanner-canvas');
+            if (!video || !video.videoWidth) { alert('Caméra non prête'); return; }
+
+            isProcessing = true;
+            const btn = document.getElementById('scan-capture-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="scanner-loading-spinner mx-auto"></div>';
+
+            // Capture frame
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            // --- Prétraitement d'image pour OCR : Noir & Blanc + Contraste élevé ---
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                // 1. Convertir en niveaux de gris
+                let gray = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+                // 2. Assombrir les ombres et éclaircir les couleurs claires (contraste puissant)
+                let contrast = (gray - 128) * 2.5 + 128;
+                let finalVal = Math.min(255, Math.max(0, contrast));
+                // Appliquer aux canaux RGB
+                data[i] = data[i+1] = data[i+2] = finalVal;
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+            // Show photo preview immediately
+            document.getElementById('scanner-photo-preview').src = imageDataUrl;
+            showSelectStep();
+            showChipsLoading();
+
+            try {
+                const worker = await getWorker();
+                const result = await worker.recognize(imageDataUrl);
+                const lines = extractLines(result.data);
+                renderChips(lines);
+            } catch (e) {
+                console.error(e);
+                document.getElementById('scanner-word-chips').innerHTML =
+                    '<p class="text-[9px] text-rose-400 font-bold uppercase">Erreur OCR — tapez le nom</p>';
+            } finally {
+                isProcessing = false;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-camera text-white text-2xl"></i>';
+            }
+        };
+
+        function showChipsLoading() {
+            document.getElementById('scanner-word-chips').innerHTML = `
+                <div class="flex items-center gap-2 py-2">
+                    <div class="scanner-loading-spinner"></div>
+                    <span class="text-[9px] text-violet-400 font-bold uppercase animate-pulse">Lecture en cours...</span>
+                </div>`;
+        }
+
+        // Extract unique, clean lines from Tesseract result
+        function extractLines(data) {
+            const seen = new Set();
+            const chips = [];
+
+            function addChip(text) {
+                const clean = text.trim().toUpperCase().replace(/[^A-Z0-9ÀÂÄÉÈÊËÎÏÔÙÛÜÇ\s\-']/g, '').trim();
+                // We allow words 2 chars or longer, not just numbers
+                if (clean.length >= 2 && !/^\d+$/.test(clean) && !seen.has(clean)) {
+                    seen.add(clean);
+                    chips.push(clean);
+                }
+            }
+
+            // 1. Try full lines first (often better for logos/brands grouped together)
+            if (data.lines && data.lines.length) {
+                data.lines
+                    .filter(l => l.confidence > 30) // Lower confidence threshold for lines
+                    .forEach(l => {
+                        addChip(l.text);
+                        // Also split the line by space and add individual chunks > 3 chars
+                        l.text.split(/\s+/).forEach(chunk => {
+                            if (chunk.length > 3) addChip(chunk);
+                        });
+                    });
+            }
+
+            // 2. Add individual words as fallback
+            if (data.words && data.words.length) {
+                data.words
+                    .filter(w => w.confidence > 35) // Lower threshold
+                    .forEach(w => addChip(w.text));
+            }
+
+            // 3. Absolute fallback to raw text block
+            if (chips.length === 0 && data.text) {
+                data.text.split('\n').forEach(l => addChip(l));
+            }
+
+            return chips.slice(0, 24); // max 24 chips
+        }
+
+        function renderChips(lines) {
+            const container = document.getElementById('scanner-word-chips');
+            if (!lines.length) {
+                container.innerHTML = '<p class="text-[9px] text-gray-500 font-bold uppercase">Aucun texte détecté — tapez manuellement</p>';
+                return;
+            }
+            container.innerHTML = lines.map(w => `
+                <button type="button" class="word-chip" onclick="selectChip(this, '${w.replace(/'/g, "\\'")}')">${w}</button>
+            `).join('');
+        }
+
+        window.selectChip = function (el, text) {
+            // Toggle selection
+            document.querySelectorAll('.word-chip.selected').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            // Append or replace in input
+            const inp = document.getElementById('scanner-result-input');
+            const cur = inp.value.trim();
+            inp.value = cur ? cur + ' ' + text : text;
+            inp.scrollTop = inp.scrollHeight;
+        };
+
+        function highlightChip(name) {
+            document.querySelectorAll('.word-chip').forEach(c => {
+                if (c.textContent.trim() === name) c.classList.add('selected');
+            });
+        }
+
+        window.retakePhoto = function () {
+            showCameraStep();
+        };
+
+        // ─── Confirm chip/input into purchase form ───
+        window.confirmScanResult = function () {
+            const name = (document.getElementById('scanner-result-input').value || '').trim().toUpperCase();
+            if (!name) return;
+            if (scanTarget === 'input') {
+                fillProductInput(name);
+                window.closeScannerModal();
+            }
+        };
+
+        // ─── Save with price ───
+        window.saveScanWithPrice = function () {
+            const name = (document.getElementById('scanner-result-input').value || '').trim().toUpperCase();
+            const price = (document.getElementById('scanner-price-input').value || '').trim();
+            if (!name) {
+                if (typeof showToast === 'function') showToast('Entrez ou sélectionnez le nom', true);
+                return;
+            }
+            addHistory(name, price);
+            renderHistory();
+
+            if (scanTarget === 'input') {
+                fillProductInput(name);
+                const dp = document.getElementById('direct-price');
+                if (dp && price) dp.value = price;
+                window.closeScannerModal();
+            } else {
+                if (typeof showToast === 'function')
+                    showToast('✅ ' + name + (price ? ' — ' + price + ' DA' : '') + ' sauvegardé !');
+                setTimeout(() => {
+                    document.getElementById('scanner-result-input').value = '';
+                    document.getElementById('scanner-price-input').value = '';
+                    document.querySelectorAll('.word-chip.selected').forEach(c => c.classList.remove('selected'));
+                }, 900);
+            }
+        };
+
+        function fillProductInput(name) {
+            const inp = document.getElementById('productInput');
+            if (inp) {
+                inp.value = name;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
+
+    })();
+    </script>
+
 </body>
 
 </html>
