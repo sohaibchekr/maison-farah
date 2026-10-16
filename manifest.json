@@ -1,8 +1,9 @@
 {
   "name": "فرح نور - Achats Famille",
   "short_name": "FarahAchats",
+  "id": "farah-nour-achats",
   "description": "Gestion des courses pour la famille Farah Nour",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -26,22 +27,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "categories": [
-    "shopping",
-    "family"
-  ],
-  "shortcuts": [
-    {
-      "name": "Nouvel Article",
-      "url": "./index.html?action=new",
-      "icons": [
-        {
-          "src": "fille.jpg",
-          "sizes": "192x192"
-        }
-      ]
     }
   ]
 }
