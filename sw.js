@@ -1,5 +1,5 @@
-// ✅ VERSION v17 - Installation Android ultra-résiliente et push sécurisé
-const APP_VERSION = 'v17';
+// ✅ VERSION v18 - Vitesse maximale et ouverture instantanée
+const APP_VERSION = 'v18';
 const CACHE_NAME = 'farah-achats-' + APP_VERSION;
 
 const ASSETS = [
@@ -7,8 +7,6 @@ const ASSETS = [
     './index.html',
     './fille.jpg',
     './manifest.json',
-    './icon-192.png',
-    './icon-512.png',
 ];
 
 // Domaines à NE PAS mettre en cache (APIs Firebase, CDN dynamiques...)
@@ -56,19 +54,38 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
     const url = new URL(e.request.url);
 
-    // Ne pas intercepter les requêtes Firebase/APIs externes (évite CORS)
+    // Ne pas intercepter les requêtes Firebase/APIs externes
     if (SKIP_CACHE_HOSTS.some(host => url.hostname.includes(host))) {
-        return; // Laisse passer directement au réseau
+        return;
     }
-    // Ne pas mettre en cache les requêtes POST/PUT/DELETE
     if (e.request.method !== 'GET') return;
+
+    // Pour les navigations (ouverture de l'app), répondre immédiatement avec fallback
+    if (e.request.mode === 'navigate') {
+        e.respondWith(
+            fetch(e.request).then((res) => {
+                if (res && res.status === 200) {
+                    const clone = res.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+                }
+                return res;
+            }).catch(async () => {
+                const cachedPage = await caches.match('./index.html') || await caches.match('./');
+                if (cachedPage) return cachedPage;
+                return new Response('Hors ligne - Veuillez vous reconnecter à internet.', {
+                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                });
+            })
+        );
+        return;
+    }
 
     // Stratégie cache-first pour les ressources locales
     e.respondWith(
         caches.match(e.request).then((cached) => {
             if (cached) return cached;
             return fetch(e.request).then((res) => {
-                if (res && res.status === 200 && res.type === 'basic') {
+                if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
                     const clone = res.clone();
                     caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
                 }
